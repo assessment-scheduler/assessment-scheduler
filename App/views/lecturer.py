@@ -18,5 +18,5 @@ def newLect():
 
     #Check if email is already used by another lecturer ie. lecturer already registered
     if db.session.query(Lecturer).filter(Lecturer.email == email).count == 0:
-        register(self, fName, lName, email)
+        register(self, fName, lName, email, pwd)
         return renderTemplate('index.html')    

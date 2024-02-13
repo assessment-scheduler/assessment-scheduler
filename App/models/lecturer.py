@@ -10,16 +10,15 @@ class Lecturer(User):
   #creates reverse relationship from Lecturer back to Course to access courses assigned to a specific lecturer
   coursesAssigned = db.relationship('course', backref=db.backref('courses', lazy='joined'))
 
-  def __init__(self, fName, lName, email, cNum):
+  def __init__(self, fName, lName, email):
     super().__init__(u_ID, password)
     self.fName = fName
     self.lName = lName
     self.email = email
-    self.cNum = cNum
-
+    self.password = password
 
   def register(self, fName, lName, email):
-    newLect = Lecturer(self, fName, lName, email)
+    newLect = Lecturer(self, fName, lName, email, password)
     db.session.add(newLect)  #add to db
     db.session.commit()
     return newLect  
