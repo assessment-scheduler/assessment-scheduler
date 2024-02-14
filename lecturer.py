@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, renderTemplate
+from flask import Blueprint, request, jsonify, render_template
 from App.database import db
 from flask_jwt_extended import current_user as jwt_current_user
 from flask_jwt_extended import jwt_required
@@ -13,9 +13,9 @@ def newLect():
     pwd = request.form['password']
 
     if (firstName == '' or lastName == '' or email == '' or pwd == ''):
-        renderTemplate('signup.html', message = 'Please enter required fields.')
+        render_template('signup.html', message = 'Please enter required fields.')
 
     #Check if email is already used by another lecturer ie. lecturer already registered
-    if db.session.query(Lecturer).filter(Lecturer.email == email).count == 0:
+    if db.session.query(Lecturer).filter(Lecturer.email == email).count() == 0:
         register(self, fName, lName, email)
-        return renderTemplate('index.html')    
+    return render_template('index.html')    

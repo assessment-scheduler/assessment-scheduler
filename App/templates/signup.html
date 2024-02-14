@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Scheduler</title>
+</head>
+<body>
+    <h1>Registration</h1>
+    <p>Complete the form below.</p>
+    <form id="registrationForm">
+        FIRST NAME: <input id="firstName">
+        LAST NAME: <input id="lastName">
+        EMAIL ADDRESS: <input id="email">
+        PASSWORD: <input id="password">
+        <button id="register_btn">SUBMIT</button>
+    </form>
+
+    <script>
+        const button = document.getElementById('register_btn');
+
+        button.addEventListener('click', function() {
+            event.preventDefault(); 
+
+            let name=document.getElementById('firstName').value;
+            fetch('/register', {
+                method: 'POST',
+                body: JSON.stringify({}) // Optionally include data in the request body
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Handle successful response
+                    console.log('Request successful!');
+                } else {
+                    // Handle error response
+                    console.error('Request failed.');
+                }
+            })
+            .catch(error => {
+                // Handle network errors
+                console.error('Error:', error);
+            });
+        });
+
+    </script>
+    
+</body>
+</html>
