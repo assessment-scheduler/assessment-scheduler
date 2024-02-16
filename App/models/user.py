@@ -3,12 +3,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 class User(db.Model):
     __tablename__ = 'user'
-
-    u_ID = db.Column(db.Integer, primary_key=True)
     password = db.Column(db.String(120), nullable=False)
 
-    def __init__(self, u_ID, password, role):
-        self.u_ID = u_ID,
+    def __init__(self, password):
         self.set_password(password)
 
     def set_password(self, password):

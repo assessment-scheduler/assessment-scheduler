@@ -1,0 +1,1 @@
+from .lecturer import *
