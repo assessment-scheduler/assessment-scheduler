@@ -3,17 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="signup.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title>Assessment Scheduler</title>
 </head>
 <body>
-    <h1>Registration</h1>
-    <p>Complete the form below.</p>
     <form id="registrationForm">
-        FIRST NAME: <input id="firstName">
-        LAST NAME: <input id="lastName">
-        EMAIL ADDRESS: <input id="email">
-        PASSWORD: <input id="password">
-        <button id="register_btn">SUBMIT</button>
+        <h1>Sign Up</h1>
+        <div>
+            <label for="firstName" class="input-label">First Name</label><br>
+            <input type="text" id="firstName">
+        </div>
+        <div>
+            <label for="lastName" class="input-label">Last Name</label><br>
+            <input type="text" id="lastName">
+        </div>
+        <div>
+            <label for="email" class="input-label">Email</label><br>
+            <input type="text" id="email">
+        </div>
+        <div>
+            <label for="password" class="input-label">Password</label><br>
+            <div id="passwordContainer">
+                <input type="password" id="password">
+                <!-- <label id="togglePassword"></label> -->
+                <i id="togglePassword" class="material-icons">visibility</i>
+            </div>
+            
+        </div>
+ 
+        <button id="register_btn">Sign Up</button>
     </form>
 
     <script>
@@ -40,6 +59,17 @@
                 // Handle network errors
                 console.error('Error:', error);
             });
+        });
+
+        document.getElementById("togglePassword").addEventListener("click", function() {
+        var passwordInput = document.getElementById("password");
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            this.textContent = "visibility_off";
+        } else {
+            passwordInput.type = "password";
+            this.textContent = "visibility";
+        }
         });
 
     </script>
