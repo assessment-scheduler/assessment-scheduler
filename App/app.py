@@ -7,7 +7,7 @@ db = SQLAlchemy(app)
 ENV = 'DEVELOPMENT'
 if ENV == 'DEVELOPMENT':
     app.debug == True
-    app.config['SQLALCHEMY_DATABSE_URI'] = ''
+    app.config['SQLALCHEMY_DATABSE_URI'] = ' '
 else:
     app.debug == True
     app.config['SQLALCHEMY_DATABSE_URI'] = ''
