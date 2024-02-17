@@ -14,3 +14,5 @@ else:
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False    
 
+if name = '__main__':
+    app.run
