@@ -4,7 +4,7 @@ from flask_login import LoginManager, current_user
 from flask_uploads import DOCUMENTS, IMAGES, TEXT, UploadSet, configure_uploads
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
-from werkzeug.datastructures import  FileStorage
+from werkzeug.datastructures import FileStorage
 from datetime import timedelta
 
 from App.database import init_db

@@ -1,4 +1,5 @@
 from App.database import db
+from .user import User
 
 class Lecturer(User):
   __tablename__ = 'lecturer'

@@ -3,6 +3,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 class User(db.Model):
     __tablename__ = 'user'
+    __abstract__ = True #class cannot be instantiated
     password = db.Column(db.String(120), nullable=False)
 
     def __init__(self, password):

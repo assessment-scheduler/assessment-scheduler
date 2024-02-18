@@ -1,4 +1,5 @@
 from App.database import db
+from .user import User  ##error -> flask run to run
 
 class Admin(User):
   __tablename__ = 'admin'
