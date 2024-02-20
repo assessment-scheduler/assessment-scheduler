@@ -10,10 +10,10 @@ from datetime import timedelta
 from App.database import init_db
 from App.config import config
 
-from App.controllers import (
-    setup_jwt,
-    setup_flask_login
-)
+# from App.controllers import (
+#     setup_jwt,
+#     setup_flask_login
+# )
 
 from App.views import views
 
@@ -41,7 +41,7 @@ def create_app(config_overrides={}):
     configure_uploads(app, photos)
     add_views(app)
     init_db(app)
-    setup_jwt(app)
-    setup_flask_login(app)
+    # setup_jwt(app)
+    # setup_flask_login(app)
     app.app_context().push()
     return app

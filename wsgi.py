@@ -17,4 +17,4 @@ def initialize():
     create_user('bob', 'bobpass')
     print('database intialized')
 
-app.cli.add_command(test)
+# app.cli.add_command(test)
