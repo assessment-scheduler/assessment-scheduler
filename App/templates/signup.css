@@ -10,13 +10,14 @@ head,body{
 
 form{
     width: 300px;
-    margin: 10% auto;    
+    margin: 4% auto;   
     background-color: var(--secondary-color);
     padding: 20px;
     text-align: center;
     border-radius: 5px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     position: relative;
+    font-size: 12pt;
 }
 
 div{
@@ -69,5 +70,7 @@ button:hover{
     font-size: 14pt;
 }
 
-
-
+#dropdown{
+    background-color: var(--primary-color);
+    color: white;
+}
