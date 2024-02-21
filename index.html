@@ -1,11 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assessment Scheduler</title>
-</head>
-<body>
-    <h1>Hello World</h1>
-</body>
+<html lang='en'>
+  <head>
+    <meta charset='utf-8' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <link rel="stylesheet" href="style.css">
+    <link href='fullcalendar/core/main.css' rel='stylesheet' />
+    <link href='fullcalendar/daygrid/main.css' rel='stylesheet' />
+    <script src='fullcalendar/core/main.js'></script>
+    <script src='fullcalendar/daygrid/main.js'></script>
+    <script src='fullcalendar/interaction/main.js'></script>
+
+  </head>
+  <body>
+    <div>
+        <p>Nav Bar</p>
+    </div>
+    <div id='calendar'></div>
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+          var calendarEl = document.getElementById('calendar');
+          var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth'
+          });
+          calendar.render();
+        });
+        
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+        // Your other options
+        events: [
+            {
+            title: 'Event 1',
+            start: '2024-02-21'
+            },
+            {
+            title: 'Event 2',
+            start: '2024-02-22',
+            end: '2024-02-24'
+            }
+            // Add more events as needed
+        ]
+        });
+      </script>
+  </body>
 </html>
