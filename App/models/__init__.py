@@ -3,3 +3,8 @@ from .admin import *
 from .lecturer import *
 from .courseLecturer import *
 from .course import *
+from .assessment import *
+from .courseAssessment import *
+from .courseProgramme import *
+from .programme import *
+from .schedule import *
