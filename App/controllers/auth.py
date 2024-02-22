@@ -17,10 +17,15 @@ def jwt_authenticate_admin(id, password):
     return create_access_token(identity=id)
   return None
 
+# Payload is a dictionary which is passed to the function by Flask JWT
+def identity(payload):
+  return User.query.get(payload['identity'])
 
-def login(id, password):    
-    return none
+def login(payload):    
+  return flask_login.login_user(user, remember=remember)
 
+def logout(user, remember):
+  return flask_login.logout_user()
 
 def setup_flask_login(app):
   login_manager = LoginManager()
@@ -37,9 +42,8 @@ def setup_flask_login(app):
       return admin
     return login_manager
 
-
-
-
+def setup_jwt(app):
+  return JWT(app, authenticate, identity)
 
 
 
