@@ -3,19 +3,48 @@
   <head>
     <meta charset='utf-8' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <link rel="stylesheet" href="style.css">  
+  </head>
+  <body>
+    <div id="container">
+      <div id="header">
+          <h2>Welcome!</h2>
+      </div>
+      <div id="main">
+            <div id="calendar">
+          </div>
+          <div id="nav">
+              <h3>Nav</h3>
+          </div>
+      </div>
+  </div>
+
     <script>
 
       document.addEventListener('DOMContentLoaded', function() {
         var calendarEl = document.getElementById('calendar');
         var calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: 'dayGridMonth'
+          initialView: 'dayGridMonth',
+          editable:true,
+          selectable:true,
+          droppable:true,
+          events : [
+            {
+              title:'Assignemnt 1',
+              start:'2024-02-02',
+              end: '2024-02-12',
+            },
+            // {% for event in events %}
+            // {
+            //     title : '{{event.todo}}',
+            //     start : '{{event.date}}',
+            // },
+            // {% endfor %}
+          ]
         });
         calendar.render();
       });
 
     </script>
-  </head>
-  <body>
-    <div id='calendar'></div>
   </body>
 </html>
