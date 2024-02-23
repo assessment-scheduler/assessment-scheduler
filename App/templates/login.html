@@ -4,11 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assessment Scheduler | Login</title>
-    <link rel="stylesheet" href="login.css">
+
+
+    <!-- global css file -->
+    <link rel="stylesheet" href="../static/css/main.css">
+    <link rel="stylesheet" href="../static/css/login.css">
+
+    
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+
 </head>
 <body>
-    <form id="loginForm" action="/login" method="POST">
+    <!-- <form id="loginForm" action="/login" method="POST">
         <h1>Login</h1>
         <div>
             <label for="email" class="input-label">Email</label><br>
@@ -23,9 +35,37 @@
         </div>
  
         <button id="login_btn">Login</button>
-    </form>
+    </form> -->
 
 
+    <!-- div to separate both sides -->
+    <div class="pageDiv">
+        <div class="leftSide">
+            <header>
+                <nav>
+                    <p class="logo">FST Assessment Scheduler</p>
+                    <a class="registerLink" href="#">Register</a>
+                </nav>
+            </header>
+            <div class="content">
+                <h1>Create the Optimal Assessment Schedule with ease!</h1>
+                <form action="">
+                    <h2>Login</h2>
+                    <div class="field_containers">
+                        <label for="email">Email</label>
+                        <input type="text" id="email">
+                    </div>
+                    <div class="field_containers">
+                        <label for="password">Password</label>
+                        <input type="text" id="password">
+                    </div>
+                    <button id="login_btn">Login</button>
+                    <p class="forgotPassword">Forgot password? <a href="">Reset</a></p>
+                </form>
+            </div>
+        </div>
+        <div class="rightSide"></div>
+    </div>
 
 
 
