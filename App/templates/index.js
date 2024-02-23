@@ -1,15 +1,32 @@
 document.addEventListener('DOMContentLoaded', function() {
+    eventNames=["Assignment 1", "Assignment 2", "Coursework Exam", "Lab Exam", "Project"];
+    courseCodes=["COMP 1601", "COMP 1602", "INFO 1600"];
 
-    var containerEl = document.getElementById('courses-list');
-
-    for (var i = 1; i <= 5; i++) {
-        var eventEl = document.createElement('div');
-        eventEl.classList.add('fc-event', 'fc-h-event', 'fc-daygrid-event', 'fc-daygrid-block-event');
-        eventEl.innerHTML = '<div class="fc-event-main">Assignment ' + i + '</div>';
-        containerEl.appendChild(eventEl);
-      }
+    courseCodes.forEach((courseCode) => {
+        const courseCard = document.createElement('div');
+        courseCard.classList.add('course-card'); // Add styling for the course card
     
-
+        const title = document.createElement('h3');
+        title.textContent = courseCode;
+        courseCard.appendChild(title);
+    
+        // Create a container for events within this course
+        const eventsContainer = document.createElement('div');
+        eventsContainer.classList.add('course-events'); // Add styling for the events container
+    
+        // Loop through each event name and create an event element
+        eventNames.forEach((eventName) => {
+          const eventEl = document.createElement('div');
+          eventEl.classList.add('fc-event', 'fc-h-event', 'fc-daygrid-event', 'fc-daygrid-block-event');
+          eventEl.innerHTML = '<div class="fc-event-main">' + eventName + '</div>';
+          eventsContainer.appendChild(eventEl);
+        });
+    
+        courseCard.appendChild(eventsContainer);
+        document.getElementById('courses-list').appendChild(courseCard);
+      });
+    
+    var containerEl = document.getElementById('courses-list');      
     new FullCalendar.Draggable(containerEl, {
       itemSelector: '.fc-event',
       eventData: function(eventEl) {
@@ -30,24 +47,20 @@ document.addEventListener('DOMContentLoaded', function() {
       editable:true,
       selectable:true,
       droppable:true,
-      events : [
-        {
-          title:'Assignemnt 1',
-          start:'2024-02-02',
-          end: '2024-02-12',
-        },
         // {% for event in events %}
         // {
         //     title : '{{event.todo}}',
         //     start : '{{event.date}}',
         // },
         // {% endfor %}
-      ],
       eventResize:function(info){
         toEditItem(info.event);
       },
       eventDrop:function(info){
         calendarEventDragged(info.event)
+      },
+      drop: function(arg) {
+          arg.draggedEl.parentNode.removeChild(arg.draggedEl);
       }
     });
     calendar.render();
