@@ -14,7 +14,11 @@ body {
     padding: 15px;
     text-align: left;
     flex-grow: 1;
-}
+    width: fit-content;
+    overflow: visible;
+    flex-wrap: wrap; 
+  }
+
 
 h2{
     padding:0;
@@ -25,10 +29,12 @@ h2{
     display: flex;
     flex-grow: 2;
 }
+
 #calendar {
     flex-grow: 1;
-    padding: 25px;
+    padding: 15px;
 }
+
 #nav {
     flex-grow: 0.5;
     padding: 10px;
