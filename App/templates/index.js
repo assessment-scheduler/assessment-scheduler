@@ -1,21 +1,24 @@
 document.addEventListener('DOMContentLoaded', function() {
-    eventNames=["Assignment 1", "Assignment 2", "Coursework Exam", "Lab Exam", "Project"];
-    courseCodes=["COMP 1601", "COMP 1602", "INFO 1600"];
-
-    courseCodes.forEach((courseCode) => {
+    course1=["COMP 1601", "Assignment 1", "Assignment 2", "Coursework Exam"]
+    course2=["COMP 1602", "Assignment 1", "Assignment 2", "Coursework Exam 1", "Coursework Exam 2"]
+    course3=["INFO 2604", "Assignment 1", "Assignment 2", "Coursework Exam", "Project"]
+    courses=[course1,course2,course3]
+    
+    courses.forEach((course) => {
         const courseCard = document.createElement('div');
         courseCard.classList.add('course-card'); // Add styling for the course card
     
         const title = document.createElement('h3');
-        title.textContent = courseCode;
+        title.textContent = course[0];
         courseCard.appendChild(title);
     
         // Create a container for events within this course
         const eventsContainer = document.createElement('div');
         eventsContainer.classList.add('course-events'); // Add styling for the events container
-    
+
+        var assessments=course.slice(1);
         // Loop through each event name and create an event element
-        eventNames.forEach((eventName) => {
+        assessments.forEach((eventName) => {
           const eventEl = document.createElement('div');
           eventEl.classList.add('fc-event', 'fc-h-event', 'fc-daygrid-event', 'fc-daygrid-block-event');
           eventEl.innerHTML = '<div class="fc-event-main">' + eventName + '</div>';
