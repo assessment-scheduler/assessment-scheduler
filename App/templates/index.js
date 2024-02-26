@@ -3,11 +3,11 @@ document.addEventListener('DOMContentLoaded', function() {
     course2=["COMP 1602", "Assignment 1", "Assignment 2", "Coursework Exam 1", "Coursework Exam 2"]
     course3=["INFO 2604", "Assignment 1", "Assignment 2", "Coursework Exam", "Project"]
     courses=[course1,course2,course3]
-    
+
     courses.forEach((course) => {
         const courseCard = document.createElement('div');
         courseCard.classList.add('course-card'); // Add styling for the course card
-    
+
         const title = document.createElement('h3');
         title.textContent = course[0];
         courseCard.appendChild(title);
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
         assessments.forEach((eventName) => {
           const eventEl = document.createElement('div');
           eventEl.classList.add('fc-event', 'fc-h-event', 'fc-daygrid-event', 'fc-daygrid-block-event');
-          eventEl.innerHTML = '<div class="fc-event-main">' + eventName + '</div>';
+          eventEl.innerHTML = '<div class="fc-event-main">' + course[0] + "-" + eventName + '</div>';
           eventsContainer.appendChild(eventEl);
         });
     
