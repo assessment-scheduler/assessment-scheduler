@@ -3,10 +3,19 @@ document.addEventListener('DOMContentLoaded', function() {
     course2=["COMP 1602", "Assignment 1", "Assignment 2", "Coursework Exam 1", "Coursework Exam 2"]
     course3=["INFO 2604", "Assignment 1", "Assignment 2", "Coursework Exam", "Project"]
     courses=[course1,course2,course3]
+    const colors = {
+      Assignment:"#008AB0", 
+      Exam:"#499373", 
+      Project:"#C29203", 
+      Quiz:"#CC4E4E", 
+      Presentation:"#808080",
+      Other:"#555555"
+    }
+    index=0;
 
     courses.forEach((course) => {
         const courseCard = document.createElement('div');
-        courseCard.classList.add('course-card'); // Add styling for the course card
+        courseCard.classList.add('course-card'); // Add styling for the course card     
 
         const title = document.createElement('h3');
         title.textContent = course[0];
@@ -21,10 +30,18 @@ document.addEventListener('DOMContentLoaded', function() {
         assessments.forEach((eventName) => {
           const eventEl = document.createElement('div');
           eventEl.classList.add('fc-event', 'fc-h-event', 'fc-daygrid-event', 'fc-daygrid-block-event');
-          eventEl.innerHTML = '<div class="fc-event-main">' + course[0] + "-" + eventName + '</div>';
+
+          const typeOfAssessment = getTypeOfAssessment(eventName);
+          color = colors[typeOfAssessment];
+
+          eventEl.dataset.color = color;
+          eventEl.style.backgroundColor = color;
+      
+          eventEl.innerHTML = '<div class="fc-event-main">' + course[0] + '-' + eventName + '</div>';
           eventsContainer.appendChild(eventEl);
         });
     
+        index++;
         courseCard.appendChild(eventsContainer);
         document.getElementById('courses-list').appendChild(courseCard);
       });
@@ -34,7 +51,8 @@ document.addEventListener('DOMContentLoaded', function() {
       itemSelector: '.fc-event',
       eventData: function(eventEl) {
         return {
-          title: eventEl.innerText.trim()
+          title: eventEl.innerText.trim(),
+          backgroundColor: eventEl.dataset.color
         }
       }
     });
@@ -60,17 +78,17 @@ document.addEventListener('DOMContentLoaded', function() {
         toEditItem(info.event);
       },
       eventDrop:function(info){
-        calendarEventDragged(info.event)
+        calendarEventDragged(info.event);
       },
       drop: function(arg) {
           arg.draggedEl.parentNode.removeChild(arg.draggedEl);
-      }
+      },
     });
     calendar.render();
   });
 
-    
 
+  
 function calendarEventDragged(event){
     let id=event.id;
     let sDate=formatDate(new Date(event.start));
@@ -104,4 +122,19 @@ function formatDate(dateObj){
 
     let toStoreDate=`${year}-${paddedMonth}-${paddedDate}`;
     return toStoreDate;
+}
+
+function getTypeOfAssessment(eventName) {
+  if (eventName.toLowerCase().includes("assignment")) {
+      return "Assignment";
+  } else if (eventName.toLowerCase().includes("exam")) {
+      return "Exam";
+  } else if (eventName.toLowerCase().includes("project")) {
+      return "Project";
+  } else if (eventName.toLowerCase().includes("quiz")) {
+      return "Quiz";
+  } else if (eventName.toLowerCase().includes("presentation")) {
+      return "Presentation";
+  }
+  return "Other";
 }
