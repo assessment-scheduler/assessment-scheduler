@@ -4,12 +4,12 @@ document.addEventListener('DOMContentLoaded', function() {
     course3=["INFO 2604", "Assignment 1", "Assignment 2", "Coursework Exam", "Project"]
     courses=[course1,course2,course3]
     const colors = {
-      Assignment:"#008AB0", 
-      Exam:"#499373", 
-      Project:"#C29203", 
-      Quiz:"#CC4E4E", 
-      Presentation:"#808080",
-      Other:"#555555"
+      Assignment:"#3397b9", 
+      Quiz:"#499373", 
+      Project:"#006064", 
+      Exam:"#CC4E4E", 
+      Presentation:"#cc7a50",
+      Other:"#C29203"
     }
     index=0;
 

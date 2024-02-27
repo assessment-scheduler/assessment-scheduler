@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="../static/css/main.css">
+    {% block head %}{% endblock %}
 </head>
 <body>
     <nav id="layout_nav">
@@ -45,8 +46,10 @@
             </div>
         </div>
     </nav>
-
-    {% block content %}{% endblock %}
+    <div>
+      {% block content %}{% endblock %}
+    </div>
+    
 </body>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
