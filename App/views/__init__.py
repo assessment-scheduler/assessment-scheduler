@@ -1,5 +1,5 @@
-from .lecturer import *
-from .user import *
+from .staff import staff_views
+from .index import index_views
 
-views = [lect_views, user_views]
+views = [staff_views, index_views]
 # blueprints must be added to this list^^

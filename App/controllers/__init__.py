@@ -1,1 +1,1 @@
-from .lecturer import *
+from .staff import *

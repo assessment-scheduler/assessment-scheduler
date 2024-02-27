@@ -1,5 +1,6 @@
 from App.database import db
 from .user import User
+import enum
 
 class Status(enum.Enum):
     PTINSTRUCT = "Part-Time Instructor"
@@ -10,34 +11,31 @@ class Status(enum.Enum):
     TUTOR = "Tutor"
     PTTUTOR = "Part-Time Tutor"
 
-class Admin(User):
-  __tablename__ = 'lecturer'
-  lect_ID = db.Column(db.String, primary_key= True)
+class Staff(User):
+  __tablename__ = 'staff'
   fName = db.Column(db.String(120), nullable=False)
   lName = db.Column(db.String(120), nullable=False)
-  status = db.Column(db.String(120), nullable=False)
   email = db.Column(db.String(120), nullable=False)
-  cNum = db.Column(db.Integer, nullable=False, default=0)
-  #Defines the contract position of a teaching staff member
-  status = db.Column(db.Enum(Status), nullable = False)
-  #creates reverse relationship from Lecturer back to Course to access courses assigned to a specific lecturer
+  cNum = db.Column(db.Integer, nullable=False) #changes depending on status
+  status = db.Column(db.Enum(Status), nullable = False) #defines the contract position of a teaching staff member
+  #creates reverse relationship from Staff back to Course to access courses assigned to a specific lecturer
   coursesAssigned = db.relationship('course', backref=db.backref('courses', lazy='joined'))
 
-  def __init__(self, fName, lName, lect_ID, status, email, password):
-    super().__init__(password)
-    self.lect_ID = lect_ID
+  def __init__(self, fName, lName, u_ID, status, email, password):
+    super().__init__(u_ID, password)
     self.fName = fName
     self.lName = lName
     self.status = status
     self.email = email
-    self.cNum = cNum
+    #use block to assign courses to staff depending on status
+    #self.cNum = 
 
   def get_id(self):
-    return self.lect_ID 
+    return self.u_ID 
 
   def to_json(self):
     return {
-        "staffID": self.lect_ID,
+        "staffID": self.u_ID,
         "firstname": self.fName,
         "lastname": self.lName,
         "status": self.status,
@@ -47,8 +45,8 @@ class Admin(User):
     }
 
   #Lecturers must register before using system
-  def register(firstName, lastName, staffID, status, email, pwd):
-    newLect = Lecturer(firstName, lastName, staffID, status, email, pwd)
-    db.session.add(newLect)  #add to db
+  def register(firstName, lastName, u_ID, status, email, password):
+    newStaff = Staff(firstName, lastName, u_ID, status, email, password)
+    db.session.add(newStaff)  #add to db
     db.session.commit()
-    return newLect  
+    return newStaff  

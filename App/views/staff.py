@@ -1,19 +1,18 @@
 from flask import Blueprint, request, jsonify, render_template
 from App.database import db
-from App.controllers import Lecturer
+from App.controllers import Staff
 #from flask_jwt_extended import current_user as jwt_current_user
 #from flask_jwt_extended import jwt_required
 
-from App.controllers.lecturer import (
-    register_lecturer
+from App.controllers.staff import (
+    register_staff
 )
 
-lect_views = Blueprint('lect_views', __name__, template_folder='../templates')
-
+staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
 
 #models need to reflect data being pulled from form!
-@lect_views.route('/register', methods=['GET', 'POST'])
-def register_lecturer_action():
+@staff_views.route('/register', methods=['GET', 'POST'])
+def register_staff_action():
     if request.method == ['POST']:
         firstName = request.form['firstName']
         lastName = request.form['lastName']
@@ -25,7 +24,7 @@ def register_lecturer_action():
         if (firstName == '' or lastName == '' or staffID == '' or status == '' or email == '' or pwd == ''):
             render_template('signup.html', message = 'Please enter required fields.')
         else:
-            register_lecturer(firstName, lastName, staffID, status, email, pwd)
+            register_staff(firstName, lastName, staffID, status, email, pwd)
             return render_template('index.html')  #landing page
     else: 
         return render_template('signup.html')      
