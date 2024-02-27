@@ -15,5 +15,144 @@ html{
     background-color: var(--primary-color);
     color: white;
     overflow-x: hidden;
+}
+
+/* styling for main nav for site */
+
+.main_nav_wrapper{
+    /* background-color: rgb(255, 22, 22); */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1rem;
+}
+
+.logo_container a{
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.links_container{
+    display: none;
+    /* padding: 2rem 1rem; */
+}
+
+.burger{
+    cursor: pointer;
+    background-color: aquamarine;
+}
+
+.links_container_mobile{
+    display: none;
+    background-color: var(--secondary-color);
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 0%;
+    width: 100%;
+}
+
+#layout_nav_links_mobile{
+    list-style: none;
+}
+#layout_nav_links_mobile li{
+    margin-bottom: 20px;
+    text-align: center;
+}
+.mobile_links{
+    margin-bottom: 20px;
+    color: white;
+    text-decoration: none;
+    font-size: 44px;
+    transition: all 0.25s ease;
+}
+
+.mobile_links:hover{
+    color: rgb(187, 184, 184);
+}
+
+
+
+
+@media screen and (min-width: 900px){
+
+    .links_container_mobile{
+        display: none;
+    }
+
+    .burger{
+        display: none;
+    }
+
+
+
+    .links_container{
+        display: block;
+        flex: 1;
+        max-width: 700px;
+    }
+
+    #layout_nav_links{
+        display: flex;
+        justify-content: space-between;
+        list-style: none;
+    }
+
+    .nav_link{
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.25s ease;
+    }
+    .nav_link:hover{
+        color: rgb(172, 167, 167);
+    }
+    .logo_container{
+        flex: 0.5;
+    }
+
+    .logout_nav_link{
+        background-color: var(--tertiary-color);
+        padding: 0.7rem 1.5rem;
+        border-radius: 6px;
+        color: white;
+        font-size: 14px;
+        text-decoration: none;
+        transition: background-color 0.25s ease-in;
+    }
+
+    .logout_nav_link:hover{
+        background-color: #5c46b4;
+    }
+
+}
+
+@media screen and (min-width: 1024px){
+    .links_container{
+        flex: 1.8;
+    }
+    .logo_container{
+        flex: 1;
+    }
+
+    .nav_link, .logout_nav_link{
+        font-size: 16px;
+    }
+    .logo_container a{
+        font-size: 20px;
+    }
+}
+
+@media screen and (min-width: 1080px){
+    .links_container{
+        flex: 1.4;
+        
+    }
+    .logo_container{
+        flex: 1;
+    }
     
 }
