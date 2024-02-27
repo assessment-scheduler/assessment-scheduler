@@ -1,7 +1,16 @@
 from App.database import db
 from .user import User
 
-class Lecturer(User):
+class Status(enum.Enum):
+    PTINSTRUCT = "Part-Time Instructor"
+    INSTRUCTOR = "Instructor"
+    HOD = "Head of Department"
+    LECTURER = "Lecturer"
+    TA = "Teaching Assisstant"
+    TUTOR = "Tutor"
+    PTTUTOR = "Part-Time Tutor"
+
+class Admin(User):
   __tablename__ = 'lecturer'
   lect_ID = db.Column(db.String, primary_key= True)
   fName = db.Column(db.String(120), nullable=False)
@@ -9,6 +18,8 @@ class Lecturer(User):
   status = db.Column(db.String(120), nullable=False)
   email = db.Column(db.String(120), nullable=False)
   cNum = db.Column(db.Integer, nullable=False, default=0)
+  #Defines the contract position of a teaching staff member
+  status = db.Column(db.Enum(Status), nullable = False)
   #creates reverse relationship from Lecturer back to Course to access courses assigned to a specific lecturer
   coursesAssigned = db.relationship('course', backref=db.backref('courses', lazy='joined'))
 
@@ -19,10 +30,7 @@ class Lecturer(User):
     self.lName = lName
     self.status = status
     self.email = email
-    if str(Lecturer.query.count()) < 10:
-      self.lect_ID = "L0" + str(Lecturer.query.count() + 1)
-    else:
-      self.lect_ID = "L" + str(Lecturer.query.count() + 1)
+    self.cNum = cNum
 
   def get_id(self):
     return self.lect_ID 

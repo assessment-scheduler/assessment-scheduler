@@ -1,6 +1,6 @@
 from App.database import db
 
-class Schedule(db.Model):
+class Schedule(db.model):
     __tablename__ = 'schedule'
 
     s_ID = db.Column(db.Integer, primary_key=True)

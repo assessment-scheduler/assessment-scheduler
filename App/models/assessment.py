@@ -6,6 +6,10 @@ class Category(enum.Enum):
     ASSIGNMENT = "Assignment"
     QUIZ = "Quiz"
     PROJECT = "Project"
+    DEBATE = "Debate"
+    PRESENTATION = "Presentation"
+    ORALEXAM = "Oral Exam"
+    PARTICIPATION = "Participation"
 
 class assessment(db.Model):
     __tablename__ = 'assessment'
