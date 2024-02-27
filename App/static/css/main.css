@@ -20,7 +20,6 @@ html{
 /* styling for main nav for site */
 
 .main_nav_wrapper{
-    /* background-color: rgb(255, 22, 22); */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -36,16 +35,14 @@ html{
 
 .links_container{
     display: none;
-    /* padding: 2rem 1rem; */
 }
 
 .burger{
     cursor: pointer;
-    background-color: aquamarine;
 }
 
 .links_container_mobile{
-    display: none;
+    /* display: none; */
     background-color: var(--secondary-color);
     position: absolute;
     top: 0;
@@ -54,15 +51,30 @@ html{
     width: 100%;
 }
 
+
+.exit{
+    position:absolute;
+    top:0.8rem;
+    right:1.2rem;
+    cursor:pointer;
+    opacity:0;
+    transform:translateY(-5px);
+    pointer-events: none;
+}
+
 #layout_nav_links_mobile{
     list-style: none;
+    pointer-events: none;
+    margin-top: 6rem;
 }
+
 #layout_nav_links_mobile li{
-    margin-bottom: 20px;
     text-align: center;
+    opacity:0;
+    margin-bottom:1.5rem;
 }
+
 .mobile_links{
-    margin-bottom: 20px;
     color: white;
     text-decoration: none;
     font-size: 44px;
@@ -73,6 +85,20 @@ html{
     color: rgb(187, 184, 184);
 }
 
+.logout_mobile_container{
+    margin-top:4rem;
+}
+
+#layout_nav_links_mobile .logout_nav_link{
+    background-color: var(--tertiary-color);
+    padding: 1rem 2.5rem;
+    border-radius: 6px;
+    transition:all 0.25s ease-in;
+}
+#layout_nav_links_mobile .logout_nav_link:hover{
+    background-color: #5c46b4;
+    color: white;
+}
 
 
 
