@@ -144,6 +144,10 @@ label {
 .forgotPassword a{
     text-decoration: underline;
     color: rgb(129,128,128);
+    transition: 0.25s color ease-in;
+}
+.forgotPassword a:hover{
+    color: rgb(153, 151, 151);
 }
 
 

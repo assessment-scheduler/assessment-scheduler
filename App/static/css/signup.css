@@ -136,6 +136,25 @@ form input{
 }
 
 
+
+.haveAnAccount{
+    color: rgb(129, 128, 128);
+    font-size: 12px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.haveAnAccount a{
+    color: rgb(129, 128, 128);
+    text-decoration: underline;
+    transition: 0.25s color ease-in;
+}
+
+.haveAnAccount a:hover{
+    color: rgb(153, 151, 151);
+}
+
+
 @media screen and (min-width: 480px){
     form h1{
         font-size: 26px;
@@ -158,5 +177,9 @@ form input{
     }
     .input-label{
         font-size: 18px;
+    }
+
+    .haveAnAccount{
+        font-size: 14px;
     }
 }
