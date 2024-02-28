@@ -1,6 +1,6 @@
 from App.database import db
 
-class courseStaff(db.Model):
+class CourseStaff(db.Model):
   __tablename__ = 'courseStaff'
 
   u_ID = db.Column(db.Integer, db.ForeignKey('staff.u_ID'), primary_key= True, nullable=False)
