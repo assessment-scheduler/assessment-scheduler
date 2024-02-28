@@ -1,6 +1,7 @@
 from App.database import db
 
-class programme(db.Model):
+class Programme(db.Model):
+
   __tablename__ = 'Programme'
 
   p_ID = db.Column(db.Integer, primary_key = True)
