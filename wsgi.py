@@ -1,9 +1,9 @@
-import click, sys
+import click, sys, csv
 from flask import Flask
 from flask.cli import with_appcontext, AppGroup
 from App.database import db, get_migrate
 from App.main import create_app
-from App.models import Staff
+from App.models import Staff, Course
 
 # This commands file allow you to create convenient CLI commands for testing controllers!!
 
@@ -27,16 +27,32 @@ def initialize():
 def get_users():
   staff = Staff.query.all()
   print(staff)
+  print('end of staff objects')
 
 # This command assigns courses to staff
 @app.cli.command("add-course")
-@click.argument(id, default=300456)
-def change_email(id):
-  bob = Staff.query.filter_by(lect_ID=id).first()
+@click.argument(id)
+def assign_course(id):
+  bob = Staff.query.filter_by(u_ID=id).first()
+  
   if not bob:
       print(f'Staff with ID: {id} not found!')
       return
+    
   bob.coursesAssigned = ["COMP1601", "COMP1602", "COMP1603"]
   db.session.add(bob)
   db.session.commit()
   print(bob)
+  print('courses added')
+
+#load course data from csv file
+@app.cli.command("load-courses")
+def load_course_data():
+  with open('courses.csv') as file: #csv files are used for spreadsheets
+    reader = csv.DictReader(file)
+    for row in reader: 
+      new_course = Course(courseCode=row['courseCode'], courseTitle=row['courseTitle'], description=row['description'], 
+        level=row['level'], semester=row['semester'], preReqs=row['preReqs'], p_ID=row['p_ID'],)  #create object
+      db.session.add(new_course) 
+    db.session.commit() #save all changes OUTSIDE the loop
+  print('database intialized')
