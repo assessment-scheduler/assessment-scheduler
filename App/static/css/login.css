@@ -22,7 +22,7 @@ a{
     min-width: 50%;
     background-color: #674ECC;
     /* place holder pic */
-    background-image: url('../static/images/uwi.jpg');
+    background-image: url('../images/uwi.jpg');
     min-height: 35vh;
     background-size: cover;
     background-position: center;
