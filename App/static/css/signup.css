@@ -1,0 +1,185 @@
+/* form{
+    width: 300px;
+    margin: 4% auto;   
+    background-color: var(--secondary-color);
+    padding: 20px;
+    text-align: center;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    position: relative;
+    font-size: 12pt;
+}
+
+div{
+    margin-right: 20px;    
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+input{
+    background-color: var(--primary-color);
+    color: white;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+
+button{
+    background-color: var(--tertiary-color);
+    margin-top: 30px;
+    padding: 10px;
+    padding-left: 10%;
+    padding-right: 10%;
+    text-align: center;
+    color: white;
+    border:none;
+    border-radius: 4px;
+}
+
+button:hover{
+    opacity: 0.8;
+}
+
+#passwordContainer {
+    display: inline-flex; 
+    align-items: center; 
+    width: 100%;
+}
+
+#password{
+    width: 100%;
+}
+
+#togglePassword {
+    cursor: pointer;
+    color: white; 
+    margin-left: 5px; 
+    font-size: 14pt;
+}
+
+#dropdown{
+    background-color: var(--primary-color);
+    color: white;
+} */
+
+body{
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    align-items: center;
+}
+
+
+form{
+    background: var(--secondary-color);
+    min-width: 300px;
+    margin: 0 auto;
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+
+    box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
+    -webkit-box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
+    -moz-box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
+}
+
+form h1{
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+form input{
+    width: 100%;
+}
+
+.field_containers input{
+    background: var(--primary-color);
+    border: none;
+    padding: 0.5rem 0.8rem;
+    color: white;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.input-label{
+    font-size: 16px;
+}
+
+#dropdown{
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 6px;
+    padding: 0.5rem 0.8rem;
+    border: none;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+#register_btn{
+    background: var(--tertiary-color);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 6px;
+    margin-top: 20px;
+    font-size: 14px;
+    width: 100%;
+    cursor: pointer;
+    transition: background 0.15s ease-in;
+}
+
+#register_btn:hover{
+    background: #5d45bd;
+}
+
+
+
+.haveAnAccount{
+    color: rgb(129, 128, 128);
+    font-size: 12px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.haveAnAccount a{
+    color: rgb(129, 128, 128);
+    text-decoration: underline;
+    transition: 0.25s color ease-in;
+}
+
+.haveAnAccount a:hover{
+    color: rgb(153, 151, 151);
+}
+
+
+@media screen and (min-width: 480px){
+    form h1{
+        font-size: 26px;
+    }
+}
+@media screen and (min-width: 900px){
+    form{
+        min-width: 400px;
+
+    }
+
+    #register_btn{
+        font-size: 16px;
+    }
+}
+
+@media screen and (min-width: 1024px){
+    form h1{
+        font-size: 28px;
+    }
+    .input-label{
+        font-size: 18px;
+    }
+
+    .haveAnAccount{
+        font-size: 14px;
+    }
+}

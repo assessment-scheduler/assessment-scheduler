@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Assessment Scheduler | Register</title>
+    <!-- global css file -->
+    <link rel="stylesheet" href="../static/css/main.css">
+    <link rel="stylesheet" href="../static/css/signup.css">
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+</head>
+<body>
+    <!-- {% if message %}
+        <p> {{ message }} </p>
+    {% endif %} -->
+    
+    <form id="registrationForm" action="/register" method="POST">
+        <h1>Register</h1>
+        <div class="field_containers">
+            <label for="firstName" class="input-label">First Name</label><br>
+            <input type="text" id="firstName">
+        </div>
+        <div class="field_containers">
+            <label for="lastName" class="input-label">Last Name</label><br>
+            <input type="text" id="lastName">
+        </div>
+        <div class="field_containers">
+            <label for="staffID" class="input-label">Staff ID</label><br>
+            <input type="text" id="staffID">
+        </div>
+
+        <div>
+            <label for="dropdown">Status</label><br>
+            <select id="dropdown" name="status">
+                <option value="Lecturer 1">Lecturer 1</option>
+                <option value="Lecturer 2">Lecturer 2</option>
+                <option value="Lecturer 3">Lecturer 3</option>
+                <option value="Part Time Lecturer 1">Part Time Lecturer 1</option>
+                <option value="Part Time Lecturer 2">Part Time Lecturer 2</option>
+                <option value="Part Time Lecturer 3">Part Time Lecturer 3</option>
+                <option value="Instructor 1">Instructor 1</option>
+                <option value="Instructor 2">Instructor 2</option>
+                <option value="Instructor 3">Instructor 3</option>
+                <option value="Teaching Assistant">Teaching Assistant</option>
+                <option value="Tutor">Tutor</option>
+                <option value="Part Time Tutor">Part Time Tutor</option>
+                <option value="Head of Department">Head of Department</option>
+            </select>
+        </div>
+        <div class="field_containers">
+            <label for="email" class="input-label">Email</label><br>
+            <input type="text" id="email">
+        </div>
+        <div class="field_containers">
+            <label for="password" class="input-label">Password</label><br>
+            <div id="passwordContainer">
+                <input type="password" id="password">
+                <!-- <label id="togglePassword"></label> -->
+                <!-- <i id="togglePassword" class="material-icons">visibility</i> -->
+            </div>
+        </div>
+ 
+        <button id="register_btn">Sign Up</button>
+
+        <p class="haveAnAccount">Already have an account? <a href="">Login</a></p>
+    </form>
+
+
+
+
+    <script>
+        const button = document.getElementById('register_btn');
+
+        button.addEventListener('click', function() {
+            event.preventDefault(); 
+
+            let name=document.getElementById('firstName').value;
+            fetch('/register', {
+                method: 'POST',
+                body: JSON.stringify({}) // Optionally include data in the request body
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Handle successful response
+                    console.log('Request successful!');
+                } else {
+                    // Handle error response
+                    console.error('Request failed.');
+                }
+            })
+            .catch(error => {
+                // Handle network errors
+                console.error('Error:', error);
+            });
+        });
+
+        document.getElementById("togglePassword").addEventListener("click", function() {
+        var passwordInput = document.getElementById("password");
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            this.textContent = "visibility_off";
+        } else {
+            passwordInput.type = "password";
+            this.textContent = "visibility";
+        }
+        });
+
+    </script>
+    
+</body>
+</html>

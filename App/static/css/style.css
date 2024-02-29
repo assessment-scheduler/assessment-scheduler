@@ -1,0 +1,85 @@
+:root{
+    --primary-color:#23272A;
+    --secondary-color:#2C2F33;
+    --tertiary-color:#674ECC;
+}
+
+#container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+#header {
+    padding: 15px;
+    text-align: center;
+    flex-grow: 1;
+    width: inherit;
+    overflow: visible;
+    flex-wrap: wrap; 
+}
+
+
+h2{
+    padding:0;
+    margin:0;
+}
+
+#main {
+    display: flex;
+    flex-grow: 2;
+}
+
+#calendar {
+    flex-grow: 1;
+    padding: 50px;
+    padding-top: 20px;
+}
+
+#nav {
+    flex-grow: 0.5;
+    padding: 20px;
+}
+
+#filters{
+    display: flex;
+    padding: 30px;
+}
+
+.list-item, #level, #courses, #assignmentType {
+    background-color: #9C9FE2;
+    border-radius: 5px;
+}
+
+select {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+  
+#courses-list{
+    width: 90%;
+}
+
+.course-card{
+    padding-top: 30px;
+}
+
+.fc-event{
+    border-spacing: 2px;
+    padding: 5px;
+    margin-bottom: 8px;
+    border-radius: 5px;
+}
+
+.fc .fc-button-group > .fc-button {
+    background-color: var(--tertiary-color);
+    border-radius: 5px;
+}
+
+.fc .fc-button-group > .fc-button.fc-button-active, .fc .fc-button-group > .fc-button:focus, .fc .fc-button-group > .fc-button:hover {
+    background-color:#503b9a;
+}
