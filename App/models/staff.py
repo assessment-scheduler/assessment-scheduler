@@ -19,7 +19,7 @@ class Staff(User):
   cNum = db.Column(db.Integer, nullable=False) #changes depending on status
   status = db.Column(db.Enum(Status), nullable = False) #defines the contract position of a teaching staff member
   #creates reverse relationship from Staff back to Course to access courses assigned to a specific lecturer
-  coursesAssigned = db.relationship('course', backref=db.backref('courses', lazy='joined'))
+  coursesAssigned = db.relationship('Course', backref='courses', lazy='joined')
 
 
   def __init__(self, fName, lName, u_ID, status, email, password):
@@ -28,22 +28,26 @@ class Staff(User):
     self.lName = lName
     self.status = status
     self.email = email
-    
-    #assign number of courses to staff depending on status
-    if status == "Part-Time Instructor": 
-      self.cNum = 1
-    elif status == "Instructor": 
-      self.cNum = 2
-    elif status == "Head of Department": 
-      self.cNum = 2  
-    elif status == "Lecturer": 
-      self.cNum = 3
-    elif status == "Teaching Assisstant": 
-      self.cNum = 2
-    elif status == "Tutor": 
+    if status == "Lecturer": #assign number of courses to staff depending on status
       self.cNum = 2
     else: 
-      self.cNum = 1  #Part-Time Tutor
+      self.cNum = 3 #Instructor
+
+    # Other teaching positions for possible extension
+    # if status == "Part-Time Instructor": 
+    #   self.cNum = 1
+    # elif status == "Instructor": 
+    #   self.cNum = 2
+    # elif status == "Head of Department": 
+    #   self.cNum = 2  
+    # elif status == "Lecturer": 
+    #   self.cNum = 3
+    # elif status == "Teaching Assisstant": 
+    #   self.cNum = 2
+    # elif status == "Tutor": 
+    #   self.cNum = 2
+    # else: 
+    #   self.cNum = 1  #Part-Time Tutor
     
     
   def get_id(self):
@@ -52,7 +56,7 @@ class Staff(User):
 
   def to_json(self):
     return {
-        "staffID": self.u_ID,
+        "staff_ID": self.u_ID,
         "firstname": self.fName,
         "lastname": self.lName,
         "status": self.status,

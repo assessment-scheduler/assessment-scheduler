@@ -6,15 +6,13 @@ from App.main import create_app
 from App.models import Staff, Course
 
 # This commands file allow you to create convenient CLI commands for testing controllers!!
-
 app = create_app()
-migrate = get_migrate(app)
 
 # This command creates and initializes the database
 @app.cli.command("init", help="Creates and initializes the database")
 def initialize():
   db.drop_all()
-  db.init_app(app)
+  # db.init_app(app)
   db.create_all()
   bob = Staff("bob", "test", 300456, "Lecturer", "bob@gmail.com", "bobpass")
   db.session.add(bob)
@@ -31,12 +29,12 @@ def get_users():
 
 # This command assigns courses to staff
 @app.cli.command("add-course")
-@click.argument(id)
-def assign_course(id):
-  bob = Staff.query.filter_by(u_ID=id).first()
+@click.argument("staff_ID")
+def assign_course(staff_ID):
+  bob = Staff.query.filter_by(u_ID=staff_ID).first()
   
   if not bob:
-      print(f'Staff with ID: {id} not found!')
+      print(f'Staff with ID: {staff_ID} not found!')
       return
     
   bob.coursesAssigned = ["COMP1601", "COMP1602", "COMP1603"]
