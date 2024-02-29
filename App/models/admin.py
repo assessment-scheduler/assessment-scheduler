@@ -12,5 +12,3 @@ class Admin(User):
       "admin_ID": self.u_ID,
       "password": self.password
   }
-  
-    
