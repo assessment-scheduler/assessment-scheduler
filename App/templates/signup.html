@@ -67,7 +67,7 @@
             </div>
         </div>
  
-        <button id="register_btn">Sign Up</button>
+        <button id="register_btn" type="submit">Sign Up</button>
 
         <p class="haveAnAccount">Already have an account? <a href="/login">Login</a></p>
     </form>
@@ -76,30 +76,30 @@
 
 
     <script>
-        const button = document.getElementById('register_btn');
+        // const button = document.getElementById('register_btn');
 
-        button.addEventListener('click', function() {
-            event.preventDefault(); 
+        // button.addEventListener('click', function() {
+        //     event.preventDefault(); 
 
-            let name=document.getElementById('firstName').value;
-            fetch('/register', {
-                method: 'POST',
-                body: JSON.stringify({}) // Optionally include data in the request body
-            })
-            .then(response => {
-                if (response.ok) {
-                    // Handle successful response
-                    console.log('Request successful!');
-                } else {
-                    // Handle error response
-                    console.error('Request failed.');
-                }
-            })
-            .catch(error => {
-                // Handle network errors
-                console.error('Error:', error);
-            });
-        });
+        //     let name=document.getElementById('firstName').value;
+        //     fetch('/register', {
+        //         method: 'POST',
+        //         body: JSON.stringify({}) // Optionally include data in the request body
+        //     })
+        //     .then(response => {
+        //         if (response.ok) {
+        //             // Handle successful response
+        //             console.log('Request successful!');
+        //         } else {
+        //             // Handle error response
+        //             console.error('Request failed.');
+        //         }
+        //     })
+        //     .catch(error => {
+        //         // Handle network errors
+        //         console.error('Error:', error);
+        //     });
+        // });
 
         document.getElementById("togglePassword").addEventListener("click", function() {
         var passwordInput = document.getElementById("password");

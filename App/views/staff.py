@@ -17,7 +17,12 @@ def get_signup_page():
 # Gets Login Page
 @staff_views.route('/login', methods=['GET'])
 def get_login_page():
-    return render_template('login.html')    
+    return render_template('login.html')  
+
+# Gets Calendar Page
+@staff_views.route('/calendar', methods=['GET'])
+def get_calendar_page():
+    return render_template('index.html')        
  
 # Retrieves info and stores it in databes ie. register new staff
 @staff_views.route('/register', methods=['POST'])
@@ -35,4 +40,4 @@ def register_staff_action():
             return render_template('signup.html', message = 'Please enter required fields.')
         else:
             register_staff(firstName, lastName, staffID, status, email, pwd)
-            return render_template('index.html')                
+        return render_template('index.html')                
