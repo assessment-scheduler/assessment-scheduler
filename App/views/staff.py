@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for
 from App.controllers import Staff
+from App.database import db
 #from flask_jwt_extended import current_user as jwt_current_user
 #from flask_jwt_extended import jwt_required
 
@@ -40,4 +41,5 @@ def register_staff_action():
             return render_template('signup.html', message = 'Please enter required fields.')
         else:
             register_staff(firstName, lastName, staffID, status, email, pwd)
-        return render_template('index.html')                
+            return render_template('index.html')  
+           

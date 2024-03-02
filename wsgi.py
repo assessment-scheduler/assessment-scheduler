@@ -14,7 +14,7 @@ def initialize():
   db.drop_all()
   # db.init_app(app)
   db.create_all()
-  bob = Staff("bob", "test", 300456, "Lecturer", "bob@gmail.com", "bobpass")
+  bob = Staff("bob", "test", 300456, "Lecturer 1", "bob@gmail.com", "bobpass")
   db.session.add(bob)
   db.session.commit()
   print(bob)

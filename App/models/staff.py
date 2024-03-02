@@ -16,7 +16,7 @@ class Staff(User):
   fName = db.Column(db.String(120), nullable=False)
   lName = db.Column(db.String(120), nullable=False)
   email = db.Column(db.String(120), nullable=False)
-  cNum = db.Column(db.Integer, nullable=False) #changes depending on status
+  cNum = db.Column(db.Integer, nullable=False, default=0) #changes depending on status
   status = db.Column(db.Enum(Status), nullable = False) #defines the contract position of a teaching staff member
   #creates reverse relationship from Staff back to Course to access courses assigned to a specific lecturer
   coursesAssigned = db.relationship('Course', backref='courses', lazy='joined')
@@ -26,9 +26,10 @@ class Staff(User):
     super().__init__(u_ID, password)
     self.fName = fName
     self.lName = lName
-    self.status = status
+    # self.status = status
     self.email = email
-    if status == "Lecturer": #assign number of courses to staff depending on status
+    if status == "Lecturer 1" or  "Lecturer 2" or  "Lecturer 3": #assign number of courses to staff depending on status
+      self.status = Status.LECTURER 
       self.cNum = 2
     else: 
       self.cNum = 3 #Instructor
