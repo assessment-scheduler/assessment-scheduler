@@ -1,0 +1,67 @@
+#semForm{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    line-height: 2;
+    background: var(--secondary-color);
+    min-width: 30%;
+    margin: 0 auto;
+    border-radius: 10px;
+    border: 2px solid white;
+    padding: 1rem 1.5rem;
+
+    box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
+    -webkit-box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
+    -moz-box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
+}
+
+#save_btn{
+    background: var(--tertiary-color);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 6px;
+    margin-top: 20px;
+    font-size: 14px;
+    float: right;
+    cursor: pointer;
+    transition: background 0.15s ease-in;
+}
+
+#save_btn:hover{
+    background: #5d45bd;
+}
+
+form h2{
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.field_containers input{
+    border: none;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.input-label{
+    font-size: 16px;
+}
+
+.sem_container {
+    display: flex;
+    align-items: center;
+}
+
+.sem_container input[type="radio"] {
+    margin-right: 5px;
+}
+
+.sem_container label[for="semester"] {
+    margin-right: 20px; 
+}
+
+
