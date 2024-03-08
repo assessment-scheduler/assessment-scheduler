@@ -65,9 +65,8 @@
     let selectedRow = null;
     window.onload = function() {
       const tableBody = document.getElementById("courseTableBody");
-      tableBody.innerHTML = ""; // Clear existing rows
-
-      // Loop through courses and create table rows
+      tableBody.innerHTML = "";
+      
       for (const course of courses) {
         const row = document.createElement("tr");
         const cell = document.createElement("td");
