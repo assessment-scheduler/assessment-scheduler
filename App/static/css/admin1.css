@@ -1,4 +1,4 @@
-#semForm{
+#semForm, #courseForm, #coursesList{
     position: absolute;
     top: 50%;
     left: 50%;
@@ -16,7 +16,13 @@
     -moz-box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
 }
 
-#save_btn{
+#courseForm, #coursesList{
+    min-width: 50%;
+    max-height: 80%;
+    overflow-y: auto;
+}
+
+button{
     background: var(--tertiary-color);
     color: white;
     border: none;
@@ -33,10 +39,10 @@
     background: #5d45bd;
 }
 
-form h2{
+h2{
     text-align: center;
-    font-size: 24px;
-    margin-bottom: 20px;
+    font-size: 20px;
+    margin-bottom: 10px;
 }
 
 .field_containers input{
@@ -45,23 +51,49 @@ form h2{
     border-radius: 6px;
     margin-bottom: 15px;
     width: 100%;
-}
+}  
 
 .input-label{
     font-size: 16px;
 }
 
-.sem_container {
+
+.sem_container, .level_container {
     display: flex;
     align-items: center;
 }
 
-.sem_container input[type="radio"] {
+.sem_container input[type="radio"], .level_container input[type="checkbox"] {
     margin-right: 5px;
 }
 
-.sem_container label[for="semester"] {
+.sem_container label[for="semester"], .level_container label[for="level"] {
     margin-right: 20px; 
 }
 
+table {
+    border-spacing: 0;
+    width: 100%;
+    overflow-y: auto; 
+}
 
+td {
+    text-align: left;
+    padding: 8px;
+    border: 1px solid;
+}
+
+#table_container {
+    overflow-x: auto; 
+    height: 400px;
+}
+
+#buttons_container{
+    display: flex;
+    justify-content: space-between;
+}
+
+.selected{
+    background-color: grey;
+}
+  
