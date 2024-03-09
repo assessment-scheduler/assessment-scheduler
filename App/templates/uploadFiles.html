@@ -53,7 +53,7 @@
             </div>
             <hr id="formSeparator">
             <div class="uploadFormSection" id="uploadProgrammeSection">
-                <h2>Upload Programme</h1>
+                <h2>Upload Programmes</h1>
                 <input type="file" name="programmes_file" id="fileProgrammeInput">
                 <input class="submitButton" type="submit" name="uploadProgrammeBtn" value="Upload" onclick="submitForm('uploadProgrammeBtn')">
             </div>
@@ -68,36 +68,55 @@
     <script>
         function submitForm(buttonName){
             const form = document.getElementById("uploadForm");
+            const message = document.getElementById('message');
 
             if (buttonName === "uploadCoursesBtn"){
                 //stuff for that
-                const courseInput = document.getElementById("fileCourseInput");
-                const file = fileInput.files[0]
 
-                if(file){
-                    const formData = new formData();
-                    formData.append('file', file)
+                form.addEventListener('submit', function(event){
+                    event.preventDefault();
+                    const courseInput = document.getElementById("fileCourseInput");
+                    const file = fileInput.files[0]
 
-                    fetch('/upload',{
-                        method: 'POST',
-                        body: formData
-                    });
-                    // .then(response => response.text())
-                    // .then(data => {
-                    //     message.textContent = data;
-                    // })
-                    // .catch(error => {
-                    //     console.error(error)
-                    //     message.textContent = "An error occured during upload.";
-                    // });
-                } 
-                // else {
-                //     message.textContent = "Please select a file to upload"
-                // }
+                    if(file){
+                        const formData = new formData();
+                        formData.append('file', file)
+                        formData.append('test1', 'Course Upload')
+                        message.style.display = 'block';
+
+                        fetch('/upload',{
+                            method: 'POST',
+                            body: formData
+                        })
+                        //all the extra bits for message
+                    }
+                });
 
             } else if (buttonName === "uploadProgrammeBtn"){
                 //stuff for that
-            }
+                form.addEventListener('submit', function(event){
+                    event.preventDefault();
+                    const courseInput = document.getElementById("fileProgrammeInput");
+                    const file = fileInput.files[0]
+
+                    if(file){
+                        const formData = new formData();
+                        formData.append('file', file)
+                        formData.append('test1', 'Programme Upload')
+                        message.style.display = 'block';
+
+                        fetch('/upload',{
+                            method: 'POST',
+                            body: formData
+                        })
+                        //all extra stuff for message
+                    }
+                });
+            } setTimeout(function(){
+                message.textContent = '';
+                message.style.display = 'none';
+            }, 3000);
+
         }
     </script>
 

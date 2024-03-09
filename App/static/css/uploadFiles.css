@@ -67,6 +67,7 @@ form h2{
     color: lightgrey;
     margin-top: 20px;
     padding: 1rem;
+    display: none;
     border-radius: 6px;
     background-color: var(--tertiary-color);
     text-align: center;
