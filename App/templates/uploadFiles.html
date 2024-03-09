@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Files</title>
+    <link rel="stylesheet" href="../static/css/main.css">
+    <link rel="stylesheet" href="../static/css/uploadFiles.css">
+</head>
+<body>
+    <nav id="layout_nav">
+        <div class="main_nav_wrapper">
+            <div class="logo_container">
+                <a href="">FST Assessment Scheduler</a>
+            </div>
+            
+
+            <div class="links_container">
+                <ul id="layout_nav_links">
+                    <li><a class="chat_nav_link nav_link" href="#">Courses</a></li>
+                    <li><a class="myAssessments_nav_link nav_link" href="#">Upload Files</a></li>
+                    <li><a class="calendar_nav_link nav_link" href="#">Semester</a></li>
+                    <li><a class="logout_nav_link" href="#">Logout</a></li>
+                </ul>
+            </div>
+
+            <div class="links_container_mobile">
+                <ul id="layout_nav_links_mobile">
+                    <li><a class="chat_nav_link mobile_links" href="#">Courses</a></li>
+                    <li><a class="myAssessments_nav_link mobile_links" href="#">Upload Files</a></li>
+                    <li><a class="calendar_nav_link mobile_links" href="#">Semester</a></li>
+                    <li class="logout_mobile_container"><a class="logout_nav_link mobile_links" href="#">Logout</a></li>
+                </ul>
+                <div class="exit">
+                    <img src="../static/images/exit-btn.svg" alt="">
+                </div>
+            </div>
+
+
+            <div class="burger">
+                <img src="../static/images/burgermenu.svg" alt="">
+            </div>
+        </div>
+    </nav>
+
+    <!-- form body -->
+    <div class="formContainer">
+        <form method="POST" id="uploadForm">
+            <div class="uploadFormSection" id="uploadCourseSection">
+                <h2>Upload Courses</h1>
+                <input type="file" name="courses_file" id="fileCourseInput">
+                <input class="submitButton" type="submit" name="uploadCoursesBtn" value="Upload" onclick="submitForm('uploadCoursesBtn')">
+            </div>
+            <hr id="formSeparator">
+            <div class="uploadFormSection" id="uploadProgrammeSection">
+                <h2>Upload Programme</h1>
+                <input type="file" name="programmes_file" id="fileProgrammeInput">
+                <input class="submitButton" type="submit" name="uploadProgrammeBtn" value="Upload" onclick="submitForm('uploadProgrammeBtn')">
+            </div>
+            
+            <!-- <button id="submitButton" type="submit">Upload</button> -->
+        </form>
+        <p id="message"></p>
+    </div>
+
+
+
+    <script>
+        function submitForm(buttonName){
+            const form = document.getElementById("uploadForm");
+
+            if (buttonName === "uploadCoursesBtn"){
+                //stuff for that
+                const courseInput = document.getElementById("fileCourseInput");
+                const file = fileInput.files[0]
+
+                if(file){
+                    const formData = new formData();
+                    formData.append('file', file)
+
+                    fetch('/upload',{
+                        method: 'POST',
+                        body: formData
+                    });
+                    // .then(response => response.text())
+                    // .then(data => {
+                    //     message.textContent = data;
+                    // })
+                    // .catch(error => {
+                    //     console.error(error)
+                    //     message.textContent = "An error occured during upload.";
+                    // });
+                } 
+                // else {
+                //     message.textContent = "Please select a file to upload"
+                // }
+
+            } else if (buttonName === "uploadProgrammeBtn"){
+                //stuff for that
+            }
+        }
+    </script>
+
+</body>
+</html>
