@@ -1,0 +1,85 @@
+.formContainer{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+form{
+    background-color: var(--secondary-color);
+    padding: 2.5rem 2rem;
+    border-radius: 10px;
+    text-align: center;
+    
+    box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
+    -webkit-box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
+    -moz-box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
+}
+
+form h2{
+    margin-bottom: 5px;
+}
+
+#formSeparator{
+    border: 1px solid rgb(122, 122, 122);
+    margin: 2rem 0;
+}
+.uploadFormSection input{
+    margin-top: 10px;
+}
+
+
+#uploadForm [type="file"]::-webkit-file-upload-button{
+    background-color: var(--primary-color);
+    color: white;
+
+    cursor: pointer;
+    padding: 1rem 1.5rem;
+    margin-right: 10px;
+    border-radius: 5px;
+    border: lightgrey 1px solid;
+    transition: background 0.5s ease-in-out;
+    margin-bottom: 10px;
+}
+
+#uploadForm [type="file"]::-webkit-file-upload-button:hover{
+    background-color: var(--tertiary-color);
+}
+
+
+.submitButton{
+    width: 100%;
+    padding: 0.8rem 0.5rem;
+    background-color: var(--tertiary-color);
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s ease-in;
+}
+
+.submitButton:hover{
+    background: #5d45bd;
+}
+
+#message{
+    color: lightgrey;
+    margin-top: 20px;
+    padding: 1rem;
+    display: none;
+    border-radius: 6px;
+    background-color: var(--tertiary-color);
+    text-align: center;
+    font-size: 14px;
+}
+
+@media screen and (min-width: 900px){
+    .submitButton{
+        font-size: 16px;
+    }
+
+    #message{
+        font-size: 16px;
+    }
+}

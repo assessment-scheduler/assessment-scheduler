@@ -1,0 +1,118 @@
+.formContainer{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+form{
+    background-color: var(--secondary-color);
+    padding: 2.5rem 2rem;
+    border-radius: 10px;
+    text-align: center;
+    min-width: 300px;
+    box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
+    -webkit-box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
+    -moz-box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
+}
+
+form h2{
+    margin-bottom: 20px;
+    font-size: 24px;
+    
+}
+
+form textarea{
+    resize: none;
+}
+
+.normalLabel{
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.normalLabel input, .normalLabel textarea{
+    width: 100%;
+}
+
+.formInputContainer{
+    margin-bottom: 20px;
+}
+
+.mainLabel{
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+.normalLabel input, .normalLabel textarea{
+    background: var(--primary-color);
+    border: none;
+    padding: 0.5rem 0.8rem;
+    color: white;
+    border-radius: 6px;
+}
+
+
+#submitBtn{
+    background: var(--tertiary-color);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    margin-top: 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease-in;
+    font-size: 14px;
+    width: 100%;
+}
+
+#submitBtn:hover{
+    background: #5d45bd;
+}
+
+.levelContainer, .semesterContainer{
+    text-align: left;
+}
+
+.levelContainer .mainLabel, .semesterContainer .mainLabel{
+    margin-right: 10px;
+}
+
+.smallLabel{
+    margin-right: 7px;
+}
+
+
+/* media queries */
+@media screen and (min-width: 480px){
+    form h2{
+        font-size: 26px;
+    }
+}
+
+
+@media screen and (min-width: 900px){
+    form {
+        min-width:450px;
+    }
+
+    #SubmitBtn{
+        font-size: 16px;
+    }
+
+}
+
+@media screen and (min-width: 1024px){
+    
+  form h2{
+    font-size: 28px;
+  }
+
+  .mainLabel {
+    font-size: 18px;
+  }
+}
+
+
+
