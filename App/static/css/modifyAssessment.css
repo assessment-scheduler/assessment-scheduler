@@ -1,4 +1,4 @@
-#addAssessmentForm{
+#modifyAssessmentForm{
     background-color: var(--secondary-color);
     margin-top: 30px;
     padding: 1rem 1.5rem;
@@ -9,7 +9,7 @@
     margin-right: auto;
 }
 
-#addAssessmentForm input{
+#modifyAssessmentForm input{
     width: 100%;
     background: var(--primary-color);
     border: none;
@@ -24,16 +24,7 @@ h2{
     text-align: center;
 }
 
-#dropdownCourses, #dropdownAssessments{
-    width: 100%;
-    background: var(--primary-color);
-    border: none;
-    padding: 0.6rem 0.8rem;
-    color: white;
-    border-radius: 6px;
-}
-
-#addAssessmentBtn{
+#modifyAssessmentBtn{
     background: var(--tertiary-color);
     color: white;
     border: none;
@@ -48,16 +39,15 @@ h2{
 }
 
 
-#addAssessmentBtn:hover{
+#modifyAssessmentBtn:hover{
     background: #5d45bd;
 }
 
-.formInputContainer{
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-    margin-bottom: 10px;
+.formSection3{
+    margin-top: 20px;
 }
+
+
 
 /* media queries */
 @media screen and (min-width: 480px){
@@ -68,15 +58,19 @@ h2{
 
 
 @media screen and (min-width: 900px){
-    #addAssessmentForm{
+    #modifyAssessmentForm{
         margin-top: 50px;
     }
-    #addAssessmentBtn{
+    #modifyAssessmentBtn{
         font-size: 18px;
     }
     .formSection1, .formSection2, .formSection3{
         display: flex;
         justify-content: left;
+    }
+
+    .formSection3 .formInputContainer:nth-child(2){
+        margin-left: 7px;
     }
 
 
@@ -85,9 +79,8 @@ h2{
     }
 }
 
-
 @media screen and (min-width: 900px){
-    #addAssessmentForm{
+    #modifyAssessmentForm{
         margin-top: 100px;
     }
 
