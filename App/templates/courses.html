@@ -8,55 +8,55 @@
     <link rel="stylesheet" href="../static/css/admin1.css">
 </head>
 <body>
-    <nav id="layout_nav">
-        <div class="main_nav_wrapper">
-            <div class="logo_container">
-                <a href="">FST Assessment Scheduler</a>
-            </div>
-            
+  <nav id="layout_nav">
+      <div class="main_nav_wrapper">
+          <div class="logo_container">
+              <a href="">FST Assessment Scheduler</a>
+          </div>
+          
 
-            <div class="links_container">
-                <ul id="layout_nav_links">
-                    <li><a class="chat_nav_link nav_link" href="#">Courses</a></li>
-                    <li><a class="myAssessments_nav_link nav_link" href="#">Upload Files</a></li>
-                    <li><a class="calendar_nav_link nav_link" href="#">Semester</a></li>
-                    <li><a class="logout_nav_link" href="#">Logout</a></li>
-                </ul>
-            </div>
+          <div class="links_container">
+              <ul id="layout_nav_links">
+                  <li><a class="chat_nav_link nav_link" href="#">Courses</a></li>
+                  <li><a class="myAssessments_nav_link nav_link" href="#">Upload Files</a></li>
+                  <li><a class="calendar_nav_link nav_link" href="#">Semester</a></li>
+                  <li><a class="logout_nav_link" href="#">Logout</a></li>
+              </ul>
+          </div>
 
-            <div class="links_container_mobile">
-                <ul id="layout_nav_links_mobile">
-                    <li><a class="chat_nav_link mobile_links" href="#">Courses</a></li>
-                    <li><a class="myAssessments_nav_link mobile_links" href="#">Upload Files</a></li>
-                    <li><a class="calendar_nav_link mobile_links" href="#">Semester</a></li>
-                    <li class="logout_mobile_container"><a class="logout_nav_link mobile_links" href="#">Logout</a></li>
-                </ul>
-                <div class="exit">
-                    <img src="../static/images/exit-btn.svg" alt="">
-                </div>
-            </div>
+          <div class="links_container_mobile">
+              <ul id="layout_nav_links_mobile">
+                  <li><a class="chat_nav_link mobile_links" href="#">Courses</a></li>
+                  <li><a class="myAssessments_nav_link mobile_links" href="#">Upload Files</a></li>
+                  <li><a class="calendar_nav_link mobile_links" href="#">Semester</a></li>
+                  <li class="logout_mobile_container"><a class="logout_nav_link mobile_links" href="#">Logout</a></li>
+              </ul>
+              <div class="exit">
+                  <img src="../static/images/exit-btn.svg" alt="">
+              </div>
+          </div>
 
 
-            <div class="burger">
-                <img src="../static/images/burgermenu.svg" alt="">
-            </div>
-        </div>
-    </nav>
+          <div class="burger">
+              <img src="../static/images/burgermenu.svg" alt="">
+          </div>
+      </div>
+  </nav>
 
-    <div id="coursesList">
-        <h2>List of Courses</h2>
-        <div id="table_container">
-          <table id="courseTable">
-            <tbody id="courseTableBody"></tbody>
-          </table>
-        </div>
-        
-        <div id="buttons_container">
-            <button id="add_course" type="submit">Add Course</button>
-            <button id="update_course" type="submit">Update Course</button>
-            <button id="delete_course" type="submit">Delete Course</button>
-        </div>
-    </div>
+  <div id="coursesList">
+      <h2>List of Courses</h2>
+      <div id="table_container">
+        <table id="courseTable">
+          <tbody id="courseTableBody"></tbody>
+        </table>
+      </div>
+      
+      <div id="buttons_container">
+          <button id="add_course" class="formBtn"  type="submit">Add Course</button>
+          <button id="update_course" class="formBtn" type="submit">Update Course</button>
+          <button id="delete_course" class="formBtn" type="submit">Delete Course</button>
+      </div>
+  </div>
     
 </body>
 <script>
@@ -97,41 +97,5 @@
     
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
-<script>
-    const navbarToggler = document.querySelector(".burger");
-    const navbarMenu = document.querySelector(".links_container_mobile");
-    const navbarLinks = document.querySelectorAll(".mobile_links");
-    const exit = document.querySelector(".exit");
-
-var tl = gsap.timeline({ defaults: { duration: 1, ease: Expo.easeInOut } })
-navbarToggler.addEventListener("click", navbarTogglerClick);
-tl.paused(true)
-tl.to(".links_container_mobile", {
-  height: "100%"
-});
-tl.to("#layout_nav_links_mobile li", {
-  opacity: 1,
-  stagger: 0.1
-}, "-=1");
-tl.to("#layout_nav_links_mobile", {
-  pointerEvents: "all"
-}, "-=1");
-tl.to(".exit", {
-  opacity: 1,
-  y: "5px",
-  pointerEvents: "all"
-}, "-=1");
-function navbarTogglerClick() {
-  tl.play();
-};
-exit.addEventListener('click', () => {
-  tl.reverse(.9);
-});
-navbarLinks.forEach(item => {
-  item.addEventListener('click', () => {
-    tl.reverse(.9);
-  })
-});
-
-</script>
+<script src="../static/js/mobileMenu.js"></script>
 </html>

@@ -49,12 +49,12 @@
             <h2>Add Course</h2>
             <div class="formInputContainer normalLabel">
                 <label class="mainLabel" for="">Course Code</label>
-                <input type="text" name="course_code" id="course_code">
+                <input type="text" name="course_code" id="course_code" required>
             </div>
 
             <div class="formInputContainer normalLabel">
                 <label class="mainLabel" for="">Title</label>
-                <input type="text" name="title" id="title">
+                <input type="text" name="title" id="title" required>
             </div>
 
             <div class="formInputContainer normalLabel">
@@ -86,7 +86,7 @@
 
             <div class="formInputContainer normalLabel">
                 <label class="mainLabel" for="">Number of Assessments</label>
-                <input type="text" name="numAssessments" id="numAssessments">
+                <input type="number" min="1" name="numAssessments" id="numAssessments" required>
             </div>
 
             <div class="formInputContainer normalLabel">
@@ -98,4 +98,21 @@
         </form>
     </div>
 </body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
+<script src="../static/js/mobileMenu.js"></script>
+<!-- <script>
+    document.getElementById('numAssessments').addEventListener('input', function() {
+    // Get the input value
+    let value = this.value;
+
+    // Convert it to a number
+    let numberValue = parseFloat(value);
+
+    // If the number is negative, reset the input field
+    if (numberValue < 0) {
+        this.value = '';
+        alert("Please enter a positive number.");
+    }
+});
+</script> -->
 </html>
