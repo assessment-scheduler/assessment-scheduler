@@ -1,0 +1,23 @@
+@media screen and (min-width: 900px){
+    .links_container{
+        flex: 0.5;
+    }
+}
+
+@media screen and (min-width: 1024px){
+
+
+    .links_container{
+        flex: 1;
+    }
+
+}
+
+@media screen and (min-width: 1080px){
+    .links_container{
+        flex: 0.8;
+        
+    }
+
+    
+}
