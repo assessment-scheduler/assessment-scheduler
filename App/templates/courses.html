@@ -60,32 +60,39 @@
     
 </body>
 <script>
-    var courses = ["Course1", "Course2", "Course3", "Course4", "Course5", "Course6", "Course7", "Course8", "Course9","Course1", "Course2", "Course3", "Course4", "Course5", "Course6", "Course7", "Course8", "Course9"];
-    
-    let selectedRow = null;
-    window.onload = function() {
-      const tableBody = document.getElementById("courseTableBody");
-      tableBody.innerHTML = "";
-      
-      for (const course of courses) {
-        const row = document.createElement("tr");
-        const cell = document.createElement("td");
-        cell.textContent = course;
-        row.appendChild(cell);
-        tableBody.appendChild(row);
+  let selectedRow = null;
+
+  window.onload = function() {
+    const tableBody = document.getElementById("courseTableBody");
+    tableBody.innerHTML = "";
+
+    fetch('/get_courses') // Replace with your endpoint URL
+      .then(response => response.json())
+      .then(data => {
+        courses = data;  // Store fetched courses
+        const tableBody = document.getElementById("courseTableBody");
+        tableBody.innerHTML = "";
+        console.log(courses)
+        for (const course of courses) {
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.textContent = course;
+          row.appendChild(cell);
+          tableBody.appendChild(row);
 
 
-        row.addEventListener("click", function() {
-        if (selectedRow) {
-          selectedRow.classList.remove("selected"); // Deselect previous row
+          row.addEventListener("click", function() {
+          if (selectedRow) {
+            selectedRow.classList.remove("selected"); // Deselect previous row
+          }
+          selectedRow = this;
+          var course=this.firstChild.textContent;
+          this.classList.add("selected"); // Select current row
+          });
         }
-        selectedRow = this;
-        var course=this.firstChild.textContent;
-        this.classList.add("selected"); // Select current row
-        });
-      }
-      
-    };
+      })
+      .catch(error => console.error(error));
+  };
     
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
