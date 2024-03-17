@@ -61,7 +61,6 @@
 </body>
 <script>
   let selectedRow = null;
-  let courses = []; // Initialize empty courses array
 
   window.onload = function() {
     const tableBody = document.getElementById("courseTableBody");
@@ -73,7 +72,7 @@
         courses = data;  // Store fetched courses
         const tableBody = document.getElementById("courseTableBody");
         tableBody.innerHTML = "";
-        
+        console.log(courses)
         for (const course of courses) {
           const row = document.createElement("tr");
           const cell = document.createElement("td");

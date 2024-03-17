@@ -67,3 +67,9 @@ def upload_course_file():
 
             # Return course listings!        
             return render_template('courses.html')     
+
+@admin_views.route('/get_courses', methods=['GET'])
+def get_courses():
+    #insert code to pull course list from database
+    courses = ['comp1601', 'math2010', 'english1001']
+    return courses
