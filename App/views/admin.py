@@ -63,7 +63,7 @@ def upload_course_file():
                 reader = csv.DictReader(file)
                 for row in reader:
                     #create object
-                    course = add_Course(courseCode=row['course code'], courseTitle=row['title'], description=row['description'], level=row['level'], semester=row['sem'], aNum=row['aNum'])
+                    course = add_Course(courseCode=row['course code'], courseTitle=row['title'], description=row['description'], level=int(row['level']), semester=int(row['sem']), aNum=int(row['aNum']))
 
             # Return course listings!        
             return render_template('courses.html')     
