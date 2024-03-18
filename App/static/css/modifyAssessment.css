@@ -1,0 +1,87 @@
+#modifyAssessmentForm{
+    background-color: var(--secondary-color);
+    margin-top: 30px;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#modifyAssessmentForm input{
+    width: 100%;
+    background: var(--primary-color);
+    border: none;
+    padding: 0.6rem 0.8rem;
+    color: white;
+    border-radius: 6px;
+}
+
+h2{
+    font-size: 30px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+#modifyAssessmentBtn{
+    background: var(--tertiary-color);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    margin-top: 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease-in;
+    font-size: 16px;
+    font-weight: 500;
+    width: 100%;
+}
+
+
+#modifyAssessmentBtn:hover{
+    background: #5d45bd;
+}
+
+.formSection3{
+    margin-top: 20px;
+}
+
+
+
+/* media queries */
+@media screen and (min-width: 480px){
+    h2{
+        font-size: 34px;
+    }
+}
+
+
+@media screen and (min-width: 900px){
+    #modifyAssessmentForm{
+        margin-top: 50px;
+    }
+    #modifyAssessmentBtn{
+        font-size: 18px;
+    }
+    .formSection1, .formSection2, .formSection3{
+        display: flex;
+        justify-content: left;
+    }
+
+    .formSection3 .formInputContainer:nth-child(2){
+        margin-left: 7px;
+    }
+
+
+    .formSection1 .formInputContainer:nth-child(1), .formSection2 .formInputContainer:nth-child(1), .formSection3 .formInputContainer:nth-child(1){
+        margin-right: 10px;
+    }
+}
+
+@media screen and (min-width: 900px){
+    #modifyAssessmentForm{
+        margin-top: 100px;
+    }
+
+}

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modify Assessment</title>
+    <link rel="stylesheet" href="../static/css/main.css">
+    <link rel="stylesheet" href="../static/css/modifyAssessment.css">
+</head>
+<body>
+        <!-- from layout file -->
+        <nav id="layout_nav">
+            <div class="main_nav_wrapper">
+                <div class="logo_container">
+                    <a href="">FST Assessment Scheduler</a>
+                </div>
+                <div class="links_container">
+                    <ul id="layout_nav_links">
+                        <li><a class="chat_nav_link nav_link" href="#">Chat</a></li>
+                        <li><a class="myAssessments_nav_link nav_link" href="#">Assessments</a></li>
+                        <li><a class="calendar_nav_link nav_link" href="#">Calendar</a></li>
+                        <li><a class="myAccount_nav_link nav_link" href="#">Account</a></li>
+                        <li><a class="notification_nav_link nav_link" href="#">Notifications</a></li>
+                        <li><a class="logout_nav_link" href="#">Logout</a></li>
+                    </ul>
+                </div>
+    
+                <div class="links_container_mobile">
+                    <ul id="layout_nav_links_mobile">
+                        <li><a class="chat_nav_link mobile_links" href="#">Chat</a></li>
+                        <li><a class="myAssessments_nav_link mobile_links" href="#">Assessments</a></li>
+                        <li><a class="calendar_nav_link mobile_links" href="#">Calendar</a></li>
+                        <li><a class="myAccount_nav_link mobile_links" href="#">Account</a></li>
+                        <li><a class="notification_nav_link mobile_links" href="#">Notifications</a></li>
+                        <li class="logout_mobile_container"><a class="logout_nav_link mobile_links" href="#">Logout</a></li>
+                    </ul>
+                    <div class="exit">
+                        <img src="../static/images/exit-btn.svg" alt="">
+                    </div>
+                </div>
+    
+    
+                <div class="burger">
+                    <img src="../static/images/burgermenu.svg" alt="">
+                </div>
+            </div>
+        </nav>
+
+
+
+<!-- site body -->
+<div class="formContainer">
+    <form id="modifyAssessmentForm" action="">
+        <div class="formTitle">
+            <h2>Modify Assessment</h2>
+        </div>
+        
+        <div class="bottomForm">
+            <div class="formSection2">
+                <div class="formInputContainer">
+                    <label for="">Assessment Start Time</label>
+                    <input type="time" id="startTime" name="startTime">
+                </div>
+                <div class="formInputContainer">
+                    <label for="">Assessment Start Date</label>
+                    <input type="date" id="startDate" name="startDate">
+                </div>
+            </div>
+            <div class="formSection3" id="sectionToHide">
+                <div class="formInputContainer">
+                    <label for="">Assessment End Time</label>
+                    <input type="time" id="endTime" name="endTime">
+                </div>
+                <div class="formInputContainer">
+                    <label for="">Assessment end Date</label>
+                    <input type="date" id="endDate" name="endDate">
+                </div>
+            </div>
+        </div>
+        <button id="modifyAssessmentBtn" type="submit">Save</button>
+    </form>
+</div>
+
+
+
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
+<script src="../static/js/mobileMenu.js"></script>
+</html>
