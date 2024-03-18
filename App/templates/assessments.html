@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block title %}My Assessments{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="../static/css/main.css">
+<link rel="stylesheet" href="../static/css/assessments.css">
+{% endblock %}
+
+{% block content %}
+<div class="main_content">
+    <h1>My Assessments</h1>
+    <button id="add_assessment_btn">Add Assessment</button>
+    <div id="card_container"></div>
+</div>
+<script src="../static/js/assessments.js"></script>
+{% endblock %}

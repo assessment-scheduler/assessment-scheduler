@@ -1,0 +1,39 @@
+{% extends "adminLayout.html" %}
+
+{% block title %}My Account{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="../static/css/main.css">
+<link rel="stylesheet" href="../static/css/account.css">
+
+{% endblock %}
+
+{% block content %}
+<div id="main_container">
+    <h1>My Account</h1>
+    <div class="course_selection">
+        <div class="search-container">
+          <form action="">
+            <input type="search" id="search_box" name="q" placeholder="Search Courses" autocomplete="off">
+          </form>
+          <div id="search-dropdown"></div>
+        </div>
+
+        
+        <div id="selected_courses">
+            <h3>My Courses</h3>   
+        </div>
+    </div> 
+
+        
+      
+      
+    <div class="reset_password">
+        <h3>Reset password</h3>
+        <label for="password">New Password</label>
+        <input type="text" id="password">
+        <button id="reset_password">Reset</button>
+    </div>
+</div>
+<script src="../static/js/account.js"></script>
+{% endblock %}
