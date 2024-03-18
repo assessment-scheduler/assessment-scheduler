@@ -10,9 +10,9 @@ class Course(db.Model):
   semester = db.Column(db.Integer, nullable=False)
   aNum = db.Column(db.Integer, nullable=False, default=0)
   # preReqs = db.Column(db.ForeignKey('course.courseCode'))
-  #Relationship between a course and programmes to define which programmes a course belongs to
+  # Relationship between a course and programmes to define which programmes a course belongs to
   # p_ID = db.Column(db.Integer, db.ForeignKey('programme.p_ID'), nullable = False)
-  #creates reverse relationship from Course back to Assessment to access assessments for a specific course
+  # creates reverse relationship from Course back to Assessment to access assessments for a specific course
   # assessmentsAssigned = db.relationship('assessment', backref=db.backref('assessment', lazy='joined'))
   # staffAssigned = db.Column(db.ForeignKey('staff.u_ID'))
 
@@ -24,9 +24,9 @@ class Course(db.Model):
     self.semester = semester
     self.aNum = aNum
 
-  # #Add new Course
-  # def addCourse(courseCode, courseTitle, description, level, semester, aNum):
-  #   newCourse = Course(courseCode, courseTitle, description, level, semester, aNum)
-  #   db.session.add(newCourse)  #add to db
-  #   db.session.commit()
-  #   return newCourse
+  #Add new Course
+  def addCourse(courseCode, courseTitle, description, level, semester, aNum):
+    newCourse = Course(courseCode, courseTitle, description, level, semester, aNum)
+    db.session.add(newCourse)  #add to db
+    db.session.commit()
+    return newCourse
