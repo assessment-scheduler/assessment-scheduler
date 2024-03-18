@@ -29,6 +29,23 @@ def get_upload_page():
 def index():
     return render_template('courses.html')    
 
+@admin_views.route('/addCourse', methods=['GET'])
+def get_addCourse_page():
+    return render_template('addCourse.html')    
+
+@admin_views.route('/updateCourse', methods=['GET'])
+def get_updateCourse_page():
+    course={
+        "Code":"COMP1601",
+        "Title":"Computer Programming I",
+        "Description":"This course uses an appropriate programming language as a tool to teach fundamental programming concepts. The main concepts covered are sequence, selection and repetition logic, character and string manipulation, function, and a basic introduction to arrays and their applications.",
+        "Level":"1",
+        "Semester":["1","3"],
+        "aNum":"3",
+        "Programme":"IT (Special), Computer Science (Major)"
+    }
+    return render_template('updateCourse.html')  
+
 # Retrieves semester details and stores it in global variables 
 @admin_views.route('/newSemester', methods=['POST'])
 def new_semester_action():
@@ -67,9 +84,3 @@ def upload_course_file():
 
             # Return course listings!        
             return render_template('courses.html')     
-
-@admin_views.route('/get_courses', methods=['GET'])
-def get_courses():
-    #insert code to pull course list from database
-    courses = ['comp1601', 'math2010', 'english1001']
-    return courses
