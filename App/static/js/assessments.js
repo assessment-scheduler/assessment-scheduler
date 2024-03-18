@@ -30,53 +30,71 @@ assessments=[a1,a2,a3,a4]
 const cardContainer = document.getElementById('card_container');
 
 assessments.forEach(assessment => {
-  // Create the card element
-  const card = document.createElement('div');
-  card.classList.add('card');
+    // Create the card element
+    const card = document.createElement('div');
+    card.classList.add('card');
 
-  // Create elements for course details, assessment info, and actions
-  const courseDetails = document.createElement('div');
-  courseDetails.classList.add('course-details');
-  const assessmentInfo = document.createElement('div');
-  assessmentInfo.classList.add('assessment-info');
-  const actions = document.createElement('div');
-  actions.classList.add('actions');
+    // Create elements for course details, assessment info, and actions
+    const courseDetails = document.createElement('div');
+    courseDetails.classList.add('course-details');
+    const assessmentInfo = document.createElement('div');
+    assessmentInfo.classList.add('assessment-info');
+    const actions = document.createElement('div');
+    actions.classList.add('actions');
 
-  // Create content for course details
-  const courseCode = document.createElement('p');
-  courseCode.classList.add('course-code');
-  courseCode.textContent = assessment.code;
-  const courseName = document.createElement('p');
-  courseName.classList.add('course-name');
-  courseName.textContent = assessment.title;
+    // Create content for course details
+    const courseCodeLabel = document.createElement('p');
+    courseCodeLabel.classList.add('card-label');
+    courseCodeLabel.textContent = 'Course Code';
+    const courseCode = document.createElement('p');
+    courseCode.classList.add('course-code');
+    courseCode.textContent = assessment.code;
 
-  // Create content for assessment info
-  const assessmentType = document.createElement('p');
-  assessmentType.classList.add('assessment-type');
-  assessmentType.textContent = assessment.type;
-  const dueDate = document.createElement('p');
-  dueDate.classList.add('due-date');
-  dueDate.textContent = assessment.date;
+    const courseTitleLabel = document.createElement('p');
+    courseTitleLabel.classList.add('card-label');
+    courseTitleLabel.textContent = 'Course Title';
+    const courseName = document.createElement('p');
+    courseName.classList.add('course-title');
+    courseName.textContent = assessment.title;
 
-  // Create action links (modify and delete can be replaced with actual functionality)
-  const modifyLink = document.createElement('a');
-  modifyLink.textContent = 'Modify';
-  modifyLink.href = '#'; // Replace with actual modify functionality
-  const deleteLink = document.createElement('a');
-  deleteLink.textContent = 'Delete';
-  deleteLink.href = '#'; // Replace with actual delete functionality
+    const courseAssessmentLabel = document.createElement('p');
+    courseAssessmentLabel.classList.add('card-label');
+    courseAssessmentLabel.textContent = 'Assessment Type';
+    const assessmentType = document.createElement('p');
+    assessmentType.classList.add('assessment-type');
+    assessmentType.textContent = assessment.type;
 
-  // Append elements to their respective parents
-  courseDetails.appendChild(courseCode);
-  courseDetails.appendChild(courseName);
-  assessmentInfo.appendChild(assessmentType);
-  assessmentInfo.appendChild(dueDate);
-  actions.appendChild(modifyLink);
-  actions.appendChild(deleteLink);
-  card.appendChild(courseDetails);
-  card.appendChild(assessmentInfo);
-  card.appendChild(actions);
+    const dueDateLabel = document.createElement('p');
+    dueDateLabel.classList.add('card-label');
+    dueDateLabel.textContent = 'Due Date';
+    const dueDate = document.createElement('p');
+    dueDate.classList.add('due-date');
+    dueDate.textContent = assessment.date;
 
-  // Append the card to the card container
-  cardContainer.appendChild(card);
+    // Create action links (modify and delete can be replaced with actual functionality)
+    const modifyLink = document.createElement('button');
+    modifyLink.textContent = 'Modify';
+    modifyLink.href = '#'; // Replace with actual modify functionality
+    const deleteLink = document.createElement('button');
+    deleteLink.textContent = 'Delete';
+    deleteLink.classList.add('delete_btn')
+    deleteLink.href = '#'; // Replace with actual delete functionality
+
+    // Append elements to their respective parents
+    courseDetails.appendChild(courseCodeLabel);
+    courseDetails.appendChild(courseCode);
+    courseDetails.appendChild(courseTitleLabel);
+    courseDetails.appendChild(courseName);
+    assessmentInfo.appendChild(courseAssessmentLabel);
+    assessmentInfo.appendChild(assessmentType);
+    assessmentInfo.appendChild(dueDateLabel);
+    assessmentInfo.appendChild(dueDate);
+    actions.appendChild(modifyLink);
+    actions.appendChild(deleteLink);
+    card.appendChild(courseDetails);
+    card.appendChild(assessmentInfo);
+    card.appendChild(actions);
+
+    // Append the card to the card container
+    cardContainer.appendChild(card);
 });
