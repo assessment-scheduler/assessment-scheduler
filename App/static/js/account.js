@@ -1,66 +1,61 @@
-const searchBox = document.getElementById('search_box');
-const searchDropdown = document.getElementById('search-dropdown');
-const selectedCoursesList = document.getElementById('selected_courses');
+const searchInput = document.getElementById("search_box");
+const searchDropdown = document.getElementById("search-dropdown");
+const selectedCourses = document.getElementById("selected_courses");
 
-searchBox.addEventListener('keyup', function(event) {
-  const searchQuery = event.target.value.toLowerCase();
-  const courses = ['comp1601', 'comp1600', 'comp2602', 'comp2603', 'info3604'];
+const coursesUrl = "/get_courses";
 
-  const searchedCourses = courses.filter(course => course.toLowerCase().includes(searchQuery));
+function getCourses() {
+  fetch(coursesUrl)
+    .then(response => response.json()) // Parse JSON response
+    .then(data => {
+      courses = data; // Assuming your route returns an array of courses
+      handleSearch(); // Call handleSearch to populate dropdown with retrieved courses
+    })
+    .catch(error => console.error(error)); // Handle errors if any
+}
 
-  // Clear previous search results
-  searchDropdown.querySelector('ul').innerHTML = "";
+function handleSearch(e) {
+  e.preventDefault(); // Prevent form submission
 
-  if (searchedCourses.length > 0) {
-    // Create list items for matching courses
-    const resultList = document.createElement('ul');
-    searchedCourses.forEach(course => {
-      const listItem = document.createElement('li');
-      listItem.textContent = course;  // Use the course code directly
-      resultList.appendChild(listItem);
-    });
-    searchDropdown.querySelector('ul').appendChild(resultList);
-    searchDropdown.style.display = 'block';  // Show the dropdown
-  } else {
-    searchDropdown.style.display = 'none';  // Hide the dropdown
-  }
-});
+  const searchTerm = searchInput.value.toLowerCase();
+  const filteredCourses = courses.filter((course) => course.toLowerCase().includes(searchTerm));
 
-// Handle potential clicks outside the dropdown (to close it)
-document.addEventListener('click', function(event) {
-  if (!searchDropdown.contains(event.target)) {
-    searchDropdown.style.display = 'none';
-  }
-});
+  searchDropdown.innerHTML = ""; // Clear previous results
 
-// Handle adding courses to "My Courses"
-searchDropdown.addEventListener('click', function(event) {
-    if (event.target.tagName === 'LI') {  // Check if a list item was clicked
-      const courseCode = event.target.textContent.trim();  // Get course code
-      const selectedCourses = getSelectedCourses(); // Get existing selected courses (implementation provided below)
-  
-      if (!selectedCourses.includes(courseCode)) {  // Check if course is not already selected
-        const newCourse = document.createElement('p');
-        newCourse.textContent = courseCode;
-        selectedCoursesList.appendChild(newCourse);
-        console.log(newCourse)
-        // Update selected courses storage (implementation depends on your storage method)
-        setSelectedCourses([...selectedCourses, courseCode]);
+  if (filteredCourses.length > 0) {
+    const dropdownList = document.createElement("ul");
+    dropdownList.style.listStyleType = "none";
+    
+    filteredCourses.forEach((course) => {
+      const listItem = document.createElement("li");
+      listItem.textContent = course;
+
+      // Check if course already selected before adding click event listener
+      if (!selectedCourses.textContent.includes(course)) {
+        listItem.addEventListener("click", () => addCourse(course));
       }
-    }
-  });
-  
-  // Function to get existing selected courses (replace with your storage logic)
-  function getSelectedCourses() {
-    // Replace with your logic to retrieve selected courses from localStorage, cookies, or database
-    // This example assumes localStorage:
-    return localStorage.getItem('selectedCourses')?.split(',') || [];
-  }
-  
-  // Function to update selected courses storage (replace with your storage logic)
-  function setSelectedCourses(courses) {
-    // Replace with your logic to save courses to localStorage, cookies, or database
-    // This example assumes localStorage:
-    localStorage.setItem('selectedCourses', courses.join(','));
-  }
 
+      dropdownList.appendChild(listItem);
+    });
+
+    searchDropdown.appendChild(dropdownList);
+    searchDropdown.style.display = "block"; // Show dropdown
+  } else {
+    searchDropdown.style.display = "none"; // Hide dropdown if no results
+  }
+}
+
+function addCourse(course) {
+  const courseElement = document.createElement("p");
+  courseElement.textContent = course;
+  courseElement.classList.add("selected-course");
+  selectedCourses.appendChild(courseElement);
+
+  // Clear search input and hide dropdown
+  searchInput.value = "";
+  searchDropdown.style.display = "none";
+}
+
+getCourses();
+
+searchInput.addEventListener("keyup", handleSearch);

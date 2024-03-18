@@ -9,23 +9,30 @@
 {% endblock %}
 
 {% block content %}
-<div>
+<div id="main_container">
     <h1>My Account</h1>
     <div class="course_selection">
-        <form action="">
+        <div class="search-container">
+          <form action="">
             <input type="search" id="search_box" name="q" placeholder="Search Courses" autocomplete="off">
-            <button type="submit">Search</button>
           </form>
-        <div id="search-dropdown">
-        <ul></ul>
+          <div id="search-dropdown"></div>
         </div>
 
-        <h3>My Courses</h3>
+        
         <div id="selected_courses">
+            <h3>My Courses</h3>   
         </div>
-    </div>
+    </div> 
+
+        
+      
+      
     <div class="reset_password">
-        <!-- <p>Reset password</p> -->
+        <h3>Reset password</h3>
+        <label for="password">New Password</label>
+        <input type="text" id="password">
+        <button id="reset_password">Reset</button>
     </div>
 </div>
 <script src="../static/js/account.js"></script>
