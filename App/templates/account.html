@@ -12,14 +12,21 @@
 <div>
     <h1>My Account</h1>
     <div class="course_selection">
-        <p>List of courses with search</p>
+        <form action="">
+            <input type="search" id="search_box" name="q" placeholder="Search Courses" autocomplete="off">
+            <button type="submit">Search</button>
+          </form>
+        <div id="search-dropdown">
+        <ul></ul>
+        </div>
+
         <h3>My Courses</h3>
         <div id="selected_courses">
-            <p>List goes here</p>
         </div>
     </div>
     <div class="reset_password">
-        <p>Reset password</p>
+        <!-- <p>Reset password</p> -->
     </div>
 </div>
+<script src="../static/js/account.js"></script>
 {% endblock %}
