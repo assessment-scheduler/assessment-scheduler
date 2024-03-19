@@ -1,64 +1,119 @@
-{% extends "adminLayout.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courses</title>
+    <link rel="stylesheet" href="../static/css/main.css">
+    <link rel="stylesheet" href="../static/css/admin1.css">
+</head>
+<body>
+  <nav id="layout_nav">
+      <div class="main_nav_wrapper">
+          <div class="logo_container">
+              <a href="">FST Assessment Scheduler</a>
+          </div>
+          
 
-{% block title %}Courses{% endblock %}
+          <div class="links_container">
+              <ul id="layout_nav_links">
+                  <li><a class="chat_nav_link nav_link" href="#">Courses</a></li>
+                  <li><a class="myAssessments_nav_link nav_link" href="#">Upload Files</a></li>
+                  <li><a class="calendar_nav_link nav_link" href="#">Semester</a></li>
+                  <li><a class="logout_nav_link" href="#">Logout</a></li>
+              </ul>
+          </div>
 
-{% block head %}    
-<link rel="stylesheet" href="../static/css/admin1.css">
-{% endblock %}
+          <div class="links_container_mobile">
+              <ul id="layout_nav_links_mobile">
+                  <li><a class="chat_nav_link mobile_links" href="#">Courses</a></li>
+                  <li><a class="myAssessments_nav_link mobile_links" href="#">Upload Files</a></li>
+                  <li><a class="calendar_nav_link mobile_links" href="#">Semester</a></li>
+                  <li class="logout_mobile_container"><a class="logout_nav_link mobile_links" href="#">Logout</a></li>
+              </ul>
+              <div class="exit">
+                  <img src="../static/images/exit-btn.svg" alt="">
+              </div>
+          </div>
 
-{% block content %}
-<div id="coursesList">
-    <h2>List of Courses</h2>
-    <div id="table_container">
-      <table id="courseTable">
-        <tbody id="courseTableBody"></tbody>
-      </table>
-    </div>
+
+          <div class="burger">
+              <img src="../static/images/burgermenu.svg" alt="">
+          </div>
+      </div>
+  </nav>
+
+  <div id="coursesList">
+      <h2>List of Courses</h2>
+      <div id="table_container">
+        <table id="courseTable">
+          <tbody id="courseTableBody">
+            {% for course in courses %}
+            <tr class="course-row" data="{{ course.courseCode }}">
+              <td>{{ course.courseCode }}</td> 
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      
+      <div id="buttons_container">
+          <button id="add_course" class="formBtn"  type="submit">Add Course</button>
+          <button id="update_course" class="formBtn" type="submit">Update Course</button>
+          <button id="delete_course" class="formBtn" type="submit">Delete Course</button>
+      </div>
+  </div>
     
-    <div id="buttons_container">
-        <button id="add_course" class="formBtn"  type="submit">Add Course</button>
-        <button id="update_course" class="formBtn" type="submit">Update Course</button>
-        <button id="delete_course" class="formBtn" type="submit">Delete Course</button>
-    </div>
-</div>
-    
+</body>
 <script>
-  let selectedRow = null;
+  const courseRows = document.querySelectorAll('.course-row');
 
-  window.onload = function() {
-    const tableBody = document.getElementById("courseTableBody");
-    tableBody.innerHTML = "";
+  courseRows.forEach(row => {
+    row.addEventListener('click', function handleClick() {
+      courseRows.forEach(row => row.classList.remove('selected'));
 
-    fetch('/get_courses') // Replace with your endpoint URL
-      .then(response => response.json())
-      .then(data => {
-        courses = data;  // Store fetched courses
-        const tableBody = document.getElementById("courseTableBody");
-        tableBody.innerHTML = "";
-        console.log(courses)
-        for (const course of courses) {
-          const row = document.createElement("tr");
-          const cell = document.createElement("td");
-          cell.textContent = course;
-          row.appendChild(cell);
-          tableBody.appendChild(row);
+      // Apply new styling to the clicked row
+      this.classList.add('selected');
+
+      // Access the course code from the data attribute:
+      const courseCode = this.querySelector('td').textContent
+      console.log('Clicked course code:', courseCode); 
+    });
+  });
+
+  // window.onload = function() {
+  //   const tableBody = document.getElementById("courseTableBody");
+  //   tableBody.innerHTML = "";
+
+  //   fetch('/get_courses') // Replace with your endpoint URL
+  //     .then(response => response.json())
+  //     .then(data => {
+  //       courses = data;  // Store fetched courses
+  //       const tableBody = document.getElementById("courseTableBody");
+  //       tableBody.innerHTML = "";
+  //       console.log(courses)
+  //       for (const course of courses) {
+  //         const row = document.createElement("tr");
+  //         const cell = document.createElement("td");
+  //         cell.textContent = course;
+  //         row.appendChild(cell);
+  //         tableBody.appendChild(row);
 
 
-          row.addEventListener("click", function() {
-          if (selectedRow) {
-            selectedRow.classList.remove("selected"); // Deselect previous row
-          }
-          selectedRow = this;
-          var course=this.firstChild.textContent;
-          this.classList.add("selected"); // Select current row
-          });
-        }
-      })
-      .catch(error => console.error(error));
-  };
+  //         row.addEventListener("click", function() {
+  //         if (selectedRow) {
+  //           selectedRow.classList.remove("selected"); // Deselect previous row
+  //         }
+  //         selectedRow = this;
+  //         var course=this.firstChild.textContent;
+  //         this.classList.add("selected"); // Select current row
+  //         });
+  //       }
+  //     })
+  //     .catch(error => console.error(error));
+  // }; 
     
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
 <script src="../static/js/mobileMenu.js"></script>
-
-{% endblock %}
+</html>
