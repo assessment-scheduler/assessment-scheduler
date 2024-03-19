@@ -78,10 +78,41 @@ def get_courses():
     return render_template('courses.html', courses=courses)
     # return jsonify([course.to_json() for course in courses]), 200 #for postman
 
-@admin_views.route('/addCourse', methods=['GET'])
-def get_addCourse():
-    return render_template('addCourse.html')
+# Gets Add Course Page
+@admin_views.route('/newCourse', methods=['GET'])
+def get_new_course():
+    return render_template('addCourse.html')  
 
+# Retrieves course info and stores it in database ie. add new course
+@admin_views.route('/addCourse', methods=['POST'])
+def add_course_action():
+    if request.method == 'POST':
+        courseCode = request.form.get('course_code')
+        title = request.form.get('title')
+        description = request.form.get('description')
+        level = request.form.get('level')
+        semester = request.form.get('semester')
+        numAssessments = request.form.get('numAssessments')
+         
+        course = add_Course(courseCode,title,description,level,semester,numAssessments)
+
+        # Redirect to view course listings!   
+        # return redirect(url_for('admin_views.get_courses'))   
+        return jsonify({"message":f" {courseCode} successfully added to course listings."}), 200  for postman
+
+# Selects course and removes it from database
+@admin_views.route("/deleteCourse", methods=["GET", "POST", "DELETE"])
+def delete_course_action():
+    selected_course_code = request.args.get('selectedCode')
+    course = get_course(selected_course_code)
+
+    delete_Course(selected_course_code)
+
+    # Redirect to view course listings!   
+    # return redirect(url_for('admin_views.get_courses'))    
+    return jsonify({"message":f" {courseCode} successfully delete from course listings."}), 200 # for postman
+
+# Selects course and modifies it in database
 @admin_views.route('/modifyCourse', methods=['GET'])
 def get_modifyCourse():
     course={
