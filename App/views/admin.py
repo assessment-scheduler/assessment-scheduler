@@ -98,9 +98,9 @@ def add_course_action():
          
         course = add_Course(courseCode,title,description,level,semester,numAssessments)
 
-        # Redirect to view course listings!   
-        # return redirect(url_for('admin_views.get_courses'))   
-        return jsonify({"message":f" {courseCode} successfully added to course listings."}), 200  #for postman
+        # Redirect to view course listings!    
+        return redirect(url_for('admin_views.get_courses')) 
+        # return jsonify({"message":f" {courseCode} successfully added to course listings."}), 200  #for postman
 
 # Selects course and removes it from database
 @admin_views.route("/deleteCourse", methods=["GET", "POST", "DELETE"])
