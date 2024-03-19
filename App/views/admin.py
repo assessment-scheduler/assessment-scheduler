@@ -7,7 +7,8 @@ import os, csv
 #from flask_jwt_extended import jwt_required
 
 from App.controllers.course import (
-    add_Course
+    add_Course,
+    list_Courses
 )
 
 admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
@@ -65,11 +66,15 @@ def upload_course_file():
                     #create object
                     course = add_Course(courseCode=row['course code'], courseTitle=row['title'], description=row['description'], level=int(row['level']), semester=int(row['sem']), aNum=int(row['aNum']))
 
-            # Return course listings!        
-            return render_template('courses.html')     
+            # Redirect to view course listings!   
+            return jsonify({"message": "Courses file successfully uploaded."}), 200 # for postman
+            # return redirect(url_for('admin_views.get_courses'))       
 
+
+# Pull course list from database
 @admin_views.route('/get_courses', methods=['GET'])
 def get_courses():
-    #insert code to pull course list from database
-    courses = ['comp1601', 'math2010', 'english1001']
-    return courses
+    courses = list_Courses()
+    # return render_template('courses.html', courses=courses)
+    return jsonify([course.to_json() for course in courses]), 200 #for postman
+    # return render_template('courses.html', courseList=courses)
