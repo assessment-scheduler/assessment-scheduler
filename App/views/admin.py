@@ -102,6 +102,26 @@ def add_course_action():
         return redirect(url_for('admin_views.get_courses')) 
         # return jsonify({"message":f" {courseCode} successfully added to course listings."}), 200  #for postman
 
+# Gets Update Course Page
+@admin_views.route('/updateCourse', methods=['GET'])
+def get_edit_course():
+    return render_template('updateCourse.html')  
+
+# Selects new course details and updates existing course in database
+@admin_views.route('/modifyCourse', methods=['GET'])
+def get_modify_course():
+    selected_course_code = request.args.get('selectedCode')
+    course={
+        "Code":"COMP1601",
+        "Title":"Computer Programming I",
+        "Description":"This course uses an appropriate programming language as a tool to teach fundamental programming concepts. The main concepts covered are sequence, selection and repetition logic, character and string manipulation, function, and a basic introduction to arrays and their applications.",
+        "Level":"1",
+        "Semester":["1","3"],
+        "aNum":"3",
+        "Programme":"IT (Special), Computer Science (Major)"
+    }
+    return render_template('updateCourse.html', course=course)
+
 # Selects course and removes it from database
 @admin_views.route("/deleteCourse", methods=["GET", "POST", "DELETE"])
 def delete_course_action():
@@ -114,16 +134,3 @@ def delete_course_action():
     # return redirect(url_for('admin_views.get_courses'))    
     return jsonify({"message":f" {courseCode} successfully delete from course listings."}), 200 # for postman
 
-# Selects course and modifies it in database
-@admin_views.route('/modifyCourse', methods=['GET'])
-def get_modifyCourse():
-    course={
-        "Code":"COMP1601",
-        "Title":"Computer Programming I",
-        "Description":"This course uses an appropriate programming language as a tool to teach fundamental programming concepts. The main concepts covered are sequence, selection and repetition logic, character and string manipulation, function, and a basic introduction to arrays and their applications.",
-        "Level":"1",
-        "Semester":["1","3"],
-        "aNum":"3",
-        "Programme":"IT (Special), Computer Science (Major)"
-    }
-    return render_template('updateCourse.html', course=course)

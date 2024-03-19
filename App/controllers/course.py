@@ -18,6 +18,15 @@ def list_Courses():
 def get_course(courseCode):
     return Course.query.filter_by(courseCode=courseCode).first()
 
+def edit_course(review, staff, is_positive, comment):
+    if review.reviewer == staff:
+        review.isPositive = is_positive
+        review.comment = comment
+        db.session.add(review)
+        db.session.commit()
+        return review
+    return None    
+
 def delete_Course(course):
     db.session.delete(course)
     db.session.commit()
