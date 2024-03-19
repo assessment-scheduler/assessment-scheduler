@@ -77,3 +77,20 @@ def get_courses():
     courses = list_Courses()
     return render_template('courses.html', courses=courses)
     # return jsonify([course.to_json() for course in courses]), 200 #for postman
+
+@admin_views.route('/addCourse', methods=['GET'])
+def get_addCourse():
+    return render_template('addCourse.html')
+
+@admin_views.route('/modifyCourse', methods=['GET'])
+def get_modifyCourse():
+    course={
+        "Code":"COMP1601",
+        "Title":"Computer Programming I",
+        "Description":"This course uses an appropriate programming language as a tool to teach fundamental programming concepts. The main concepts covered are sequence, selection and repetition logic, character and string manipulation, function, and a basic introduction to arrays and their applications.",
+        "Level":"1",
+        "Semester":["1","3"],
+        "aNum":"3",
+        "Programme":"IT (Special), Computer Science (Major)"
+    }
+    return render_template('updateCourse.html', course=course)
