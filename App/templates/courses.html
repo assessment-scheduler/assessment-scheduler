@@ -47,7 +47,13 @@
       <h2>List of Courses</h2>
       <div id="table_container">
         <table id="courseTable">
-          <tbody id="courseTableBody"></tbody>
+          <tbody id="courseTableBody">
+            <tr>
+            {% for course in courses %}
+              <td>{{ course.courseCode }}</td> 
+            {% endfor %}
+          </tr>
+          </tbody>
         </table>
       </div>
       
@@ -59,7 +65,7 @@
   </div>
     
 </body>
-<script>
+<!-- <script>
   let selectedRow = null;
 
   window.onload = function() {
@@ -92,7 +98,7 @@
         }
       })
       .catch(error => console.error(error));
-  };
+  }; -->
     
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>

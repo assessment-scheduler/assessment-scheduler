@@ -9,12 +9,27 @@ def add_Course(courseCode, courseTitle, description, level, semester, aNum):
     else:
          #Add new Course
         newCourse = Course.addCourse(courseCode, courseTitle, description, level, semester, aNum)
-        # newCourse = Course(courseCode, courseTitle, description, level, semester, aNum)
-        # db.session.add(newCourse)  #add to db
-        # db.session.commit()
         return newCourse
     return None        
 
-def list_Course():
-    # Get each object and return as string
-    return none    
+
+def list_Courses():
+    return Course.query.all() 
+
+
+# def edit_Course(review, staff, is_positive, comment):
+#     if review.reviewer == staff:
+#         review.isPositive = is_positive
+#         review.comment = comment
+#         db.session.add(review)
+#         db.session.commit()
+#         return review
+#     return None
+
+
+# def delete_Course(review, staff):
+#     if review.reviewer == staff:
+#         db.session.delete(review)
+#         db.session.commit()
+#         return True
+#     return None     
