@@ -8,7 +8,9 @@ import os, csv
 
 from App.controllers.course import (
     add_Course,
-    list_Courses
+    list_Courses,
+    get_course,
+    delete_Course
 )
 
 admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
