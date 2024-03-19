@@ -54,3 +54,8 @@ def register_staff_action():
 def get_account_page():
     courses=list_Courses()
     return render_template('account.html', courses=courses)      
+
+#Gets assessments page
+@staff_views.route('/assessments', methods=['GET'])
+def get_assessments_page():
+    return render_template('assessments.html')      
