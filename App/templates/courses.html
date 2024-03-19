@@ -48,11 +48,11 @@
       <div id="table_container">
         <table id="courseTable">
           <tbody id="courseTableBody">
-            <tr>
             {% for course in courses %}
+            <tr class="course-row" data="{{ course.courseCode }}">
               <td>{{ course.courseCode }}</td> 
+            </tr>
             {% endfor %}
-          </tr>
           </tbody>
         </table>
       </div>
@@ -65,40 +65,53 @@
   </div>
     
 </body>
-<!-- <script>
-  let selectedRow = null;
+<script>
+  const courseRows = document.querySelectorAll('.course-row');
 
-  window.onload = function() {
-    const tableBody = document.getElementById("courseTableBody");
-    tableBody.innerHTML = "";
+  courseRows.forEach(row => {
+    row.addEventListener('click', function handleClick() {
+      courseRows.forEach(row => row.classList.remove('selected'));
 
-    fetch('/get_courses') // Replace with your endpoint URL
-      .then(response => response.json())
-      .then(data => {
-        courses = data;  // Store fetched courses
-        const tableBody = document.getElementById("courseTableBody");
-        tableBody.innerHTML = "";
-        console.log(courses)
-        for (const course of courses) {
-          const row = document.createElement("tr");
-          const cell = document.createElement("td");
-          cell.textContent = course;
-          row.appendChild(cell);
-          tableBody.appendChild(row);
+      // Apply new styling to the clicked row
+      this.classList.add('selected');
+
+      // Access the course code from the data attribute:
+      const courseCode = this.querySelector('td').textContent
+      console.log('Clicked course code:', courseCode); 
+    });
+  });
+
+  // window.onload = function() {
+  //   const tableBody = document.getElementById("courseTableBody");
+  //   tableBody.innerHTML = "";
+
+  //   fetch('/get_courses') // Replace with your endpoint URL
+  //     .then(response => response.json())
+  //     .then(data => {
+  //       courses = data;  // Store fetched courses
+  //       const tableBody = document.getElementById("courseTableBody");
+  //       tableBody.innerHTML = "";
+  //       console.log(courses)
+  //       for (const course of courses) {
+  //         const row = document.createElement("tr");
+  //         const cell = document.createElement("td");
+  //         cell.textContent = course;
+  //         row.appendChild(cell);
+  //         tableBody.appendChild(row);
 
 
-          row.addEventListener("click", function() {
-          if (selectedRow) {
-            selectedRow.classList.remove("selected"); // Deselect previous row
-          }
-          selectedRow = this;
-          var course=this.firstChild.textContent;
-          this.classList.add("selected"); // Select current row
-          });
-        }
-      })
-      .catch(error => console.error(error));
-  }; -->
+  //         row.addEventListener("click", function() {
+  //         if (selectedRow) {
+  //           selectedRow.classList.remove("selected"); // Deselect previous row
+  //         }
+  //         selectedRow = this;
+  //         var course=this.firstChild.textContent;
+  //         this.classList.add("selected"); // Select current row
+  //         });
+  //       }
+  //     })
+  //     .catch(error => console.error(error));
+  // }; 
     
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
