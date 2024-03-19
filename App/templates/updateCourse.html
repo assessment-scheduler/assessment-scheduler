@@ -8,15 +8,15 @@
 
 {% block content %}
 
-<form id="courseForm" action="" method="POST">
+<form id="courseForm" action="/updateCourse" method="POST">
     <h2>Update Course</h2>   
     <div class="field_containers">
         <label for="code" class="input-label">Course Code</label>
-        <input type="text" id="code" name="code" readonly>
+        <input type="text" id="code" name="code" readonly/>
     </div>
     <div class="field_containers">
         <label for="title" class="input-label">Title</label>
-        <input type="text" id="title" name="title" readonly>
+        <input type="text" id="title" name="title" readonly/>
     </div>
     <div class="field_containers">
         <label for="description" class="input-label">Description</label>
@@ -49,32 +49,6 @@
         <input type="text" id="programme" name="programme">
     </div>
     <button id="save_btn" class="formBtn" type="submit">Save</button>
-
 </form>
 
-<!-- <script>
-    window.onload = function() {
-        const course = {{ course | tojson }};
-        console.log(course);
-      
-      document.getElementById("code").value = course.Code;
-      document.getElementById("title").value = course.Title;
-      document.getElementById("description").value = course.Description;
-      document.getElementById("assessment").value = course.aNum;
-      document.getElementById("programme").value = course.Programme;
-
-      var levelRadio = document.querySelector('input[name="level"][value="' + course.Level + '"]');
-      if (levelRadio) {
-        levelRadio.checked = true;
-      }
-
-      var semesterCheckboxes = document.querySelectorAll('input[name="semester"]');
-      for (var i = 0; i < semesterCheckboxes.length; i++) {
-        var semValue = semesterCheckboxes[i].value;
-        if (course.Semester.indexOf(semValue) !== -1) {
-          semesterCheckboxes[i].checked = true;
-        }
-      }
-    };
-</script> -->
 {% endblock %}

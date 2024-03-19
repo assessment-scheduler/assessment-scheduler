@@ -7,6 +7,7 @@
 {% endblock %}
 
 {% block content %}
+
 <div id="coursesList">
   <h2>List of Courses</h2>
   <div id="table_container">
@@ -14,35 +15,37 @@
       <tbody id="courseTableBody">
         {% for course in courses %}
         <tr class="course-row" data="{{ course.courseCode }}">
-          <td>{{ course.courseCode }}</td> 
+          <td>{{course.courseCode }}</td> 
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-  
   <div id="buttons_container">
       <a href="/newCourse" class="formBtn">Add Course</a>
-      <a href="/modifyCourse" class="formBtn">Update Course</a>
+      <a href="/modifyCourse/{{ code }}" class="formBtn">Update Course</a>
       <a href="/get_courses" class="formBtn">Delete Course</a>
   </div>
-</div>
+</div> 
 
 <script>
-const courseRows = document.querySelectorAll('.course-row');
+  const courseRows = document.querySelectorAll('.course-row');
 
-courseRows.forEach(row => {
-row.addEventListener('click', function handleClick() {
-  courseRows.forEach(row => row.classList.remove('selected'));
+  courseRows.forEach(row => {
+  row.addEventListener('click', function handleClick() {
+    courseRows.forEach(row => row.classList.remove('selected'));
 
-  // Apply new styling to the clicked row
-  this.classList.add('selected');
+    // Apply new styling to the clicked row
+    this.classList.add('selected');
 
-  // Access the course code from the data attribute:
-  const courseCode = this.querySelector('td').textContent
-  console.log('Clicked course code:', courseCode); 
-});
-});
+    // Access the course code from the data attribute:
+    const courseCode = this.querySelector('td').textContent
+    console.log('Clicked course code:', courseCode); 
+  });
+  });
+
+ 
+
 </script>
 {% endblock %}
 
