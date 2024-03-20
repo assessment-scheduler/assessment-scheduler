@@ -44,7 +44,7 @@ def new_semester_action():
         return render_template('test.html')  
                
 # Uploads course details file and extracts data
-@admin_views.route('/uploadcourse', methods=['GET','POST'])
+@admin_views.route('/uploadcourse', methods=['POST'])
 def upload_course_file():
     if request.method == 'POST': 
         file = request.files['file'] 
