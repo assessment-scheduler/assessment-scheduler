@@ -86,7 +86,7 @@ def get_new_course():
     return render_template('addCourse.html')  
 
 # Retrieves course info and stores it in database ie. add new course
-@admin_views.route('/addNewCourse', methods=['POST'])
+@admin_views.route('/addNewCourse', method=['POST'])
 def add_course_action():
     if request.method == 'POST':
         courseCode = request.form.get('course_code')
