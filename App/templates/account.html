@@ -27,19 +27,20 @@
                   {% endfor %}
                 </tbody>
               </table>
-              </div> 
+            </div> 
           </div>
         </div>
 
-    <h3>My Courses</h3>     
-    <div id="selected_courses">
-          
-    </div>
+      <h3>My Courses</h3>     
+      <div id="selected_courses"></div>
     </div> 
 
         
       
-      
+    <form id="save-course-form" method="POST" action="/account">
+      <input type="hidden" id="courseData" name="courseData">
+      <button type="submit">Save</button>
+    </form>
     <!-- <div class="reset_password">
         <h3>Reset password</h3>
         <label for="password">New Password</label>
