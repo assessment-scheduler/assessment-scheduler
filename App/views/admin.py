@@ -102,13 +102,11 @@ def add_course_action():
         return redirect(url_for('admin_views.get_courses')) 
         return jsonify({"message":f" {courseCode} successfully added to course listings."}), 200  #for postman
 
-
 # Gets Update Course Page
 @admin_views.route('/modifyCourse/<string:courseCode>', methods=['GET'])
 def get_update_course(courseCode):
     course = get_course(courseCode) # Gets selected course
 
-    # return jsonify({"message":f" {course} selected to modify."}), 200 #for postman
     return render_template('updateCourse.html', course=course)  
 
 # Selects new course details and updates existing course in database
@@ -125,9 +123,10 @@ def update_course():
     
     delete_Course(get_course(courseCode))
     add_Course(courseCode, title, description, level, semester, numAssessments)
-    print(courseCode, " updated")
+
     # Redirect to view course listings! 
-    return redirect(url_for('admin_views.get_courses'))  
+    # return redirect(url_for('admin_views.get_courses')) 
+    return jsonify({"message":f" {courseCode} successfully updated."}), 200 # for postman 
 
 # Selects course and removes it from database
 @admin_views.route("/deleteCourse/<string:courseCode>", methods=["POST"])
@@ -136,7 +135,8 @@ def delete_course_action(courseCode):
         course = get_course(courseCode) # Gets selected course
         delete_Course(course)
         print(courseCode, " deleted")
+
     # Redirect to view course listings!   
-    return redirect(url_for('admin_views.get_courses'))    
-    # return jsonify({"message":f" {courseCode} successfully delete from course listings."}), 200 # for postman
+    # return redirect(url_for('admin_views.get_courses'))    
+    return jsonify({"message":f" {courseCode} successfully delete from course listings."}), 200 # for postman
 
