@@ -66,3 +66,5 @@ def get_account_page():
 @staff_views.route('/assessments', methods=['GET'])
 def get_assessments_page():
     return render_template('assessments.html')      
+
+#hi, this is a test commit
