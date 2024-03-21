@@ -38,8 +38,8 @@ h1{
     grid-column: 2; 
 }
 
-.reset_password{
-    padding: 50px;
+#table_container, #courseTable, #courseTableBody{
+    max-width: 100%;
 }
 
 #search-dropdown:hover{
