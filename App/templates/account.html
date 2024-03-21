@@ -16,25 +16,38 @@
           <form action="">
             <input type="search" id="search_box" name="q" placeholder="Search Courses" autocomplete="off">
           </form>
-          <div id="search-dropdown"></div>
+          <div id="search-dropdown">
+            <div id="table_container">
+              <table id="courseTable">
+                <tbody id="courseTableBody">
+                  {% for course in courses %}
+                  <tr class="course-row" data="{{ course.courseCode }}" >
+                    <td>{{course.courseCode }}</td> 
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div> 
+          </div>
         </div>
 
-        
-        <div id="selected_courses">
-            <h3>My Courses</h3>   
-        </div>
+      <h3>My Courses</h3>     
+      <div id="selected_courses"></div>
     </div> 
 
         
       
-      
-    <div class="reset_password">
+    <form id="save-course-form" method="POST" action="/account">
+      <input type="hidden" id="courseData" name="courseData">
+      <button type="submit">Save</button>
+    </form>
+    <!-- <div class="reset_password">
         <h3>Reset password</h3>
         <label for="password">New Password</label>
         <input type="text" id="password">
         <button id="reset_password">Reset</button>
-    </div>
+    </div> -->
 </div>
 
-<!-- <script src="../static/js/account.js"></script> -->
+<script src="../static/js/account.js"></script>
 {% endblock %}
