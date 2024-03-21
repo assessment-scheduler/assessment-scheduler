@@ -23,8 +23,10 @@
   </div>
   <div id="buttons_container">
       <a href="/newCourse" class="formBtn">Add Course</a>
-      <a href="/modifyCourse/{{ code }}" class="formBtn">Update Course</a>
-      <a href="/get_courses" class="formBtn">Delete Course</a>
+      <a href="#" class="modify-course-link formBtn">Update Course</a>
+      <form action="/deleteCourse/{{ courseCode }}" method="POST">
+        <button type="submit" class="delete-course-link formBtn">Delete Course</button>
+      </form>
   </div>
 </div> 
 
@@ -41,6 +43,12 @@
     // Access the course code from the data attribute:
     const courseCode = this.querySelector('td').textContent
     console.log('Clicked course code:', courseCode); 
+
+    const modifyCourseLink = document.querySelector('.modify-course-link');
+    modifyCourseLink.href = `/modifyCourse/${courseCode}`;
+
+    const deleteCourseForm = document.querySelector('form'); // Assuming form exists
+    deleteCourseForm.action = `/deleteCourse/${courseCode}`;
   });
   });
 

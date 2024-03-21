@@ -12,41 +12,31 @@
     <h2>Update Course</h2>   
     <div class="field_containers">
         <label for="code" class="input-label">Course Code</label>
-        <input type="text" id="code" name="code" readonly/>
+        <input type="text" id="code" name="code" value={{course.courseCode}} readonly/>
     </div>
     <div class="field_containers">
         <label for="title" class="input-label">Title</label>
-        <input type="text" id="title" name="title" readonly/>
+        <input type="text" id="title" name="title" value={{course.courseTitle}} readonly/>
     </div>
     <div class="field_containers">
         <label for="description" class="input-label">Description</label>
-        <input type="textarea" name="description" id="description">
+        <input type="text" name="description" id="description" value={{course.description}}>
     </div>
-    <div class="level_container">
+    <div class="field_containers">
         <label for="level" class="input-label">Level</label>
-        <input type="radio" id="radio_btns" name="level" value="1">
-        <label for="level">1</label>
-        <input type="radio" id="radio_btns" name="level" value="2">
-        <label for="level">2</label>
-        <input type="radio" id="radio_btns" name="level" value="3">
-        <label for="level">3</label>
+        <input type="text" name="level" id="level" value={{course.level}}>
     </div>
-    <div class="sem_container">
+    <div class="field_containers">
         <label for="semester" class="input-label">Semester</label>
-        <input type="checkbox" name="semester" value="1">
-        <label for="semester">1</label>
-        <input type="checkbox" name="semester" value="2">
-        <label for="semester">2</label>
-        <input type="checkbox" name="semester" value="3">
-        <label for="semester">3</label>
+        <input type="text" name="semester" id="semester" value={{course.semester}} >
     </div>
     <div class="field_containers">
         <label for="assessment" class="input-label">Number of Assessments</label>
-        <input type="number" id="assessment" name="assessment">
+        <input type="number" id="assessment" name="assessment" value={{course.aNum}}>
     </div>
     <div class="field_containers">
         <label for="programme" class="input-label">Programmes</label>
-        <input type="text" id="programme" name="programme">
+        <input type="text" id="programme" name="programme" value={{course.p_ID}}>
     </div>
     <button id="save_btn" class="formBtn" type="submit">Save</button>
 </form>

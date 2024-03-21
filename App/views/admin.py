@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from App.controllers import Course
 from App.database import db
 from werkzeug.utils import secure_filename
@@ -98,46 +98,44 @@ def add_course_action():
          
         course = add_Course(courseCode,title,description,level,semester,numAssessments)
 
-        # Redirect to view course listings!    
-        #return redirect(url_for('admin_views.get_courses')) 
+        # Redirect to view course listings!  
+        return redirect(url_for('admin_views.get_courses')) 
         return jsonify({"message":f" {courseCode} successfully added to course listings."}), 200  #for postman
-
-# Get selectec course
-# @admin_views.route('/selectedCourse', methods=['GET'])
-# def get_selected_course():
 
 
 # Gets Update Course Page
 @admin_views.route('/modifyCourse/<string:courseCode>', methods=['GET'])
 def get_update_course(courseCode):
     course = get_course(courseCode) # Gets selected course
+
     # return jsonify({"message":f" {course} selected to modify."}), 200 #for postman
     return render_template('updateCourse.html', course=course)  
 
 # Selects new course details and updates existing course in database
-@admin_views.route('/updateCourse', methods=['GET'])
-def get_modify_course():
-    # courseCode = request.args.get['data']
-
-    # course={
-    #     "Code":"COMP1601",
-    #     "Title":"Computer Programming I",
-    #     "Description":"This course uses an appropriate programming language as a tool to teach fundamental programming concepts. The main concepts covered are sequence, selection and repetition logic, character and string manipulation, function, and a basic introduction to arrays and their applications.",
-    #     "Level":"1",
-    #     "Semester":["1","3"],
-    #     "aNum":"3",
-    #     "Programme":"IT (Special), Computer Science (Major)"
-    # }
-
+@admin_views.route('/updateCourse', methods=['POST'])
+def update_course():
+    if request.method == 'POST':
+        courseCode = request.form.get('code')
+        title = request.form.get('title')
+        description = request.form.get('description')
+        level = request.form.get('level')
+        semester = request.form.get('semester')
+        numAssessments = request.form.get('assessment')
+        programme = request.form.get('programme')
+    
+    delete_Course(get_course(courseCode))
+    add_Course(courseCode, title, description, level, semester, numAssessments)
+    print(courseCode, " updated")
     # Redirect to view course listings! 
-    return redirect(url_for('admin_views.get_courses'))   
+    return redirect(url_for('admin_views.get_courses'))  
 
 # Selects course and removes it from database
-@admin_views.route("/deleteCourse/<string:courseCode>", methods=["GET", "POST", "DELETE"])
+@admin_views.route("/deleteCourse/<string:courseCode>", methods=["POST"])
 def delete_course_action(courseCode):
-    course = get_course(courseCode) # Gets selected course
-    delete_Course(course)
-
+    if request.method == 'POST':
+        course = get_course(courseCode) # Gets selected course
+        delete_Course(course)
+        print(courseCode, " deleted")
     # Redirect to view course listings!   
     return redirect(url_for('admin_views.get_courses'))    
     # return jsonify({"message":f" {courseCode} successfully delete from course listings."}), 200 # for postman
