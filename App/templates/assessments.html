@@ -8,10 +8,36 @@
 {% endblock %}
 
 {% block content %}
+<!--this dropdown will display the courses associated to this lecturer -->
+<select id="filterDropdown"> 
+    <option value="all">All</option>
+    <option value="COMP1601">Card 1</option>
+    <option value="COMP1603">Card 2</option>
+
+  </select>
 <div class="main_content">
     <h1>My Assessments</h1>
     <button id="add_assessment_btn">Add Assessment</button>
     <div id="card_container"></div>
 </div>
 <script src="../static/js/assessments.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterDropdown = document.getElementById('filterDropdown');
+        const cards = document.querySelectorAll('.card');
+      
+        filterDropdown.addEventListener('change', function() {
+          const selectedValue = filterDropdown.value;
+      
+          cards.forEach(card => {
+            const courseCode = card.dataset.courseCode;
+            if (selectedValue === 'all' || courseCode === selectedValue) {
+              card.style.display = 'block';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        });
+      });
+</script>
 {% endblock %}
