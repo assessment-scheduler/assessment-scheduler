@@ -31,6 +31,11 @@
     color: white;
     border-radius: 6px;
 }
+#changePasswordForm label{
+    margin-bottom: 5px;
+    font-size: 18px;
+    font-weight: 500;
+}
 
 
 #resetPasswordBtn{
