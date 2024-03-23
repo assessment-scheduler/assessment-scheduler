@@ -1,12 +1,16 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for
+from flask_login import current_user
 from App.controllers import Staff
 from App.database import db
 #from flask_jwt_extended import current_user as jwt_current_user
 #from flask_jwt_extended import jwt_required
 
+
 from App.controllers.staff import (
-    register_staff
+    register_staff,
+    login_staff
 )
+
 
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
 
@@ -16,9 +20,9 @@ def get_signup_page():
     return render_template('signup.html')
 
 # Gets Login Page
-@staff_views.route('/login', methods=['GET'])
-def get_login_page():
-    return render_template('login.html')  
+# @staff_views.route('/login', methods=['GET'])
+# def get_login_page():
+#     return render_template('login.html')  
 
 # Gets Calendar Page
 @staff_views.route('/calendar', methods=['GET'])

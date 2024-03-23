@@ -1,6 +1,8 @@
+import flask_login
 from App.database import db
 from .user import User
 import enum
+from flask_login import UserMixin
 
 class Status(enum.Enum):
     PTINSTRUCT = "Part-Time Instructor"
@@ -11,7 +13,7 @@ class Status(enum.Enum):
     TUTOR = "Tutor"
     PTTUTOR = "Part-Time Tutor"
 
-class Staff(User):
+class Staff(User,UserMixin):
   __tablename__ = 'staff'
   fName = db.Column(db.String(120), nullable=False)
   lName = db.Column(db.String(120), nullable=False)
@@ -73,3 +75,7 @@ class Staff(User):
     db.session.add(newStaff)  #add to db
     db.session.commit()
     return newStaff  
+  
+  def login(self):
+    return flask_login.login_user(self)
+
