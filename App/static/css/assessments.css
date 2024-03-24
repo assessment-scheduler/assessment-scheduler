@@ -1,73 +1,3 @@
-/* .main_content{
-    margin-top: 30px;
-    padding: 1rem 1.5rem;
-    width: 60%;
-    margin-left: auto;
-    margin-right: auto;
-    display: flex;
-    flex-direction: column;
-}
-
-#card_container{
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-gap: 30px;
-    margin-top: 20px;
-}
-
-.card{
-    background-color: var(--secondary-color);
-    width: 100%;
-    min-height: 300px;
-    padding: 20px;
-    border-radius: 10px;  
-}
-
-.card-label{
-    padding-top: 10px;
-    font-weight: bold;
-}
-
-.card button{
-    margin-top: 20px;
-}
-
-button{
-    background: var(--tertiary-color);
-    color: white;
-    border: none;
-    padding: 0.4rem 1.1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.15s ease-in;
-    font-size: 14px;
-    min-width: 80px;
-}
-
-button:hover{
-    background: #5d45bd;
-}
-
-.delete_btn{
-    background: var(--secondary-color);
-    border: 1pt solid white
-
-}
-
-.delete_btn:hover{
-    background: none;
-}
-
-.actions{
-    display: flex;
-    justify-content: space-between;
-}
-
-#add_assessment_btn{
-    width: 25%;
-    margin-left: auto;
-} */
-
 .mainContent{
     padding: 1rem 1.5rem;
     max-width: 1200px;
@@ -178,4 +108,27 @@ button:hover{
     margin-left: auto;
     margin-right: auto;
     margin-top: 20px;
+}
+
+@media screen and (min-width: 768px){
+    .mainTitle{
+        flex-direction: row;
+        margin-top: 30px;
+    }
+
+    .btnContainer{
+        margin-top: 0;
+    }
+}
+@media screen and (min-width: 1024px){
+    .mainTitle{
+        margin-top: 50px;
+    }
+
+}
+@media screen and (min-width: 1080px){
+    .mainTitle h1{
+        font-size: 30px;
+    }
+
 }
