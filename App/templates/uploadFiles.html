@@ -121,5 +121,130 @@
         }
     </script>
 
+<!-- 
+
+    ################## test html code ##################
+    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+        <input type="file" name="file" id="fileInput">
+        <input class="submitButton" type="submit" name="uploadCoursesBtn" value="Upload" onclick="submitForm('uploadCoursesBtn')">
+
+
+
+
+        <input type="file" name="file1" id="fileInput1">
+        <input class="submitButton" type="submit" name="uploadProgrammeBtn" value="Upload" onclick="submitForm('uploadProgrammeBtn')">
+    </form>
+
+    <p id="message"></p>
+
+
+    ################## JS code ##################
+<script>
+        function submitForm(buttonName){
+            const form = document.getElementById("uploadForm");
+            const message = document.getElementById('message');
+            
+
+            if (buttonName === "uploadCoursesBtn"){
+                //stuff for that
+
+                form.addEventListener('submit', function(event){
+                    event.preventDefault();
+                    const courseInput = document.getElementById("fileInput");
+                    const file = courseInput.files[0]
+
+                    if (file) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('test1', 'CourseUpload')
+                    message.style.display = 'block';
+                    fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        message.textContent = data;
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        message.textContent = "An error occurred during upload.";
+                    });
+                    } else {
+                        message.textContent = "Please select a file to upload.";
+                    }
+                });
+            } else if (buttonName === "uploadProgrammeBtn"){
+                //stuff for that
+
+                form.addEventListener('submit', function(event){
+                    event.preventDefault();
+                    const courseInput1 = document.getElementById("fileInput1");
+                    const file1 = courseInput1.files[0]
+
+                    if (file1) {
+                    const formData = new FormData();
+                    formData.append('file', file1);
+                    formData.append('test1', 'ProgrammeUpload')
+                    message.style.display = 'block';
+                    fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        message.textContent = data;
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        message.textContent = "An error occurred during upload.";
+                    });
+                    } else {
+                        message.textContent = "Please select a file to upload.";
+                    }
+                });
+                
+
+                
+            } setTimeout(function(){
+                message.textContent = '';
+                message.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+
+
+
+
+    ################## Pythong route code ##################
+@app.route('/upload', methods=['POST'])
+def upload_file():
+
+    form_data = request.form
+    if request.method == 'POST':
+        # Check if file is present
+        if 'file' not in request.files:
+            return 'No file selected!'
+
+        file = request.files['file']
+        test = form_data.get('test1')
+        print(f'Test: {test}')
+        # Check if file name is present
+        if file.filename == '':
+            return 'No selected file!'
+
+        # Secure filename
+        filename = secure_filename(file.filename)
+
+        # Save file to upload folder
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        return f'File for {test} uploaded successfully'
+
+
+ -->
+
+
 </body>
 </html>
