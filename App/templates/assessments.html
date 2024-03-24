@@ -3,41 +3,56 @@
 {% block title %}My Assessments{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="../static/css/main.css">
-<link rel="stylesheet" href="../static/css/assessments.css">
+<head>
+    <link rel="stylesheet" href="../static/css/main.css">
+    <link rel="stylesheet" href="../static/css/assessments.css">
+</head>
+
 {% endblock %}
 
 {% block content %}
 <!--this dropdown will display the courses associated to this lecturer -->
-<select id="filterDropdown"> 
-    <option value="all">All</option>
-    <option value="COMP1601">Card 1</option>
-    <option value="COMP1603">Card 2</option>
+<body>
+    <div class="mainContent">
+        <div class="mainTitle">
+            <h1>My Assessments</h1>
+            <div class="btnContainer">
+                <a href="" id="add_assessment_btn">Add Assessment</a>
+                <div class="filterContainer">
+                    <select id="filterDropdownAssessments"> 
+                        <option value="all">All</option>
+                        <option value="COMP1601">COMP1601</option>
+                        <option value="COMP1603">COMP1603</option>
+                    </select>
+                </div>
+            </div>
 
-  </select>
-<div class="main_content">
-    <h1>My Assessments</h1>
-    <button id="add_assessment_btn">Add Assessment</button>
-    <div id="card_container"></div>
-</div>
-<script src="../static/js/assessments.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const filterDropdown = document.getElementById('filterDropdown');
-        const cards = document.querySelectorAll('.card');
-      
-        filterDropdown.addEventListener('change', function() {
-          const selectedValue = filterDropdown.value;
-      
-          cards.forEach(card => {
-            const courseCode = card.dataset.courseCode;
-            if (selectedValue === 'all' || courseCode === selectedValue) {
-              card.style.display = 'block';
-            } else {
-              card.style.display = 'none';
-            }
+        </div>
+
+
+        
+        <div id="card_container"></div>
+    </div>
+    <script src="../static/js/assessments.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterDropdown = document.getElementById('filterDropdownAssessments');
+            const cards = document.querySelectorAll('.card');
+          
+            filterDropdown.addEventListener('change', function() {
+              const selectedValue = filterDropdown.value;
+          
+              cards.forEach(card => {
+                const courseCode = card.dataset.courseCode;
+                if (selectedValue === 'all' || courseCode === selectedValue) {
+                  card.style.display = 'block';
+                } else {
+                  card.style.display = 'none';
+                }
+              });
+            });
           });
-        });
-      });
-</script>
+    </script>
+</body>
+
 {% endblock %}
