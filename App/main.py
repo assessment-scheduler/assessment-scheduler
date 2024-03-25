@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 from datetime import timedelta
 
+from App.controllers.auth import setup_flask_login
 from App.database import init_db
 from App.config import config
 
@@ -43,6 +44,6 @@ def create_app(config_overrides={}):
     add_views(app)
     init_db(app)
     # setup_jwt(app)
-    # setup_flask_login(app)
+    setup_flask_login(app)
     app.app_context().push()
     return app
