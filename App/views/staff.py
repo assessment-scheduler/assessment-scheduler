@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, render_template, redirect, url_fo
 from App.controllers import Staff
 from App.controllers import Course
 from App.database import db
+import json
 #from flask_jwt_extended import current_user as jwt_current_user
 #from flask_jwt_extended import jwt_required
 
@@ -55,12 +56,17 @@ def get_account_page():
     courses=list_Courses()
     return render_template('account.html', courses=courses)      
 
-# @staff_views.route('/account', methods=['POST'])
-# def get_selected_courses():
-#     if request.method == 'POST':
+@staff_views.route('/account', methods=['POST'])
+def get_selected_courses():
+    courses=list_Courses()
 
-#     courses=list_Courses()
-#     return render_template('account.html', courses=courses)    
+    if request.method == 'POST':
+        course_codes_json = request.form.get('courseCodes')
+        course_codes = json.loads(course_codes_json)
+        for code in course_codes:
+            print(code)
+            #add course to course-staff table
+    return render_template('account.html', courses=courses)    
 
 #Gets assessments page
 @staff_views.route('/assessments', methods=['GET'])
