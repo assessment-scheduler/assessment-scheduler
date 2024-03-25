@@ -1,0 +1,63 @@
+#main_container{
+    background-color: var(--secondary-color);
+    margin-top: 30px;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+h1{
+    text-align: center;
+}
+
+.course_selection {
+    display: grid;
+    grid-template-columns: 1fr 1fr; 
+    gap: 10px; 
+    padding: 30px;
+    padding-left: 50px;
+}
+  
+.search-container {
+    display: grid;
+    grid-template-rows: auto auto; 
+}
+  
+.search-container form,
+.search-container #search-dropdown {
+    grid-column: 1; 
+}
+  
+.course_selection h3,
+.course_selection #selected_courses {
+    grid-column: 2; 
+}
+
+#table_container, #courseTable, #courseTableBody{
+    max-width: 100%;
+}
+
+#search-dropdown:hover{
+    cursor: pointer;
+}
+
+#reset_password{
+    background: var(--tertiary-color);
+    color: white;
+    border: none;
+    padding: 0.4rem 1.1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease-in;
+    font-size: 14px;
+    min-width: 80px;
+}
+
+#reset_password:hover{
+    background: #5d45bd;
+}

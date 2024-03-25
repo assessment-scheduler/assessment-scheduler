@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File Upload Example</title>
+</head>
+<body>
+    <h1>Upload a file</h1>
+    <form enctype="multipart/form-data" id="uploadForm" action="/uploadcourse" method="POST">
+        <input type="file" name="file" id="fileInput">
+        <button type="submit">Upload</button>
+    </form>
+    {% if message %}
+        <p id="message">{{ message | safe }}</p>
+    {% endif %}
+
+    <!-- <script>
+        const form = document.getElementById('uploadForm');
+        const message = document.getElementById('message');
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(data => {
+                    message.textContent = data;
+                })
+                .catch(error => {
+                    console.error(error);
+                    message.textContent = "An error occurred during upload.";
+                });
+            } else {
+                message.textContent = "Please select a file to upload.";
+            }
+        });
+    </script> -->
+</body>
+</html>

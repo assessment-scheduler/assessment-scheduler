@@ -1,101 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Course</title>
-    <link rel="stylesheet" href="../static/css/main.css">
-    <link rel="stylesheet" href="../static/css/addCourse.css">
-</head>
-<body>
-    <nav id="layout_nav">
-        <div class="main_nav_wrapper">
-            <div class="logo_container">
-                <a href="">FST Assessment Scheduler</a>
-            </div>
-            
+{% extends "adminLayout.html" %}
 
-            <div class="links_container">
-                <ul id="layout_nav_links">
-                    <li><a class="chat_nav_link nav_link" href="#">Courses</a></li>
-                    <li><a class="myAssessments_nav_link nav_link" href="./uploadFiles.html">Upload Files</a></li>
-                    <li><a class="calendar_nav_link nav_link" href="#">Semester</a></li>
-                    <li><a class="logout_nav_link" href="#">Logout</a></li>
-                </ul>
-            </div>
+{% block title %}Add Course{% endblock %}
 
-            <div class="links_container_mobile">
-                <ul id="layout_nav_links_mobile">
-                    <li><a class="chat_nav_link mobile_links" href="#">Courses</a></li>
-                    <li><a class="myAssessments_nav_link mobile_links" href="#">Upload Files</a></li>
-                    <li><a class="calendar_nav_link mobile_links" href="#">Semester</a></li>
-                    <li class="logout_mobile_container"><a class="logout_nav_link mobile_links" href="#">Logout</a></li>
-                </ul>
-                <div class="exit">
-                    <img src="../static/images/exit-btn.svg" alt="">
-                </div>
-            </div>
+{% block head %}
+<link rel="stylesheet" href="../static/css/addCourse.css">
+{% endblock %}
 
-
-            <div class="burger">
-                <img src="../static/images/burgermenu.svg" alt="">
-            </div>
+{% block content %}
+<div class="formContainer">
+    <form action="/addNewCourse" id="addCourseForm" method="POST">
+        <h2>Add Course</h2>
+        <div class="formInputContainer normalLabel">
+            <label class="mainLabel" for="">Course Code</label>
+            <input type="text" name="course_code" id="course_code" required>
         </div>
-    </nav>
 
-    <!-- form body -->
-    <div class="formContainer">
-        <form action="" id="addCourseForm">
-            <h2>Add Course</h2>
-            <div class="formInputContainer normalLabel">
-                <label class="mainLabel" for="">Course Code</label>
-                <input type="text" name="course_code" id="course_code">
-            </div>
+        <div class="formInputContainer normalLabel">
+            <label class="mainLabel" for="">Title</label>
+            <input type="text" name="title" id="title" required>
+        </div>
 
-            <div class="formInputContainer normalLabel">
-                <label class="mainLabel" for="">Title</label>
-                <input type="text" name="title" id="title">
-            </div>
+        <div class="formInputContainer normalLabel">
+            <label class="mainLabel" for="">Description</label>
+            <textarea name="description" id="description" cols="30" rows="10"></textarea>
+        </div>
 
-            <div class="formInputContainer normalLabel">
-                <label class="mainLabel" for="">Description</label>
-                <textarea name="description" id="description" cols="30" rows="10"></textarea>
-            </div>
+        <div class="formInputContainer levelContainer">
+            <label class="mainLabel" for=""level>Level</label>
 
-            <div class="formInputContainer levelContainer">
-                <label class="mainLabel" for=""level>Level</label>
+            <input type="radio" id="radio_btns" name="level" value="1">
+            <label class="smallLabel" for="level">1</label>
+            <input type="radio" id="radio_btns" name="level" value="2">
+            <label class="smallLabel" for="level">2</label>
+            <input type="radio" id="radio_btns" name="level" value="3">
+            <label class="smallLabel" for="level">3</label>
+        </div>
 
-                <input type="radio" id="radio_btns" name="level" value="1">
-                <label class="smallLabel" for="level">1</label>
-                <input type="radio" id="radio_btns" name="level" value="2">
-                <label class="smallLabel" for="level">2</label>
-                <input type="radio" id="radio_btns" name="level" value="3">
-                <label class="smallLabel" for="level">3</label>
-            </div>
+        <div class="formInputContainer semesterContainer">
+            <label class="mainLabel" for="semester">Semester</label>
 
-            <div class="formInputContainer semesterContainer">
-                <label class="mainLabel" for="semester">Semester</label>
+            <input type="checkbox" name="semester" value="1">
+            <label class="smallLabel" for="semester">1</label>
+            <input type="checkbox" name="semester" value="2">
+            <label class="smallLabel" for="semester">2</label>
+            <input type="checkbox" name="semester" value="3">
+            <label class="smallLabel" for="semester">3</label>
+        </div>
 
-                <input type="checkbox" name="semester" value="1">
-                <label class="smallLabel" for="semester">1</label>
-                <input type="checkbox" name="semester" value="2">
-                <label class="smallLabel" for="semester">2</label>
-                <input type="checkbox" name="semester" value="3">
-                <label class="smallLabel" for="semester">3</label>
-            </div>
+        <div class="formInputContainer normalLabel">
+            <label class="mainLabel" for="">Number of Assessments</label>
+            <input type="number" min="1" name="numAssessments" id="numAssessments" required>
+        </div>
 
-            <div class="formInputContainer normalLabel">
-                <label class="mainLabel" for="">Number of Assessments</label>
-                <input type="text" name="numAssessments" id="numAssessments">
-            </div>
+        <div class="formInputContainer normalLabel">
+            <label class="mainLabel" for="">Programmes</label>
+            <input type="text" name="programmes" id="programmes">
+        </div>
 
-            <div class="formInputContainer normalLabel">
-                <label class="mainLabel" for="">Programmes</label>
-                <input type="text" name="programmes" id="programmes">
-            </div>
-
-            <input type="submit" value="Add Course" id="submitBtn">
-        </form>
-    </div>
-</body>
-</html>
+        <input type="submit" value="Add Course" id="submitBtn">
+    </form>
+</div>
+{% endblock %}

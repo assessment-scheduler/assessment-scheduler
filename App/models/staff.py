@@ -21,7 +21,7 @@ class Staff(User,UserMixin):
   cNum = db.Column(db.Integer, nullable=False, default=0) #changes depending on status
   status = db.Column(db.Enum(Status), nullable = False) #defines the contract position of a teaching staff member
   #creates reverse relationship from Staff back to Course to access courses assigned to a specific lecturer
-  coursesAssigned = db.relationship('Course', backref='courses', lazy='joined')
+  # coursesAssigned = db.relationship('Course', backref='courses', lazy='joined')
 
 
   def __init__(self, fName, lName, u_ID, status, email, password):

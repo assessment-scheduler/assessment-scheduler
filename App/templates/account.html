@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block title %}My Account{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="../static/css/main.css">
+<link rel="stylesheet" href="../static/css/account.css">
+
+{% endblock %}
+
+{% block content %}
+<div id="main_container">
+    <h1>My Account</h1>
+    <div class="course_selection">
+        <div class="search-container">
+          <form action="">
+            <input type="search" id="search_box" name="q" placeholder="Search Courses" autocomplete="off">
+          </form>
+          <div id="search-dropdown">
+            <div id="table_container">
+              <table id="courseTable">
+                <tbody id="courseTableBody">
+                  {% for course in courses %}
+                  <tr class="course-row" data="{{ course.courseCode }}" >
+                    <td>{{course.courseCode }}</td> 
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div> 
+          </div>
+        </div>
+
+      <h3>My Courses</h3>     
+      <div id="selected_courses"></div>
+    </div> 
+
+        
+      
+    <form id="save-course-form" method="POST" action="/account">
+      <input type="hidden" id="courseCodesInput" name="courseCodes">
+      <button type="submit">Save</button>
+    </form>
+
+</div>
+
+<script src="../static/js/account.js"></script>
+{% endblock %}

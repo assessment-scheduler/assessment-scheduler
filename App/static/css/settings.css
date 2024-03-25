@@ -1,0 +1,85 @@
+.mainSettingsContainer{
+    background-color: var(--secondary-color);
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+
+    margin-top: 30px;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+}
+
+
+#changePasswordForm h1{
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 30px;
+}
+
+
+#changePasswordForm{
+    display: flex;
+    flex-direction: column;
+}
+
+
+#changePasswordForm input{
+    width: 100%;
+    background: var(--primary-color);
+    border: none;
+    padding: 0.6rem 0.8rem;
+    color: white;
+    border-radius: 6px;
+}
+#changePasswordForm label{
+    margin-bottom: 5px;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+
+#resetPasswordBtn{
+    background: var(--tertiary-color);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    margin-top: 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease-in;
+    font-size: 16px;
+    font-weight: 500;
+    width: 100%;
+}
+
+
+#resetPasswordBtn:hover{
+    background: #5d45bd;
+}
+
+
+@media screen and (min-width: 480px){
+    #changePasswordForm h1{
+        font-size: 34px;
+    }
+}
+
+@media screen and (min-width: 900px){
+    .mainSettingsContainer{
+        margin-top: 50px;
+    }
+
+    #resetPasswordBtn{
+        font-size: 18px;
+    }
+
+    .mainSettingsContainer{
+        min-width: 400px;
+    }
+}
+
+@media screen and (min-width: 900px){
+    #resetPassword{
+        margin-top: 100px;
+    }
+}

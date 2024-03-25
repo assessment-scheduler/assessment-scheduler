@@ -2,13 +2,13 @@
     position: absolute;
     top: 50%;
     left: 50%;
+    z-index: -1;
     transform: translate(-50%, -50%);
     line-height: 2;
     background: var(--secondary-color);
     min-width: 30%;
     margin: 0 auto;
     border-radius: 10px;
-    border: 2px solid white;
     padding: 1rem 1.5rem;
 
     box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
@@ -18,21 +18,66 @@
 
 #courseForm, #coursesList{
     min-width: 50%;
-    max-height: 80%;
+    max-height: 90%;
     overflow-y: auto;
 }
 
-button{
+#coursesList{
+    overflow-y: none;
+}
+
+tr{
+    background-color: var(--primary-color);
+    border: none;
+}
+
+td{
+    margin-bottom: 200px;
+    padding: 10px;
+    text-align: left;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+table {
+    border-spacing: 10px;
+    width: 100%;
+    overflow-y: auto; 
+}
+
+.selected{
+    background-color: #4a4f52;
+}
+
+#buttons_container{
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.formBtn{
     background: var(--tertiary-color);
     color: white;
     border: none;
-    padding: 0.7rem 1.5rem;
+    padding: 1rem 1.5rem;
     border-radius: 6px;
-    margin-top: 20px;
-    font-size: 14px;
-    float: right;
     cursor: pointer;
     transition: background 0.15s ease-in;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.formBtn:hover{
+    background: #5d45bd;
+}
+
+.formBtn:nth-child(2){
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 #save_btn:hover{
@@ -41,10 +86,11 @@ button{
 
 h2{
     text-align: center;
-    font-size: 20px;
+    font-size: 30px;
     margin-bottom: 10px;
 }
 
+/* ============================================= */
 .field_containers input{
     border: none;
     padding: 0.5rem 0.8rem;
@@ -54,7 +100,9 @@ h2{
 }  
 
 .input-label{
-    font-size: 16px;
+    font-size: 18px;
+    font-weight: 500;
+
 }
 
 
@@ -71,29 +119,55 @@ h2{
     margin-right: 20px; 
 }
 
-table {
-    border-spacing: 0;
-    width: 100%;
-    overflow-y: auto; 
+#semForm input[type="date"]{
+    background-color: var(--primary-color);
+    color: white;
 }
 
-td {
-    text-align: left;
-    padding: 8px;
-    border: 1px solid;
+#semForm{
+    max-width: 550px;
+    margin-left: auto;
+    margin-right: auto;
 }
+
+
 
 #table_container {
     overflow-x: auto; 
     height: 400px;
 }
 
-#buttons_container{
-    display: flex;
-    justify-content: space-between;
+.saveSemesterBtn{
+    width: 100%;
+    margin-top: 20px;
 }
 
-.selected{
-    background-color: grey;
+#courseForm{
+    margin-top: 20px;
+    overflow-y: auto;
 }
-  
+
+#courseForm input{
+    background: var(--primary-color);
+    color: white;
+}
+
+#courseForm #save_btn{
+    width: 100%;
+    margin-top: 20px;
+
+}
+
+
+  /* media queries */
+@media screen and (min-width: 480px){
+    h2{
+        font-size: 34px;
+    }
+}
+
+@media screen and (min-width: 900px){
+    .formBtn{
+        font-size: 18px;
+    }
+}
