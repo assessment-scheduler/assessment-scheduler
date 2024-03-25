@@ -81,11 +81,13 @@ def get_selected_courses():
 #Gets assessments page
 @staff_views.route('/assessments', methods=['GET'])
 def get_assessments_page():
-    return render_template('assessments.html')      
+    registered_courses=get_registered_courses(123)
+    return render_template('assessments.html', courses=registered_courses)      
 
 @staff_views.route('/addAssessment', methods=['GET'])
 def get_add_assessments_page():
-    return render_template('addAssessment.html')   
+    registered_courses=get_registered_courses(123)
+    return render_template('addAssessment.html', courses=registered_courses)   
 
 @staff_views.route('/modifyAssessment/<string:course_code>', methods=['GET'])
 def get_modify_assessments_page(course_code):

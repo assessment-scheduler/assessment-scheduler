@@ -17,9 +17,9 @@
             <div class="formInputContainer">
                 <label for="myCourses">My Courses</label>
                 <select id="dropdownCourses" name="myCourses">
-                    <option value="COMP1601">COMP 1601</option>
-                    <option value="COMP2606">COMP 2606</option>
-                    <option value="INFO3604">INFO 3604</option>
+                    {% for course in courses %}
+                    <option value="{{course}}">{{course}}</option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="formInputContainer">

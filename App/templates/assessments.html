@@ -17,8 +17,9 @@
                 <div class="filterContainer">
                     <select id="filterDropdownAssessments"> 
                         <option value="all">All</option>
-                        <option value="COMP1601">COMP1601</option>
-                        <option value="COMP1603">COMP1603</option>
+                        {% for course in courses %}
+                        <option value="{{course}}">{{course}}</option>
+                        {% endfor %}
                     </select>
                 </div>
             </div>
