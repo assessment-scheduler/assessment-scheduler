@@ -77,6 +77,7 @@ def upload_course_file():
 @admin_views.route('/get_courses', methods=['GET'])
 def get_courses():
     courses = list_Courses()
+
     return render_template('courses.html', courses=courses)
     # return jsonify([course.to_json() for course in courses]), 200 #for postman
 
@@ -119,10 +120,10 @@ def update_course():
         level = request.form.get('level')
         semester = request.form.get('semester')
         numAssessments = request.form.get('assessment')
-        programme = request.form.get('programme')
-    
-    delete_Course(get_course(courseCode))
-    add_Course(courseCode, title, description, level, semester, numAssessments)
+        # programme = request.form.get('programme')
+        print(courseCode, title, description, level, semester, numAssessments)
+        delete_Course(get_course(courseCode))
+        add_Course(courseCode, title, description, level, semester, numAssessments)
 
     # Redirect to view course listings! 
     # return redirect(url_for('admin_views.get_courses')) 

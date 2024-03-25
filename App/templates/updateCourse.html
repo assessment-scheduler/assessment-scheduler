@@ -4,23 +4,23 @@
 
 {% block head %}
 <link rel="stylesheet" href="../static/css/admin1.css">
+<link rel="stylesheet" href="../static/css/addCourse.css">
 {% endblock %}
 
 {% block content %}
-
 <form id="courseForm" action="/updateCourse" method="POST">
     <h2>Update Course</h2>   
     <div class="field_containers">
         <label for="code" class="input-label">Course Code</label>
-        <input type="text" id="code" name="code" value={{course.courseCode}} readonly/>
+        <input type="text" id="code" name="code" value="{{ course.courseCode }}" style="white-space: pre;" readonly>
     </div>
     <div class="field_containers">
         <label for="title" class="input-label">Title</label>
-        <input type="text" id="title" name="title" value={{course.courseTitle}} readonly/>
+        <input type="text" id="title" name="title" value="{{ course.courseTitle }}" style="white-space: pre;" readonly>
     </div>
-    <div class="field_containers">
-        <label for="description" class="input-label">Description</label>
-        <input type="text" name="description" id="description" value={{course.description}}>
+    <div class="formInputContainer normalLabel">
+        <label class="mainLabel" for="description">Description</label>
+        <textarea name="description" id="description" cols="30" rows="10">{{ course.description }}</textarea>
     </div>
     <div class="field_containers">
         <label for="level" class="input-label">Level</label>
