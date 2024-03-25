@@ -29,7 +29,8 @@ def initialize():
 @app.cli.command('get-users')
 def get_users():
   staff = Staff.query.all()
-  print(staff)
+  for s in staff:
+    print(s.to_json())
   print('end of staff objects')
 
 # This command assigns courses to staff

@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for
+from flask_login import current_user
 from App.controllers import Staff
 from App.controllers import Course
 from App.database import db
@@ -6,9 +7,12 @@ import json
 #from flask_jwt_extended import current_user as jwt_current_user
 #from flask_jwt_extended import jwt_required
 
+
 from App.controllers.staff import (
-    register_staff
+    register_staff,
+    login_staff
 )
+
 
 from App.controllers.course import (
     list_Courses
@@ -22,9 +26,9 @@ def get_signup_page():
     return render_template('signup.html')
 
 # Gets Login Page
-@staff_views.route('/login', methods=['GET'])
-def get_login_page():
-    return render_template('login.html')  
+# @staff_views.route('/login', methods=['GET'])
+# def get_login_page():
+#     return render_template('login.html')  
 
 # Gets Calendar Page
 @staff_views.route('/calendar', methods=['GET'])
@@ -48,6 +52,8 @@ def register_staff_action():
         else:
             register_staff(firstName, lastName, staffID, status, email, pwd)
             return render_template('index.html')  
+
+          
             # return jsonify({"message":f" {status} registered with id {staffID}"}), 200 # for postman
     
 #Gets account page
@@ -74,3 +80,4 @@ def get_assessments_page():
     return render_template('assessments.html')      
 
 #hi, this is a test commit
+
