@@ -37,6 +37,8 @@ function addCourse(course) {
     courseElement.textContent = course;
     courseElement.classList.add("selected-course");
     selectedCourses.appendChild(courseElement);
+    const courseCodesInput = document.getElementById("courseCodesInput");
+    courseCodesInput.value = JSON.stringify(myCourses);
   }
   // Clear search input and reset dropdown
   resetSearch()

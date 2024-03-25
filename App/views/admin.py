@@ -121,7 +121,7 @@ def update_course():
         semester = request.form.get('semester')
         numAssessments = request.form.get('assessment')
         # programme = request.form.get('programme')
-        print(courseCode, title, description, level, semester, numAssessments)
+
         delete_Course(get_course(courseCode))
         add_Course(courseCode, title, description, level, semester, numAssessments)
 
