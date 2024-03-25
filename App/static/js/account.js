@@ -4,7 +4,6 @@ const selectedCourses = document.getElementById("selected_courses");
 const searchTerm = searchInput.value.toLowerCase();
 const tableBody = document.getElementById("courseTableBody");
 const tableRows = tableBody.querySelectorAll("tr.course-row");
-const myCourses=[]
 
 tableRows.forEach((row) => {
   row.addEventListener("click", (event) => {
@@ -49,7 +48,21 @@ function resetSearch(){
   tableRows.forEach((row) => {
     row.style.display = "none";
   });
+  
 }
+
+function setExistingCourses(){
+  myCourses.forEach(course =>{
+    const courseElement = document.createElement("p");
+    courseElement.textContent = course;
+    courseElement.classList.add("selected-course");
+    selectedCourses.appendChild(courseElement);
+    const courseCodesInput = document.getElementById("courseCodesInput");
+    courseCodesInput.value = JSON.stringify(myCourses);
+  })
+}
+
+setExistingCourses()
 
 resetSearch()
 

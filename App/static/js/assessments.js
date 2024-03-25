@@ -75,7 +75,9 @@ assessments.forEach(assessment => {
     // Create action links (modify and delete can be replaced with actual functionality)
     const modifyLink = document.createElement('button');
     modifyLink.textContent = 'Modify';
-    modifyLink.href = '#'; // Replace with actual modify functionality
+    modifyLink.addEventListener('click', function() {
+        window.location.href = `/modifyAssessment/${assessment.code}`;
+    });
     const deleteLink = document.createElement('button');
     deleteLink.textContent = 'Delete';
     deleteLink.classList.add('delete_btn')

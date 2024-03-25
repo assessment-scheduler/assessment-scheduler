@@ -32,7 +32,8 @@
         </div>
 
       <h3>My Courses</h3>     
-      <div id="selected_courses"></div>
+      <div id="selected_courses">
+      </div>
     </div> 
 
         
@@ -43,6 +44,10 @@
     </form>
 
 </div>
-
+<script>
+  const myCourses = {{ registered|tojson }};
+  console.log(myCourses);
+</script>
 <script src="../static/js/account.js"></script>
+
 {% endblock %}
