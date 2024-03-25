@@ -9,7 +9,7 @@
     margin-right: auto;
 }
 
-#addAssessmentForm input{
+#addAssessmentForm input, textarea{
     width: 100%;
     background: var(--primary-color);
     border: none;
@@ -57,6 +57,14 @@ h2{
     flex-direction: column;
     text-align: left;
     margin-bottom: 10px;
+}
+
+.formSection3, .formInputContainer{
+    width: 100%;
+}
+
+form textarea{
+    resize: none;
 }
 
 /* media queries */

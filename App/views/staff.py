@@ -10,7 +10,9 @@ import json
 
 from App.controllers.staff import (
     register_staff,
-    login_staff
+    login_staff,
+    add_CourseStaff,
+    get_registered_courses,
 )
 
 
@@ -60,7 +62,8 @@ def register_staff_action():
 @staff_views.route('/account', methods=['GET'])
 def get_account_page():
     courses=list_Courses()
-    return render_template('account.html', courses=courses)      
+    registered_courses=get_registered_courses(123)
+    return render_template('account.html', courses=courses, registered=registered_courses)      
 
 @staff_views.route('/account', methods=['POST'])
 def get_selected_courses():
@@ -70,14 +73,29 @@ def get_selected_courses():
         course_codes_json = request.form.get('courseCodes')
         course_codes = json.loads(course_codes_json)
         for code in course_codes:
-            print(code)
-            #add course to course-staff table
-    return render_template('account.html', courses=courses)    
+            obj=add_CourseStaff(123,code)   #add course to course-staff table
+            print(obj.courseCode, " added")
+        
+    return redirect(url_for('staff_views.get_account_page'))   
 
 #Gets assessments page
 @staff_views.route('/assessments', methods=['GET'])
 def get_assessments_page():
-    return render_template('assessments.html')      
+    registered_courses=get_registered_courses(123)
+    return render_template('assessments.html', courses=registered_courses)      
 
-#hi, this is a test commit
+@staff_views.route('/addAssessment', methods=['GET'])
+def get_add_assessments_page():
+    registered_courses=get_registered_courses(123)
+    return render_template('addAssessment.html', courses=registered_courses)   
+
+@staff_views.route('/modifyAssessment/<string:course_code>', methods=['GET'])
+def get_modify_assessments_page(course_code):
+    print(course_code)
+    return render_template('modifyAssessment.html')  
+
+@staff_views.route('/deleteAssessment/<string:course_code>', methods=['GET'])
+def delete_assessment(course_code):
+    print(course_code)
+    return render_template('assessments.html')  
 

@@ -13,12 +13,13 @@
         <div class="mainTitle">
             <h1>My Assessments</h1>
             <div class="btnContainer">
-                <a href="" id="add_assessment_btn">Add Assessment</a>
+                <a href="/addAssessment" id="add_assessment_btn">Add Assessment</a>
                 <div class="filterContainer">
                     <select id="filterDropdownAssessments"> 
                         <option value="all">All</option>
-                        <option value="COMP1601">COMP1601</option>
-                        <option value="COMP1603">COMP1603</option>
+                        {% for course in courses %}
+                        <option value="{{course}}">{{course}}</option>
+                        {% endfor %}
                     </select>
                 </div>
             </div>
