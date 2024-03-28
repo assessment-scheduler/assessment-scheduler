@@ -21,15 +21,15 @@
         <h1>Register</h1>
         <div class="field_containers">
             <label for="firstName" class="input-label">First Name</label><br>
-            <input type="text" id="firstName" name="firstName">
+            <input type="text" id="firstName" name="firstName" required>
         </div>
         <div class="field_containers">
             <label for="lastName" class="input-label">Last Name</label><br>
-            <input type="text" id="lastName" name="lastName">
+            <input type="text" id="lastName" name="lastName" required>
         </div>
         <div class="field_containers">
             <label for="staffID" class="input-label">Staff ID</label><br>
-            <input type="text" id="staffID" name="staffID">
+            <input type="number" id="staffID" name="staffID" min="10000000" max="99999999" required>
         </div>
 
         <div>
@@ -52,12 +52,12 @@
         </div>
         <div class="field_containers">
             <label for="email" class="input-label">Email</label><br>
-            <input type="text" id="email" name="email">
+            <input type="email" id="email" name="email" required>
         </div>
         <div class="field_containers">
             <label for="password" class="input-label">Password</label><br>
             <div id="passwordContainer">
-                <input type="password" id="password" name="password">
+                <input type="password" id="password" name="password" required>
                 <!-- <label id="togglePassword"></label> -->
                 <!-- <i id="togglePassword" class="material-icons">visibility</i> -->
             </div>
@@ -68,47 +68,6 @@
         <p class="haveAnAccount">Already have an account? <a href="/login">Login</a></p>
     </form>
 
-
-
-
-    <script>
-        // const button = document.getElementById('register_btn');
-
-        // button.addEventListener('click', function() {
-        //     event.preventDefault(); 
-
-        //     let name=document.getElementById('firstName').value;
-        //     fetch('/register', {
-        //         method: 'POST',
-        //         body: JSON.stringify({}) // Optionally include data in the request body
-        //     })
-        //     .then(response => {
-        //         if (response.ok) {
-        //             // Handle successful response
-        //             console.log('Request successful!');
-        //         } else {
-        //             // Handle error response
-        //             console.error('Request failed.');
-        //         }
-        //     })
-        //     .catch(error => {
-        //         // Handle network errors
-        //         console.error('Error:', error);
-        //     });
-        // });
-
-        document.getElementById("togglePassword").addEventListener("click", function() {
-        var passwordInput = document.getElementById("password");
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            this.textContent = "visibility_off";
-        } else {
-            passwordInput.type = "password";
-            this.textContent = "visibility";
-        }
-        });
-
-    </script>
     
 </body>
 </html>

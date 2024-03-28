@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, request, jsonify, render_template
+from flask import Blueprint, flash, redirect, request, jsonify, render_template, url_for
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, current_user, unset_jwt_cookies, set_access_cookies
 from flask_login import logout_user
 from App.controllers.auth import login
@@ -7,6 +7,10 @@ from App.models.staff import Staff
 from App.database import db
 
 auth_views = Blueprint('auth_views', __name__, template_folder='../templates')
+
+@auth_views.route('/login', methods=['GET'])
+def get_login_page():
+    return render_template('login.html')
     
 @auth_views.route('/login', methods=['POST'])
 def login_action():
@@ -30,7 +34,10 @@ def login_user(email, password):
 @jwt_required()
 def logout():
   logout_user()
-  return render_template('login.html')  
+#   response = redirect(url_for('login'))  # Redirect to login page
+#   unset_jwt_cookies(response)  # Clear JWT cookie
+#   return response
+  return render_template('login.html')
 
 # @auth_views.route('/identify')
 # @jwt_required()
