@@ -27,15 +27,15 @@
             </header>
             <div class="content">
                 <h1>Create the Optimal Assessment Schedule with ease!</h1>
-                <form action="">
+                <form action="/login" method="POST">
                     <h2>Login</h2>
                     <div class="field_containers">
                         <label for="email">Email</label>
-                        <input type="text" id="email">
+                        <input type="text" id="email" name="email">
                     </div>
                     <div class="field_containers">
                         <label for="password">Password</label>
-                        <input type="text" id="password">
+                        <input type="text" id="password", name="password">
                     </div>
                     <button id="login_btn">Login</button>
                     <p class="forgotPassword">Forgot password? <a href="">Reset</a></p>
@@ -50,31 +50,6 @@
     
     
     <script>
-        const button = document.getElementById('login_btn');
-
-        button.addEventListener('click', function() {
-            event.preventDefault(); 
-
-            let name=document.getElementById('email').value;
-            fetch('/login', {
-                method: 'POST',
-                body: JSON.stringify({}) // Optionally include data in the request body
-            })
-            .then(response => {
-                if (response.ok) {
-                    // Handle successful response
-                    console.log('Request successful!');
-                } else {
-                    // Handle error response
-                    console.error('Request failed.');
-                }
-            })
-            .catch(error => {
-                // Handle network errors
-                console.error('Error:', error);
-            });
-        });
-
         document.getElementById("togglePassword").addEventListener("click", function() {
         var passwordInput = document.getElementById("password");
         if (passwordInput.type === "password") {
