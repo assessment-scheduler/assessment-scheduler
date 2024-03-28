@@ -4,7 +4,6 @@ from flask_login import UserMixin
 from flask_login import UserMixin
 
 class User(db.Model, UserMixin):
-class User(db.Model, UserMixin):
     __tablename__ = 'user'
     __abstract__ = True
 
