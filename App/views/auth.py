@@ -19,7 +19,7 @@ def login_action():
     response = login_user(email, password)
     if not response:
         flash('Bad email or password given'), 401 
-    return response                             #Returns access token
+    return render_template('index.html')                             #Returns access token
 
 def login_user(email, password):
     user = db.session.query(Staff).filter(Staff.email == email).first()
@@ -31,7 +31,7 @@ def login_user(email, password):
     return jsonify(message="Invalid username or password"), 401
 
 @auth_views.route('/logout', methods=['GET'])
-@jwt_required()
+# @jwt_required()
 def logout():
   logout_user()
 #   response = redirect(url_for('login'))  # Redirect to login page
