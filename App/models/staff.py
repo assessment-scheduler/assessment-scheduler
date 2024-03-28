@@ -1,6 +1,8 @@
+import flask_login
 from App.database import db
 from .user import User
 import enum
+from flask_login import UserMixin
 
 class Status(enum.Enum):
     PTINSTRUCT = "Part-Time Instructor"
@@ -11,11 +13,10 @@ class Status(enum.Enum):
     TUTOR = "Tutor"
     PTTUTOR = "Part-Time Tutor"
 
-class Staff(User):
+class Staff(User,UserMixin):
   __tablename__ = 'staff'
   fName = db.Column(db.String(120), nullable=False)
   lName = db.Column(db.String(120), nullable=False)
-  email = db.Column(db.String(120), nullable=False)
   cNum = db.Column(db.Integer, nullable=False, default=0) #changes depending on status
   status = db.Column(db.Enum(Status), nullable = False) #defines the contract position of a teaching staff member
   #creates reverse relationship from Staff back to Course to access courses assigned to a specific lecturer
@@ -73,3 +74,7 @@ class Staff(User):
     db.session.add(newStaff)  #add to db
     db.session.commit()
     return newStaff  
+  
+  def login(self):
+    return flask_login.login_user(self)
+
