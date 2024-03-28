@@ -35,32 +35,15 @@
                     </div>
                     <div class="field_containers">
                         <label for="password">Password</label>
-                        <input type="text" id="password", name="password">
+                        <input type="password" id="password", name="password">
                     </div>
                     <button id="login_btn">Login</button>
-                    <p class="forgotPassword">Forgot password? <a href="">Reset</a></p>
+                    <!-- <p class="forgotPassword">Forgot password? <a href="">Reset</a></p> -->
                 </form>
             </div>
         </div>
         <div class="rightSide"></div>
     </div>
 
-
-
-    
-    
-    <script>
-        document.getElementById("togglePassword").addEventListener("click", function() {
-        var passwordInput = document.getElementById("password");
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            this.textContent = "visibility_off";
-        } else {
-            passwordInput.type = "password";
-            this.textContent = "visibility";
-        }
-        });
-
-    </script>
 </body>
 </html>
