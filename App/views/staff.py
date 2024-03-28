@@ -53,7 +53,7 @@ def register_staff_action():
             return render_template('signup.html', message = 'Please enter required fields.')
         else:
             register_staff(firstName, lastName, staffID, status, email, pwd)
-            return render_template('index.html')  
+            return render_template('login.html')  
 
           
             # return jsonify({"message":f" {status} registered with id {staffID}"}), 200 # for postman
