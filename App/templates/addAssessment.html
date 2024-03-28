@@ -17,9 +17,9 @@
             <div class="formInputContainer">
                 <label for="myCourses">My Courses</label>
                 <select id="dropdownCourses" name="myCourses">
-                    <option value="COMP1601">COMP 1601</option>
-                    <option value="COMP2606">COMP 2606</option>
-                    <option value="INFO3604">INFO 3604</option>
+                    {% for course in courses %}
+                    <option value="{{course}}">{{course}}</option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="formInputContainer">
@@ -34,22 +34,18 @@
         <div class="bottomForm">
             <div class="formSection2">
                 <div class="formInputContainer">
-                    <label for="">Assessment Start Time</label>
-                    <input type="time" id="startTime" name="startTime">
+                    <label for="duration">Duration (minutes)</label>
+                    <input type="number" id="duration" name="duration">
                 </div>
                 <div class="formInputContainer">
-                    <label for="">Assessment Start Date</label>
-                    <input type="date" id="startDate" name="startDate">
+                    <label for="weight">Weight</label>
+                    <input type="number" id="weight" name="weight" placeholder="%">
                 </div>
             </div>
             <div class="formSection3" id="sectionToHide">
                 <div class="formInputContainer">
-                    <label for="">Assessment End Time</label>
-                    <input type="time" id="endTime" name="endTime">
-                </div>
-                <div class="formInputContainer">
-                    <label for="">Assessment end Date</label>
-                    <input type="date" id="endDate" name="endDate">
+                    <label for="detials">Details</label>
+                    <textarea name="details" id="details" cols="30" rows="8"></textarea>
                 </div>
             </div>
         </div>

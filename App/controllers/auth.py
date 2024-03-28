@@ -52,11 +52,15 @@ def logout(user, remember):
 
 def setup_flask_login(app):
   login_manager = flask_login.LoginManager()
+  login_manager = flask_login.LoginManager()
   login_manager.init_app(app)
   login_manager.login_view = 'login'
 
   @login_manager.user_loader
   def load_user(user_id):
+    staff = Staff.query.get(user_id)
+    if staff:
+      return staff
     staff = Staff.query.get(user_id)
     if staff:
       return staff

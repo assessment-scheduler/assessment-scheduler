@@ -1,32 +1,29 @@
 a1={
     code:'COMP1601',
-    title:'Programming 1',
     type:'Assignment',
-    date:'23/10/2023-11:00 PM'
+    duration:'120',
+    details:'',
+    weight:'15'
 }
 
 a2={
     code:'COMP1601',
-    title:'Programming 1',
-    type:'Assignment',
-    date:'29/11/2023-11:00 PM'
+    type:'Exam',
+    duration:'120',
+    details:'Written exam - FST113',
+    weight:'25'
 }
 
 a3={
     code:'COMP1603',
-    title:'Programming 3',
-    type:'Assignment',
-    date:'03/12/2023-11:00 PM'
+    type:'Presentation',
+    duration:'120',
+    details:'DCIT Conference room',
+    weight:'12'
 }
 
-a4={
-    code:'COMP1603',
-    title:'Programming 3',
-    type:'Exam',
-    date:'18/11/2023-11:00 AM'
-}
 
-assessments=[a1,a2,a3,a4]
+assessments=[a1,a2,a3]
 const cardContainer = document.getElementById('card_container');
 
 assessments.forEach(assessment => {
@@ -51,13 +48,6 @@ assessments.forEach(assessment => {
     courseCode.classList.add('course-code');
     courseCode.textContent = assessment.code;
 
-    const courseTitleLabel = document.createElement('p');
-    courseTitleLabel.classList.add('card-label');
-    courseTitleLabel.textContent = 'Course Title';
-    const courseName = document.createElement('p');
-    courseName.classList.add('course-title');
-    courseName.textContent = assessment.title;
-
     const courseAssessmentLabel = document.createElement('p');
     courseAssessmentLabel.classList.add('card-label');
     courseAssessmentLabel.textContent = 'Assessment Type';
@@ -65,17 +55,33 @@ assessments.forEach(assessment => {
     assessmentType.classList.add('assessment-type');
     assessmentType.textContent = assessment.type;
 
-    const dueDateLabel = document.createElement('p');
-    dueDateLabel.classList.add('card-label');
-    dueDateLabel.textContent = 'Due Date';
-    const dueDate = document.createElement('p');
-    dueDate.classList.add('due-date');
-    dueDate.textContent = assessment.date;
+    const durationLabel = document.createElement('p');
+    durationLabel.classList.add('card-label');
+    durationLabel.textContent = 'Duration';
+    const duration = document.createElement('p');
+    duration.classList.add('duration');
+    duration.textContent = assessment.duration+" mins";
+
+    const detailsLabel = document.createElement('p');
+    detailsLabel.classList.add('card-label');
+    detailsLabel.textContent = 'Details';
+    const details = document.createElement('p');
+    details.classList.add('details');
+    details.textContent = assessment.details;
+
+    const weightLabel = document.createElement('p');
+    weightLabel.classList.add('card-label');
+    weightLabel.textContent = 'Weight';
+    const weight = document.createElement('p');
+    weight.classList.add('weight');
+    weight.textContent = assessment.weight+"%";
 
     // Create action links (modify and delete can be replaced with actual functionality)
     const modifyLink = document.createElement('button');
     modifyLink.textContent = 'Modify';
-    modifyLink.href = '#'; // Replace with actual modify functionality
+    modifyLink.addEventListener('click', function() {
+        window.location.href = `/modifyAssessment/${assessment.code}`;
+    });
     const deleteLink = document.createElement('button');
     deleteLink.textContent = 'Delete';
     deleteLink.classList.add('delete_btn')
@@ -84,12 +90,14 @@ assessments.forEach(assessment => {
     // Append elements to their respective parents
     courseDetails.appendChild(courseCodeLabel);
     courseDetails.appendChild(courseCode);
-    courseDetails.appendChild(courseTitleLabel);
-    courseDetails.appendChild(courseName);
     assessmentInfo.appendChild(courseAssessmentLabel);
     assessmentInfo.appendChild(assessmentType);
-    assessmentInfo.appendChild(dueDateLabel);
-    assessmentInfo.appendChild(dueDate);
+    courseDetails.appendChild(durationLabel);
+    courseDetails.appendChild(duration);
+    assessmentInfo.appendChild(weightLabel);
+    assessmentInfo.appendChild(weight);
+    courseDetails.appendChild(detailsLabel);
+    courseDetails.appendChild(details);
     actions.appendChild(modifyLink);
     actions.appendChild(deleteLink);
     card.appendChild(courseDetails);

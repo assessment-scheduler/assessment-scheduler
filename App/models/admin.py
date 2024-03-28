@@ -2,9 +2,16 @@ from App.database import db
 from .user import User  
 from flask_login import UserMixin, login_user
 import flask_login
+from flask_login import UserMixin, login_user
+import flask_login
 
 class Admin(User,UserMixin):
+class Admin(User,UserMixin):
   __tablename__ = 'admin'
+
+  def login(self):
+      return flask_login.login_user(self)
+  
 
   def login(self):
       return flask_login.login_user(self)
