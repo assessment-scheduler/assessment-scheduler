@@ -1,4 +1,8 @@
 course code,title,description,level,sem,aNum,p_ID
-COMP1601,abc,test,1,1,3,10
-comp1602,def,test,1,2,3,10
-COMP1603,ghi,test,1,2,2,10
+COMP1600,Introduction to Computing Concepts,test,1,1,5,10
+COMP1601,Computer Programming I,test,1,1,5,10
+COMP1602,Computer Programming II,test,1,1,5,10
+COMP1603,Computer Programming III,test,1,2,5,10
+COMP1604,Mathematics for Computing,test,1,1,5,10
+INFO1600,Introduction to Information Technology Concepts,test,1,2,5,10
+INFO1601,Introduction to WWW Programming,test,1,3,5,10

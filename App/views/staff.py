@@ -82,9 +82,16 @@ def get_selected_courses():
 
 #Gets assessments page
 @staff_views.route('/assessments', methods=['GET'])
+@jwt_required()
 def get_assessments_page():
-    registered_courses=get_registered_courses(123)
-    return render_template('assessments.html', courses=registered_courses)      
+    id=get_uid(get_jwt_identity())  #gets u_id from email token
+    registered_courses=get_registered_courses(id)
+    #get assessments by course code
+    assessments=[{'courseCode':'COMP1601','a_ID':'Assignment','caNum':'120','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
+                {'courseCode':'COMP1602','a_ID':'Assignment','caNum':'120','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
+                {'courseCode':'COMP1601','a_ID':'Exam','caNum':'220','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
+                {'courseCode':'COMP1602','a_ID':'Assignment','caNum':'120','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'}]
+    return render_template('assessments.html', courses=registered_courses, assessments=assessments)      
 
 @staff_views.route('/addAssessment', methods=['GET'])
 def get_add_assessments_page():

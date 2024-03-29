@@ -10,11 +10,11 @@
 {% block content %}
 <form id="courseForm" action="/updateCourse" method="POST">
     <h2>Update Course</h2>   
-    <div class="field_containers">
+    <div class="formInputContainer normalLabel">
         <label for="code" class="input-label">Course Code</label>
         <input type="text" id="code" name="code" value="{{ course.courseCode }}" style="white-space: pre;" readonly>
     </div>
-    <div class="field_containers">
+    <div class="formInputContainer normalLabel">
         <label for="title" class="input-label">Title</label>
         <input type="text" id="title" name="title" value="{{ course.courseTitle }}" style="white-space: pre;" readonly>
     </div>
@@ -22,19 +22,19 @@
         <label class="mainLabel" for="description">Description</label>
         <textarea name="description" id="description" cols="30" rows="10">{{ course.description }}</textarea>
     </div>
-    <div class="field_containers">
+    <div class="formInputContainer normalLabel">
         <label for="level" class="input-label">Level</label>
         <input type="text" name="level" id="level" value={{course.level}}>
     </div>
-    <div class="field_containers">
+    <div class="formInputContainer normalLabel">
         <label for="semester" class="input-label">Semester</label>
-        <input type="text" name="semester" id="semester" value={{course.semester}} >
+        <input type="text" name="semester" id="semester" value={{course.semester}} readonly>
     </div>
-    <div class="field_containers">
+    <div class="formInputContainer normalLabel">
         <label for="assessment" class="input-label">Number of Assessments</label>
         <input type="number" id="assessment" name="assessment" value={{course.aNum}}>
     </div>
-    <div class="field_containers">
+    <div class="formInputContainer normalLabel">
         <label for="programme" class="input-label">Programmes</label>
         <input type="text" id="programme" name="programme" value={{course.p_ID}}>
     </div>
