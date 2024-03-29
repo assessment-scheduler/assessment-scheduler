@@ -9,7 +9,7 @@
 {% block content %}
 <div class="formContainer">
     <form id="modifyAssessmentForm" action="">
-        <div class="formTitle">
+        <!-- <div class="formTitle">
             <h2>Modify Assessment</h2>
         </div>
         <div class="bottomForm">
@@ -28,6 +28,57 @@
                     <label for="detials">Details</label>
                     <textarea name="details" id="details" cols="30" rows="10"></textarea>
                 </div>
+            </div>
+        </div>
+        <button id="modifyAssessmentBtn" type="submit">Save</button> -->
+
+        <div class="formTitle">
+            <h2>Modify Assessment</h2>
+        </div>
+        <div class="formSection1">
+            <div class="formInputContainer">
+                <!-- be a lil div to show the current course being altered -->
+                <label for="myCourses">My Courses</label>
+                <select id="dropdownCourses" name="myCourses">
+                    {% for course in courses %}
+                    <option value="{{course}}">{{course}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="formInputContainer">
+                <label for="">Assessment Type</label>
+                <select id="dropdownAssessments" name="AssessmentType">
+                    <option value="Assignment">Assignment</option>
+                    <option value="test">Coursework Exam</option>
+                    <option value="LabExam">Lab Exam</option>
+                </select>
+            </div>
+        </div>
+        <div class="bottomForm">
+            <div class="formSection2">
+                <div class="formInputContainer">
+                    <label for="">Assessment Start Date</label>
+                    <input type="date" id="startDate" name="startDate">
+                </div>
+                <div class="formInputContainer">
+                    <label for="">Assessment Start Time</label>
+                    <input type="time" id="startTime" name="startTime">
+                </div>
+                
+            </div>
+
+    
+            <div class="formSection3" id="sectionToHide">
+                <div class="formInputContainer">
+                    <label for="">Assessment End Date</label>
+                    <input type="date" id="endDate" name="endDate">
+                </div>
+                <div class="formInputContainer">
+                    <label for="">Assessment End Time</label>
+                    <input type="time" id="endTime" name="endTime">
+                </div>
+                
+
             </div>
         </div>
         <button id="modifyAssessmentBtn" type="submit">Save</button>
