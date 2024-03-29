@@ -73,28 +73,31 @@ assessments.forEach(assessment => {
     const modifyLink = document.createElement('button');
     modifyLink.textContent = 'Modify';
     modifyLink.addEventListener('click', function() {
-        window.location.href = `/modifyAssessment/${assessment.code}`;
+        window.location.href = `/modifyAssessment/${assessment.caNum}`;
     });
     const deleteLink = document.createElement('button');
     deleteLink.textContent = 'Delete';
     deleteLink.classList.add('delete_btn')
-    deleteLink.href = '#'; // Replace with actual delete functionality
+    deleteLink.addEventListener('click', function() {
+        window.location.href = `/deleteAssessment/${assessment.caNum}`;
+    });
+ 
 
     // Append elements to their respective parents
     courseDetails.appendChild(courseCodeLabel);
     courseDetails.appendChild(courseCode);
     assessmentInfo.appendChild(courseAssessmentLabel);
     assessmentInfo.appendChild(assessmentType);
-    courseDetails.appendChild(caNumLabel);
-    courseDetails.appendChild(caNum);
+    assessmentInfo.appendChild(caNumLabel);
+    assessmentInfo.appendChild(caNum);
     assessmentInfo.appendChild(startDateLabel);
     assessmentInfo.appendChild(startDate);
-    courseDetails.appendChild(endDateLabel);
-    courseDetails.appendChild(endDate);
+    assessmentInfo.appendChild(endDateLabel);
+    assessmentInfo.appendChild(endDate);
     assessmentInfo.appendChild(startTimeLabel);
     assessmentInfo.appendChild(startTime);
-    courseDetails.appendChild(endTimeLabel);
-    courseDetails.appendChild(endTime);
+    assessmentInfo.appendChild(endTimeLabel);
+    assessmentInfo.appendChild(endTime);
     actions.appendChild(modifyLink);
     actions.appendChild(deleteLink);
     card.appendChild(courseDetails);
