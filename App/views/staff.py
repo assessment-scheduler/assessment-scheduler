@@ -117,19 +117,35 @@ def delete_assessment(caNum):
     #delete record
     return redirect(url_for('staff_views.get_assessments_page')) 
 
+# get settings page
 @staff_views.route('/settings', methods=['GET'])
 @jwt_required()
 def get_settings_page():
     return render_template('settings.html')
 
+# route to change password of user
 @staff_views.route('/settings', methods=['POST'])
 @jwt_required()
 def changePassword():
-
+    
     if request.method == 'POST':
+        #get new password
         newPassword = request.form.get('password')
+        # print(newPassword)
+        
+        #get email of current user
         current_user_email = get_jwt_identity()
-        print(current_user_email)
-        print(newPassword)
+        # print(current_user_email)
+        
+        #find user by email
+        user = db.session.query(Staff).filter(Staff.email == current_user_email).first()
+        # print(user)
+        
+        if user:
+            # update the password
+            user.set_password(newPassword)
+            
+            #commit changes to DB
+            db.session.commit()
     
     return render_template('settings.html')
