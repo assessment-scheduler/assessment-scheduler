@@ -19,6 +19,10 @@ from App.controllers.course import (
     list_Courses
 )
 
+from App.controllers.user import(
+    get_uid
+)
+
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
 
 # Gets Signup Page
@@ -57,22 +61,22 @@ def register_staff_action():
 @staff_views.route('/account', methods=['GET'])
 @jwt_required()
 def get_account_page():
-    value=get_jwt_identity()
-
+    id=get_uid(get_jwt_identity())  #gets u_id from email token
     courses=list_Courses()
-    registered_courses=get_registered_courses(123)
-    return render_template('account.html', courses=courses, registered=registered_courses, email=value)      
+    registered_courses=get_registered_courses(id)
+    return render_template('account.html', courses=courses, registered=registered_courses)      
 
 @staff_views.route('/account', methods=['POST'])
+@jwt_required()
 def get_selected_courses():
     courses=list_Courses()
+    id=get_uid(get_jwt_identity())  #gets u_id from email token
 
     if request.method == 'POST':
         course_codes_json = request.form.get('courseCodes')
         course_codes = json.loads(course_codes_json)
         for code in course_codes:
-            obj=add_CourseStaff(123,code)   #add course to course-staff table
-            print(obj.courseCode, " added")
+            obj=add_CourseStaff(id,code)   #add course to course-staff table
         
     return redirect(url_for('staff_views.get_account_page'))   
 
