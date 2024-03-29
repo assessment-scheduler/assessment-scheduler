@@ -27,6 +27,11 @@ def set_variables():
 def get_upload_page():
     return render_template('semester.html')
 
+@admin_views.route('/uploadFiles', methods=['GET'])
+def get_uploadFiles_page():
+    return render_template('test.html')
+    # return render_template('uploadFiles.html')
+
 # Gets Course Listings Page
 @admin_views.route('/coursesList', methods=['GET'])
 def index():
@@ -44,6 +49,41 @@ def new_semester_action():
         return render_template('test.html')  
                
 # Uploads course details file and extracts data
+# @admin_views.route('/uploadcourse', methods=['POST'])
+# def upload_course_file():
+
+#     form_data = request.form
+#     if request.method == 'POST': 
+#         print("HEYYYYYYYYYYYYYYYYYYYYYYYYY")
+#         file = request.files['file'] 
+#         test = form_data.get('test1')
+#         print(f'Test: {test}')
+
+#         # Check if file is present
+#         if (file.filename == ''):
+#             message = 'No file selected!' 
+#             return render_template('uploadFiles.html', message = message) 
+#         else:
+#             # Secure filename
+#             filename = secure_filename(file.filename)
+        
+#             # Save file to uploads folder
+#             file.save(os.path.join('App/uploads', filename)) 
+            
+#             # Retrieves course details from file and stores it in database ie. store course info 
+#             fpath = 'App/uploads/' + filename
+#             with open(fpath, 'r') as file:
+#                 reader = csv.DictReader(file)
+#                 for row in reader:
+#                     #create object
+#                     course = add_Course(courseCode=row['course code'], courseTitle=row['title'], description=row['description'], level=int(row['level']), semester=int(row['sem']), aNum=int(row['aNum']))
+
+#             # Redirect to view course listings!   
+#             return redirect(url_for('admin_views.get_courses'))    
+#             # return jsonify({"message": "Courses file successfully uploaded."}), 200 # for postman   
+
+
+
 @admin_views.route('/uploadcourse', methods=['POST'])
 def upload_course_file():
     if request.method == 'POST': 
