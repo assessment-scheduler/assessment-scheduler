@@ -4,8 +4,8 @@ from App.controllers import Staff
 from App.controllers import Course
 from App.database import db
 import json
-#from flask_jwt_extended import current_user as jwt_current_user
-#from flask_jwt_extended import jwt_required
+from flask_jwt_extended import current_user as jwt_current_user, get_jwt_identity
+from flask_jwt_extended import jwt_required
 
 
 from App.controllers.staff import (
@@ -99,3 +99,19 @@ def delete_assessment(course_code):
     print(course_code)
     return render_template('assessments.html')  
 
+@staff_views.route('/settings', methods=['GET'])
+@jwt_required()
+def get_settings_page():
+    return render_template('settings.html')
+
+@staff_views.route('/settings', methods=['POST'])
+@jwt_required()
+def changePassword():
+
+    if request.method == 'POST':
+        newPassword = request.form.get('password')
+        current_user_email = get_jwt_identity()
+        print(current_user_email)
+        print(newPassword)
+    
+    return render_template('settings.html')
