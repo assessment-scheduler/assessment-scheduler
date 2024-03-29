@@ -29,7 +29,7 @@ def get_upload_page():
 
 @admin_views.route('/uploadFiles', methods=['GET'])
 def get_uploadFiles_page():
-    return render_template('test.html')
+    return render_template('uploadFiles.html')
     # return render_template('uploadFiles.html')
 
 # Gets Course Listings Page
@@ -46,7 +46,7 @@ def new_semester_action():
         semChoice = request.form.get('semester')
         
         # Return course upload page to upload cvs file for courses offered that semester
-        return render_template('test.html')  
+        return render_template('uploadFiles.html')  
                
 # Uploads course details file and extracts data
 # @admin_views.route('/uploadcourse', methods=['POST'])
@@ -92,7 +92,7 @@ def upload_course_file():
         # Check if file is present
         if (file.filename == ''):
             message = 'No file selected!' 
-            return render_template('test.html', message = message) 
+            return render_template('uploadFiles.html', message = message) 
         else:
             # Secure filename
             filename = secure_filename(file.filename)
