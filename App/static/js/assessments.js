@@ -8,7 +8,7 @@ assessments.forEach(assessment => {
     // Create the card element
     const card = document.createElement('div');
     card.classList.add('card');
-    card.setAttribute('data-course-code', assessment.code);
+    card.setAttribute('data-course-code', assessment.courseCode);
     
     // Create elements for course details, assessment info, and actions
     const courseDetails = document.createElement('div');
@@ -103,7 +103,7 @@ assessments.forEach(assessment => {
     card.appendChild(courseDetails);
     card.appendChild(assessmentInfo);
     card.appendChild(actions);
-
+    
     // Append the card to the card container
     cardContainer.appendChild(card);
 });
