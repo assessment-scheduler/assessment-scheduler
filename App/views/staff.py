@@ -34,7 +34,27 @@ def get_signup_page():
 @staff_views.route('/calendar', methods=['GET'])
 @jwt_required()
 def get_calendar_page():
-    return render_template('index.html')        
+    id=get_uid(get_jwt_identity())  #gets u_id from email token
+
+    #get courses for filter
+    courses=[]
+    allCourses=[course.courseCode for course in list_Courses()]
+    myCourses=get_registered_courses(id)
+    for course in allCourses:
+        if course not in myCourses:
+            courses.append(course)
+
+    #get assessments for registered courses
+    assessments=[{'courseCode':'COMP1601','a_ID':'Assignment','caNum':'0','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
+                {'courseCode':'COMP1600','a_ID':'Assignment','caNum':'1','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
+                {'courseCode':'COMP1601','a_ID':'Exam','caNum':'2','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
+                {'courseCode':'COMP1600','a_ID':'Exam','caNum':'3','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'}]
+   
+    
+
+    # for c in courses:
+    #     print(c.courseCode)
+    return render_template('index.html', courses=courses, myCourses=myCourses, assessments=assessments)        
  
 # Retrieves info and stores it in database ie. register new staff
 @staff_views.route('/register', methods=['POST'])

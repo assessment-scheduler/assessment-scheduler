@@ -13,13 +13,16 @@
   <div id="filters">
       <select id="level">
         <option value="" class="list-item">Level</option>
-        <option value="100" class="list-item">1</option>
-        <option value="200" class="list-item">2</option>
-        <option value="300" class="list-item">3</option>
+        <option value="1" class="list-item">1</option>
+        <option value="2" class="list-item">2</option>
+        <option value="3" class="list-item">3</option>
       </select>
       
       <select id="courses">
-        <option value="">Courses</option>
+        <option value="none">None</option>
+        {% for course in courses %}
+          <option value="{{course}}">{{course}}</option>
+        {% endfor %}
         </select>
       
       <select id="assignmentType">
@@ -41,7 +44,10 @@
   </div>
 </div>
 
-<script src="{{ url_for('static', filename='index.js') }}"></script>
+<script>
+  var assessments={{ assessments | tojson() }};
+  var myCourses={{ myCourses | tojson() }};
+</script>
 <script src="../static/index.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
 <script src="../static/js/mobileMenu.js"></script>
