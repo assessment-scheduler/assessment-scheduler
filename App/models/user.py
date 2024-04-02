@@ -11,9 +11,10 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), nullable=False, unique = True)
 
-    def __init__(self, u_ID, password):
+    def __init__(self, u_ID, password, email):
         self.u_ID = u_ID
         self.set_password(password)
+        self.email = email
 
     def set_password(self, password):
         """Create hashed password."""
@@ -30,6 +31,5 @@ class User(db.Model, UserMixin):
             "email":self.email
         }
         
-    
-    # def __str__(self):
-    #     return f"Staff(id={self.u_ID}, email={self.email})"
+    def __str__(self):
+        return f"Staff(id={self.u_ID}, email={self.email})"

@@ -4,8 +4,7 @@
 
 {% block head %}
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
-  <link rel="stylesheet" href="../static/css/style.css">  
-
+  <link rel="stylesheet" href="../static/css/uploadFiles.css">
 {% endblock %}
 
 {% block content %}
@@ -44,11 +43,14 @@
   </div>
 </div>
 
-<script>
-  var assessments={{ assessments | tojson() }};
-  var myCourses={{ myCourses | tojson() }};
-</script>
-<script src="../static/index.js"></script>
+  
+<script src="{{url_for('static', filename='index.js')}}"></script>
+<script src="{{url_for('static', filename='js/mobileMenu.js')}}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
-<script src="../static/js/mobileMenu.js"></script>
+
 {% endblock %}
+
+
+  <!-- <script src="../static/index.js"/></script>
+  var assessments={{ assessments | tojson }};
+  var myCourses={{ myCourses | tojson }}; -->

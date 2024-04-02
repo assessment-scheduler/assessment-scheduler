@@ -8,11 +8,11 @@
 {% block content %}
     <!-- form body -->
     <div class="formContainer">
-        <form enctype="multipart/form-data" method="POST" id="uploadForm" action="/uploadcourse">
+        <form enctype="multipart/form-data" id="uploadForm" action="/uploadcourse" method="POST" >
             <div class="uploadFormSection" id="uploadCourseSection">
                 <h1>Upload Courses</h1>
                 <input type="file" name="file" id="fileCourseInput">
-                <button class="submitButton type="submit">Upload</button>
+                <button class="submitButton" type="submit">Upload</button>
                 <!-- <input type="file" name="courses_file" id="fileCourseInput"> -->
                 <!-- <input class="submitButton" type="submit" name="uploadCoursesBtn" value="Upload" onclick="submitForm('uploadCoursesBtn')" > -->
             </div>

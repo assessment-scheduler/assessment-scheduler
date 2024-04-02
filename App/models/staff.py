@@ -20,15 +20,12 @@ class Staff(User,UserMixin):
   cNum = db.Column(db.Integer, nullable=False, default=0) #changes depending on status
   status = db.Column(db.Enum(Status), nullable = False) #defines the contract position of a teaching staff member
   #creates reverse relationship from Staff back to Course to access courses assigned to a specific lecturer
-  # coursesAssigned = db.relationship('Course', backref='courses', lazy='joined')
-
+  coursesAssigned = db.relationship('CourseStaff', backref='courses', lazy='joined')
 
   def __init__(self, fName, lName, u_ID, status, email, password):
-    super().__init__(u_ID, password)
+    super().__init__(u_ID, password, email)
     self.fName = fName
     self.lName = lName
-    # self.status = status
-    self.email = email
     if status == "Lecturer 1" or  "Lecturer 2" or  "Lecturer 3": #assign number of courses to staff depending on status
       self.status = Status.LECTURER 
       self.cNum = 2
@@ -55,7 +52,6 @@ class Staff(User,UserMixin):
   def get_id(self):
     return self.u_ID 
 
-
   def to_json(self):
     return {
         "staff_ID": self.u_ID,
@@ -66,7 +62,6 @@ class Staff(User,UserMixin):
         "coursesNum": self.cNum,
         "coursesAssigned": [course.to_json() for course in self.coursesAssigned]
     }
-
 
   #Lecturers must register before using system
   def register(firstName, lastName, u_ID, status, email, password):
