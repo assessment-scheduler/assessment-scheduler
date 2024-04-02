@@ -7,4 +7,3 @@ from .assessment import *
 from .courseStaff import *
 from .courseAssessment import *
 from .courseProgramme import *
-from .schedule import *
