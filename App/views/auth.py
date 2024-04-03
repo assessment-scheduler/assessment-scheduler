@@ -25,9 +25,10 @@ def login_user(email, password):
     user = db.session.query(Staff).filter(Staff.email == email).first()
     if user and user.check_password(password):
         token = create_access_token(identity=email)
-        # response = jsonify(access_token = token)
-        # set_access_cookies(response, token)
-        response = make_response(render_template('index.html'))
+        if email=='bob@gmail.com':
+            response = make_response(redirect(url_for('admin_views.get_upload_page')))    
+        else:
+            response = make_response(redirect(url_for('staff_views.get_calendar_page')))
         response.set_cookie('access_token', token)
         return response
     return jsonify(message="Invalid username or password"), 401

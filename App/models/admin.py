@@ -11,9 +11,5 @@ class Admin(User,UserMixin):
   def login(self):
       return flask_login.login_user(self)
   
-
-  def login(self):
-      return flask_login.login_user(self)
-  
-  def __init__(self, u_ID, password):
-    super().__init__(u_ID, password)
+  def __init__(self, u_ID, password, email):
+    super().__init__(u_ID, password, email)

@@ -1,0 +1,102 @@
+Course Code,Course Title,Course Description,Level,Semester,Assessment No.
+COMP 1011,Introduction to Information Technology,"This course will provide the knowledge needed to formulate a sound but basic understanding of
+Information Technology, its major components and its broad applications. ",1,2,4
+COMP 1600,Introduction to Computing Concepts,"This course presents an overview of computing technology and the field of computer science.
+Discussion topics will include the organization of modern computers, operating systems, algorithms, programming languages
+and database systems.",1,1,4
+COMP 1601,Computer Programming I,"This course uses an appropriate programming language as a toolto teach fundamental programming
+concepts. The main concepts covered are sequence, selection and repetition logic, character and string manipulation,
+functions, and a basic introduction to arrays and their applications.",1,1,4
+COMP 1602,Computer Programming III," This course uses an appropriate programming language as a toolto teach intermediate programming
+concepts. The main concepts covered are structures, one and two dimensional arrays and applications involving searching,
+sorting and merging, random number generation, numerical methods, games and simulation.",1,2,4
+COMP 1603,Computer Programming III,"This course uses an appropriate programming language as a toolto teach intermediate programming
+concepts. The main concepts covered are pointers, linked lists, stacks and queues and their implementations using arrays
+and linked lists and recursion.",1,2,4
+COMP 1604,Mathematics for Computing,"This course introducesstudents to the basic mathematicalstructures and computational techniques
+that are considered to be the foundation for courses in computer science and information technology. Students are also
+taught how to reason logically and how to solve problems using various proof techniques. The main mathematicalstructures
+covered are logic, sets, relations and functions.",1,2,4
+COMP 2601,Computer Architecture,"This course builds upon knowledge and skills developed in COMP 1600. This course explores how
+computers from a programmer’s view point rather than from the hardware designer’s perspective.",2,1,4
+COMP 2602,Computer Networks,"This course examines some of the important concepts related to computer networks, e.g., the
+network edge and core, routers, the ISO and TCP/IP reference models for computer communication and networking
+protocols.",2,1,4
+COMP 2603,Object-Oriented Programming I,"This course provides a comprehensive introduction to the concepts and techniques of objectoriented programming. This course introduces the concepts of object-oriented programming to students with a background
+in the procedural paradigm.",2,2,4
+COMP 2604,Operating Systems,"This course looks at the inner workings of operating systems such as Windows, Ubuntu, and Mac OS
+X, both from a theoretical algorithmic point of view as well as a practical system programming point of view.",2,2,4
+COMP 2605,Enterprise Database Systems,"This course covers the design and implementation of relational database systems. Emphasis is
+placed on the database design of real world business application using Entity Relationship modeling.",2,1,4
+COMP 2606,Software Engineering I,"The specification, development, management, and evolution of software systems make up the
+discipline of software engineering. In this course, students apply methods and tools to develop software designs and
+specifications.",2,2,4
+COMP 2611,Data Structures," A data structure is a way of storing data in a computer so that it can be used efficiently. Data
+structures is an important part of the equation; Programs = Algorithms + Data structures.",2,1,4
+COMP 3601,Design and Analysis of Algorithms,This course covers specific fundamental algorithm-design techniques used to formulate solutions to a wide variety of problems. It also covers problem-solving techniques for analyzing algorithms to determine space/time requirements.,3,2,4
+COMP 3602,Theory of Computing,"The course introduces undergraduate computer science students to the foundations of theoretical
+computer science. It exposes them to abstractions which can be used to solve complex real world problems.",3,1,4
+COMP 3603,Human-Computer Interaction,"Human-computer interaction is an interdisciplinary field that integrates theories and methodologies
+from computer science, cognitive psychology, design, and many other areas. The course isintended to introduce the student
+to the basic concepts of human-computer interaction. ",3,2,4
+COMP 3605,Introduction to Data Analytics,"This course provides an introduction to various computational and data mining techniques that are
+used within the computer science discipline to facilitate intelligent decision making and analysis within systems.",3,1,4
+COMP 3606,Wireless and Mobile Programming,"This course is recommended as an essential part of the ""Net-centric Computing"" component of the
+ACM Computing curricula. It looks at the architecture of wireless networks and associated protocols.",3,1,4
+COMP 3607,Object-Oriented Programming II,"The course looks at the main tools of modern object-oriented software development. The main tools
+are: design-support tools (principally design patterns) and programming-support tools (principally IDE).",3,1,4
+COMP 3608,Intelligent Systems,"This course provides an introduction to artificial intelligence and its applications. The course
+concentrates on solving problems associated with artificial intelligence using data mining and knowledge representation
+tools.",3,2,4
+COMP 3609,Game Programming,"The Game Programming course will allow students to combine concepts taught in order courses
+together with the new game programming concepts taught in this course, in order to build games.",3,2,4
+COMP 3610,Big Data Analytics,"The course exposes students to the various approaches used in analyzing big data. The course
+focuses on the use of data warehouses and distributed database design to analyse structured data and Hadoop for
+unstructured data",3,2,4
+COMP 3611,Modelling and Simulation,"This course covers basic to intermediate techniques for discrete event simulation of common
+scenarios. It draws on concepts from the theory of computation and computer programming.",3,2,4
+COMP 3613,Software Engineering II,"This course is a continuation of developing skills surrounding software engineering, its principles
+and practical applications within the computer science curriculum.",3,2,4
+INFO 1600,Introduction to Information Technology Concepts,"This is a foundation course in Information Technology and introduces students to the discipline of
+Information Technology. It describes how it relates to other computing disciplines. ",1,1,4
+INFO 1601,Introduction to WWW Programming,"This is an introduction to web technologies and systems, including hypertext, self-descriptive text, web page design, web navigational systems, and various mark-up languages and scripting languages. P",1,2,4
+INFO 2600,Information Systems Development,"This course exposes studentsto the basic concepts of Information Systems and Information Systems
+development. Throughout the course, information is seen as a valuable corporate resource, one that can be used to
+maximize profit and improve competitiveness of a business organization.",2,2,4
+INFO 2601,Networking Technologies Fundamentals,"Computer networks are an indispensable component of any modern Information Technology
+infrastructure. This course introduces students to the world of computer networks. Principles and protocols for data
+communication are covered.",2,1,4
+INFO 2602,Web Programming and Technologies I,"This course covers the design, implementation and testing of web-based applications and the
+incorporation of a variety of digital media into these applications.",2,2,4
+INFO 2603,Platform Technologies I,"This course provides the student with an introductory understanding of the terminology and
+concepts of operating systems and computer networking.",2,1,4
+INFO 2604,Information Systems Security,"Information Systems Security builds upon concepts explored in Computer Programming II. This
+course explores concepts needed to manage the necessary processes that guarantee information assurance. ",2,2,4
+INFO 2605,Professional Ethics and Law,"This course provides an overview of current ethical standards and practices in the computing and information technology area. Students will develop an awareness of both the ethical and legal issuesfacing the computerized
+workplace. ",2,1,4
+INFO 3600,Business Information Systems,"The course focuses on Information Systems in terms of business processes. It covers transaction
+cycles, events, and activities of Revenue, Expenditure, Production, and Human Resources business processes. ",3,1,4
+INFO 3601,Platform Technologies II,"This course builds on operating systems concepts. It provides the student with a more detailed
+understanding of platform management. Students will be using numerous administrative tools to install, configure, manage
+and troubleshoot systems, applications and itsservices on an operating system platform.",3,1,4
+INFO 3602,Web Programming and Technologies II,"This course focuses on the development of web services and the evaluation and utilization of
+software tools to provide solution to common business problems within the marketplace.",3,2,4
+INFO 3604,Project,"This course builds upon concepts explored in INFO 2600 or COMP 2606. The course requires the
+student to implement a project of an appropriate scope.",3,2,4
+INFO 3605,Fundamentals of LAN Technologies,"This course builds on fundamental networking concepts by introducing students to Local-AreaNetwork (LAN) switching equipment, protocols and topologies. Students learn about Classless Routing, RIP V2, Single Area
+OSPF, EIGRP, the Spanning Tree Protocol and differentiate between cut-through and store-and-forward LAN switching. ",3,1,4
+INFO 3606,Cloud Computing,"This course provides the student with an understanding of virtualization and its role in both private
+and cloud technologies. The student will be able to manage virtualization technologies and management of private and
+public cloud technologies.",3,2,4
+INFO 3607,Fundamentals of WAN Technologies,"This course introduces WAN theory and design, WAN technology, PPP, ISDN and Frame Relay. Topics
+include network congestion problems, TCP/IP transport and network layer protocols, and advanced routing.",3,2,4
+INFO 3608,E-Commerce,"This course provides broad coverage of e-commerce systems. It covers the various e-commerce
+business models and e-commerce payment systems.",3,2,4
+INFO 3609,Internship I,"This course provides students with an opportunity to develop practical skills through the application
+of computer science concepts within a structured and supervised environment.",3,3,4
+INFO 3610,Internship II,"This course provides students with an opportunity to develop practical skills through the application
+of computer science concepts within a structured and supervised environment.",3,3,4
+INFO 3611,Database Administration,"This course introduces students to Database Administration. Students taking the course should have a basic understanding of how database concepts and SQL commands. The course provides practical experience in setting up and maintaining a MySQL/Oracle server, including backing up, recovery, configuration and optimisation strategies",3,1,4
+MATH 1115,Fundamental Mathematics for General Sciences I,"Algebra, Functions,Trigonometry, Coordinate Geometry, Statistics.",1,1,4
+MATH 2250,Industrial Statistics,"The course provides a
+foundational understanding of topics that will be useful for further work in data mining analysis and machine learning.",2,2,4

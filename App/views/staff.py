@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, render_template, redirect, url_fo
 from flask_login import current_user
 from App.controllers import Staff
 from App.controllers import Course
+from App.controllers import CourseAssessment
 from App.database import db
 import json
 from flask_jwt_extended import current_user as jwt_current_user, get_jwt_identity
@@ -14,13 +15,16 @@ from App.controllers.staff import (
     get_registered_courses,
 )
 
-
 from App.controllers.course import (
     list_Courses
 )
 
 from App.controllers.user import(
     get_uid
+)
+
+from App.controllers.courseAssessment import(
+    add_CourseAsm
 )
 
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
@@ -46,14 +50,25 @@ def get_calendar_page():
 
     #get assessments for registered courses
     assessments=[{'courseCode':'COMP1601','a_ID':'Assignment','caNum':'0','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
-                {'courseCode':'COMP1600','a_ID':'Assignment','caNum':'1','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
+                {'courseCode':'COMP1602','a_ID':'Assignment','caNum':'1','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
                 {'courseCode':'COMP1601','a_ID':'Exam','caNum':'2','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
-                {'courseCode':'COMP1600','a_ID':'Exam','caNum':'3','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'}]
+                {'courseCode':'COMP1602','a_ID':'Exam','caNum':'3','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'}]
    
     
 
     # for c in courses:
     #     print(c.courseCode)
+
+    # Ensure courses, myCourses, and assessments are not empty
+    if not courses:
+        courses = []
+
+    if not myCourses:
+        myCourses = []
+
+    if not assessments:
+        assessments = []
+
     return render_template('index.html', courses=courses, myCourses=myCourses, assessments=assessments)        
  
 # Retrieves info and stores it in database ie. register new staff
@@ -67,15 +82,10 @@ def register_staff_action():
         email = request.form.get('email')
         pwd = request.form.get('password')
          
-        # Flash message
-        if (firstName == '' or lastName == '' or staffID == '' or status == '' or email == '' or pwd == ''):
-            return render_template('signup.html', message = 'Please enter required fields.')
-        else:
-            register_staff(firstName, lastName, staffID, status, email, pwd)
-            return render_template('login.html')  
-
-          
-            # return jsonify({"message":f" {status} registered with id {staffID}"}), 200 # for postman
+        # Field Validation is on HTML Page
+        register_staff(firstName, lastName, staffID, status, email, pwd)
+        return render_template('login.html')  
+        #Calender is not appearing when rendering index.html and links are not working no jwt
     
 #Gets account page
 @staff_views.route('/account', methods=['GET'])
@@ -113,10 +123,27 @@ def get_assessments_page():
                 {'courseCode':'COMP1602','a_ID':'Assignment','caNum':'3','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'}]
     return render_template('assessments.html', courses=registered_courses, assessments=assessments)      
 
+# Gets add assessment page
 @staff_views.route('/addAssessment', methods=['GET'])
 def get_add_assessments_page():
     registered_courses=get_registered_courses(123)
     return render_template('addAssessment.html', courses=registered_courses)   
+
+# Retrieves assessment info and creates new assessment for course
+@staff_views.route('/addAssessment', methods=['POST'])
+def add_assessments_action():       
+    registered_courses=get_registered_courses(123)
+    course = request.form.get('myCourses')
+    asmType = request.form.get('AssessmentType')
+    startDate = request.form.get('startDate')
+    endDate = request.form.get('endDate')
+    startTime = request.form.get('startTime')
+    endTime = request.form.get('endTime')
+    
+    if course in registered_courses:
+        newAsm = add_CourseAsm(courseCode, a_ID, startDate, endDate, startTime, endTime)  
+
+    return redirect(url_for('staff_views.get_calendar_page'))   
 
 @staff_views.route('/modifyAssessment/<string:caNum>', methods=['GET'])
 def get_modify_assessments_page(caNum):
