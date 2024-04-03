@@ -4,6 +4,7 @@ from App.controllers import Staff
 from App.controllers import Course
 from App.controllers import CourseAssessment
 from App.database import db
+from App.send_email import send_mail
 import json
 from flask_jwt_extended import current_user as jwt_current_user, get_jwt_identity
 from flask_jwt_extended import jwt_required
@@ -83,9 +84,10 @@ def register_staff_action():
         pwd = request.form.get('password')
          
         # Field Validation is on HTML Page
-        register_staff(firstName, lastName, staffID, status, email, pwd)
-        return render_template('login.html')  
-        #Calender is not appearing when rendering index.html and links are not working no jwt
+        staff = register_staff(firstName, lastName, staffID, status, email, pwd)
+        send_mail(staff)
+        return render_template('login.html')  # must login after registration to get access token
+        
     
 #Gets account page
 @staff_views.route('/account', methods=['GET'])
