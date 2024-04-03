@@ -45,8 +45,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
 <script>
-  var assessments={{ assessments | tojson }};
-  var myCourses={{ myCourses | tojson }};  
+  var assessments={{ assessments | default('[]') | tojson }};
+  var myCourses={{ myCourses | default('[]') | tojson }};  
 </script>
 <script src="{{url_for('static', filename='index.js')}}"></script>
 <script src="{{url_for('static', filename='js/mobileMenu.js')}}"></script>

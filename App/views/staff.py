@@ -58,6 +58,17 @@ def get_calendar_page():
 
     # for c in courses:
     #     print(c.courseCode)
+
+    # Ensure courses, myCourses, and assessments are not empty
+    if not courses:
+        courses = []
+
+    if not myCourses:
+        myCourses = []
+
+    if not assessments:
+        assessments = []
+
     return render_template('index.html', courses=courses, myCourses=myCourses, assessments=assessments)        
  
 # Retrieves info and stores it in database ie. register new staff

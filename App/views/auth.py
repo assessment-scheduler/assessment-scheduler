@@ -27,7 +27,7 @@ def login_user(email, password):
         token = create_access_token(identity=email)
         # response = jsonify(access_token = token)
         # set_access_cookies(response, token)
-        response = make_response(render_template('index.html'))
+        response = make_response(redirect(url_for('staff_views.get_calendar_page')))
         response.set_cookie('access_token', token)
         return response
     return jsonify(message="Invalid username or password"), 401
