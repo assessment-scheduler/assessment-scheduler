@@ -25,10 +25,12 @@ from App.controllers.user import(
 )
 
 from App.controllers.courseAssessment import(
-    get_CourseAsm,
+    get_CourseAsm_id,
+    get_CourseAsm_code,
     add_CourseAsm,
     delete_CourseAsm,
-    list_Assessments
+    list_Assessments,
+    get_Assessment_id
 )
 
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
@@ -122,6 +124,8 @@ def get_assessments_page():
     id=get_uid(get_jwt_identity())  #gets u_id from email token
     registered_courses=get_registered_courses(id)
     #get assessments by course code
+    for assessment in get_CourseAsm_code('COMP1601'):
+        print(assessment.id,assessment.courseCode,assessment.a_ID,assessment.startDate)
     assessments=[{'courseCode':'COMP1601','a_ID':'Assignment','caNum':'0','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
                 {'courseCode':'COMP1602','a_ID':'Assignment','caNum':'1','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
                 {'courseCode':'COMP1601','a_ID':'Exam','caNum':'2','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
@@ -130,9 +134,10 @@ def get_assessments_page():
 
 # Gets add assessment page 
 @staff_views.route('/addAssessment', methods=['GET'])
+@jwt_required()
 def get_add_assessments_page():
-    # id=get_uid(get_jwt_identity())  #gets u_id from email token
-    registered_courses = get_registered_courses(123)
+    id=get_uid(get_jwt_identity())  #gets u_id from email token
+    registered_courses = get_registered_courses(id)
     allAsm = list_Assessments()
     return render_template('addAssessment.html', courses=registered_courses, assessments=allAsm)   
 
@@ -147,7 +152,7 @@ def add_assessments_action():
     startTime = request.form.get('startTime')
     endTime = request.form.get('endTime')
     
-    newAsm = add_CourseAsm(course.courseCode, asmType.a_ID, startDate, endDate, startTime, endTime)  
+    newAsm = add_CourseAsm(course, asmType, startDate, endDate, startTime, endTime)  
     return redirect(url_for('staff_views.get_calendar_page'))   
 
 # Modify selected assessment
@@ -171,7 +176,7 @@ def modify_assessment(caNum):
 # Delete selected assessment
 @staff_views.route('/deleteAssessment/<string:caNum>', methods=['GET'])
 def delete_assessment(caNum):
-    courseAsm = get_courseAsm(caNum) # Gets selected assessment for course
+    courseAsm = get_CourseAsm_id(caNum) # Gets selected assessment for course
     delete_CourseAsm(courseAsm)
     print(caNum, ' deleted')
     return redirect(url_for('staff_views.get_assessments_page')) 
