@@ -160,7 +160,7 @@ def get_modify_assessments_page(caNum):
 
 # Gets Update assessment Page
 @staff_views.route('/modifyAssessment/<string:caNum>', methods=['POST'])
-def get_modify_assessments_page(caNum):
+def modify_assessment(caNum):
     #if post
         #get form details
         #update record
