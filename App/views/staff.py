@@ -166,21 +166,34 @@ def add_assessments_action():
 # Modify selected assessment
 @staff_views.route('/modifyAssessment/<string:id>', methods=['GET'])
 def get_modify_assessments_page(id):
-    #if get
-        #get assessment details
-        #pass details to frontend
-    print(id)
-    return render_template('modifyAssessment.html') 
+    allAsm = list_Assessments()         #get assessment types
+    assessment=get_CourseAsm_id(id)     #get assessment details
+    return render_template('modifyAssessment.html', assessments=allAsm, ca=assessment) 
 
 # Gets Update assessment Page
 @staff_views.route('/modifyAssessment/<string:id>', methods=['POST'])
 def modify_assessment(id):
-    #if post
+    if request.method=='POST':
         #get form details
+        course = request.form.get('myCourses')
+        asmType = request.form.get('AssessmentType')
+        startDate = request.form.get('startDate')
+        endDate = request.form.get('endDate')
+        startTime = request.form.get('startTime')
+        endTime = request.form.get('endTime')
+
         #update record
-        #redirect to /assessments   
-    print(id, ' modified')    
-    return render_template('modifyAssessment.html') 
+        assessment=get_CourseAsm_id(id)
+        if assessment:
+            assessment.a_ID=asmType
+            assessment.startDate=startDate
+            assessment.endDate=endDate
+            assessment.startTime=startTime
+            assessment.endTime=endTime
+
+            db.session.commit()
+
+    return redirect(url_for('staff_views.get_assessments_page'))
 
 # Delete selected assessment
 @staff_views.route('/deleteAssessment/<string:caNum>', methods=['GET'])
