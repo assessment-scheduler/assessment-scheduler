@@ -6,7 +6,7 @@ def send_mail(staff):
     smtp_server = 'smtp.mailtrap.io'
     login = 'af2de41f1b4d1a'
     password = '4c47194e835ff0'
-    message = f"<h3>Staff Registration Successful</h3><br><br><p>Dear {staff.firstName}, <br>you have successfully registered for the Assessment Scheduler Application."
+    message = f"<h3>Staff Registration Successful</h3><br><br><p>Dear {staff.fName}, <br>you have successfully registered for the Assessment Scheduler Application."
 
     sender_email = 'vanessa.aubin@hotmail.com'
     receiver_email = {staff.email}

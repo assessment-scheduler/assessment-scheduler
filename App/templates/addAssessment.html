@@ -18,16 +18,16 @@
                 <label for="myCourses">My Courses</label>
                 <select id="dropdownCourses" name="myCourses">
                     {% for course in courses %}
-                    <option value="{{course}}">{{course}}</option>
+                    <option value="{{course}}">{{course.courseCode}}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="formInputContainer">
-                <label for="">Assessment Type</label>
+                <label for="AssessmentType">Assessment Type</label>
                 <select id="dropdownAssessments" name="AssessmentType">
-                    <option value="Assignment">Assignment</option>
-                    <option value="test">Coursework Exam</option>
-                    <option value="LabExam">Lab Exam</option>
+                    {% for each in assessments %}
+                    <option value="{{each}}">{{each.category.value}}</option>
+                    {% endfor %}
                 </select>
             </div>
         </div>
