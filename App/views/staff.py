@@ -30,7 +30,8 @@ from App.controllers.courseAssessment import(
     add_CourseAsm,
     delete_CourseAsm,
     list_Assessments,
-    get_Assessment_id
+    get_Assessment_id,
+    get_Assessment_type
 )
 
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
@@ -122,14 +123,21 @@ def get_selected_courses():
 @jwt_required()
 def get_assessments_page():
     id=get_uid(get_jwt_identity())  #gets u_id from email token
-    registered_courses=get_registered_courses(id)
-    #get assessments by course code
-    for assessment in get_CourseAsm_code('COMP1601'):
-        print(assessment.id,assessment.courseCode,assessment.a_ID,assessment.startDate)
-    assessments=[{'courseCode':'COMP1601','a_ID':'Assignment','caNum':'0','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
-                {'courseCode':'COMP1602','a_ID':'Assignment','caNum':'1','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
-                {'courseCode':'COMP1601','a_ID':'Exam','caNum':'2','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
-                {'courseCode':'COMP1602','a_ID':'Assignment','caNum':'3','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'}]
+    registered_courses=get_registered_courses(id)  #get staff's courses
+    
+    assessments=[]
+    for course in registered_courses:
+        for assessment in get_CourseAsm_code(course):  #get assessments by course code
+            obj={'id': assessment.id,
+                'courseCode': assessment.courseCode,
+                'a_ID': get_Assessment_type(assessment.a_ID),   #convert a_ID to category value
+                'startDate': assessment.startDate.isoformat(),
+                'endDate': assessment.endDate.isoformat(),
+                'startTime': assessment.startTime.isoformat(),
+                'endTime': assessment.endTime.isoformat()
+                }
+            assessments.append(obj)     #add object to list of assessments
+
     return render_template('assessments.html', courses=registered_courses, assessments=assessments)      
 
 # Gets add assessment page 
@@ -156,21 +164,22 @@ def add_assessments_action():
     return redirect(url_for('staff_views.get_calendar_page'))   
 
 # Modify selected assessment
-@staff_views.route('/modifyAssessment/<string:caNum>', methods=['GET'])
-def get_modify_assessments_page(caNum):
+@staff_views.route('/modifyAssessment/<string:id>', methods=['GET'])
+def get_modify_assessments_page(id):
     #if get
         #get assessment details
         #pass details to frontend
+    print(id)
     return render_template('modifyAssessment.html') 
 
 # Gets Update assessment Page
-@staff_views.route('/modifyAssessment/<string:caNum>', methods=['POST'])
-def modify_assessment(caNum):
+@staff_views.route('/modifyAssessment/<string:id>', methods=['POST'])
+def modify_assessment(id):
     #if post
         #get form details
         #update record
         #redirect to /assessments   
-    print(caNum, ' modified')    
+    print(id, ' modified')    
     return render_template('modifyAssessment.html') 
 
 # Delete selected assessment

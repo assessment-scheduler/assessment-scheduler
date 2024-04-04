@@ -18,6 +18,10 @@ def get_Assessment_id(aType):
     assessment=Assessment.query.filter_by(category=aType).first()
     return assessment.a_ID
 
+def get_Assessment_type(id):
+    assessment=Assessment.query.filter_by(a_ID=id).first()
+    return assessment.category.name
+
 def get_CourseAsm_id(id):
     return CourseAssessment.query.filter_by(id=id).first()   
 

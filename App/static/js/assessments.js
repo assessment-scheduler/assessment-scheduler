@@ -38,7 +38,7 @@ assessments.forEach(assessment => {
     caNumLabel.textContent = 'Course Assessment ID';
     const caNum = document.createElement('p');
     caNum.classList.add('assessment-id');
-    caNum.textContent = assessment.caNum
+    caNum.textContent = assessment.id
 
     const startDateLabel = document.createElement('p');
     startDateLabel.classList.add('card-label');
@@ -73,13 +73,13 @@ assessments.forEach(assessment => {
     const modifyLink = document.createElement('button');
     modifyLink.textContent = 'Modify';
     modifyLink.addEventListener('click', function() {
-        window.location.href = `/modifyAssessment/${assessment.caNum}`;
+        window.location.href = `/modifyAssessment/${assessment.id}`;
     });
     const deleteLink = document.createElement('button');
     deleteLink.textContent = 'Delete';
     deleteLink.classList.add('delete_btn')
     deleteLink.addEventListener('click', function() {
-        window.location.href = `/deleteAssessment/${assessment.caNum}`;
+        window.location.href = `/deleteAssessment/${assessment.id}`;
     });
  
 
@@ -88,8 +88,8 @@ assessments.forEach(assessment => {
     courseDetails.appendChild(courseCode);
     assessmentInfo.appendChild(courseAssessmentLabel);
     assessmentInfo.appendChild(assessmentType);
-    assessmentInfo.appendChild(caNumLabel);
-    assessmentInfo.appendChild(caNum);
+    // assessmentInfo.appendChild(caNumLabel);
+    // assessmentInfo.appendChild(caNum);
     assessmentInfo.appendChild(startDateLabel);
     assessmentInfo.appendChild(startDate);
     assessmentInfo.appendChild(endDateLabel);
