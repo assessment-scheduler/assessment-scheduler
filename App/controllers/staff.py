@@ -32,7 +32,7 @@ def add_CourseStaff(u_ID,courseCode):
     return new_course_staff
 
 def get_registered_courses(u_ID):
-    course_listing=CourseStaff.query.filter_by(u_ID=u_ID).all()
+    course_listing = CourseStaff.query.filter_by(u_ID=u_ID).all()
     codes=[]
     for item in course_listing:
         codes.append(item.courseCode)

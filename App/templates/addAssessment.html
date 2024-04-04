@@ -23,11 +23,11 @@
                 </select>
             </div>
             <div class="formInputContainer">
-                <label for="">Assessment Type</label>
+                <label for="AssessmentType">Assessment Type</label>
                 <select id="dropdownAssessments" name="AssessmentType">
-                    <option value="Assignment">Assignment</option>
-                    <option value="test">Coursework Exam</option>
-                    <option value="LabExam">Lab Exam</option>
+                    {% for each in assessments %}
+                    <option value="{{each.a_ID}}">{{each.category.value}}</option>
+                    {% endfor %}
                 </select>
             </div>
         </div>

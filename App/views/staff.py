@@ -4,6 +4,7 @@ from App.controllers import Staff
 from App.controllers import Course
 from App.controllers import CourseAssessment
 from App.database import db
+from App.send_email import send_mail
 import json
 from flask_jwt_extended import current_user as jwt_current_user, get_jwt_identity
 from flask_jwt_extended import jwt_required
@@ -24,7 +25,13 @@ from App.controllers.user import(
 )
 
 from App.controllers.courseAssessment import(
-    add_CourseAsm
+    get_CourseAsm_id,
+    get_CourseAsm_code,
+    add_CourseAsm,
+    delete_CourseAsm,
+    list_Assessments,
+    get_Assessment_id,
+    get_Assessment_type
 )
 
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
@@ -83,9 +90,9 @@ def register_staff_action():
         pwd = request.form.get('password')
          
         # Field Validation is on HTML Page
-        register_staff(firstName, lastName, staffID, status, email, pwd)
-        return render_template('login.html')  
-        #Calender is not appearing when rendering index.html and links are not working no jwt
+        staff = register_staff(firstName, lastName, staffID, status, email, pwd)
+        # send_mail(staff)
+        return render_template('login.html')  # must login after registration to get access token
     
 #Gets account page
 @staff_views.route('/account', methods=['GET'])
@@ -96,6 +103,7 @@ def get_account_page():
     registered_courses=get_registered_courses(id)
     return render_template('account.html', courses=courses, registered=registered_courses)      
 
+# Assign course to staff
 @staff_views.route('/account', methods=['POST'])
 @jwt_required()
 def get_selected_courses():
@@ -115,24 +123,36 @@ def get_selected_courses():
 @jwt_required()
 def get_assessments_page():
     id=get_uid(get_jwt_identity())  #gets u_id from email token
-    registered_courses=get_registered_courses(id)
-    #get assessments by course code
-    assessments=[{'courseCode':'COMP1601','a_ID':'Assignment','caNum':'0','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
-                {'courseCode':'COMP1602','a_ID':'Assignment','caNum':'1','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
-                {'courseCode':'COMP1601','a_ID':'Exam','caNum':'2','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
-                {'courseCode':'COMP1602','a_ID':'Assignment','caNum':'3','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'}]
+    registered_courses=get_registered_courses(id)  #get staff's courses
+    
+    assessments=[]
+    for course in registered_courses:
+        for assessment in get_CourseAsm_code(course):  #get assessments by course code
+            obj={'id': assessment.id,
+                'courseCode': assessment.courseCode,
+                'a_ID': get_Assessment_type(assessment.a_ID),   #convert a_ID to category value
+                'startDate': assessment.startDate.isoformat(),
+                'endDate': assessment.endDate.isoformat(),
+                'startTime': assessment.startTime.isoformat(),
+                'endTime': assessment.endTime.isoformat()
+                }
+            assessments.append(obj)     #add object to list of assessments
+
     return render_template('assessments.html', courses=registered_courses, assessments=assessments)      
 
-# Gets add assessment page
+# Gets add assessment page 
 @staff_views.route('/addAssessment', methods=['GET'])
+@jwt_required()
 def get_add_assessments_page():
-    registered_courses=get_registered_courses(123)
-    return render_template('addAssessment.html', courses=registered_courses)   
+    id=get_uid(get_jwt_identity())  #gets u_id from email token
+    registered_courses = get_registered_courses(id)
+    allAsm = list_Assessments()
+    return render_template('addAssessment.html', courses=registered_courses, assessments=allAsm)   
 
 # Retrieves assessment info and creates new assessment for course
 @staff_views.route('/addAssessment', methods=['POST'])
+@jwt_required()
 def add_assessments_action():       
-    registered_courses=get_registered_courses(123)
     course = request.form.get('myCourses')
     asmType = request.form.get('AssessmentType')
     startDate = request.form.get('startDate')
@@ -140,37 +160,43 @@ def add_assessments_action():
     startTime = request.form.get('startTime')
     endTime = request.form.get('endTime')
     
-    if course in registered_courses:
-        newAsm = add_CourseAsm(courseCode, a_ID, startDate, endDate, startTime, endTime)  
-
+    newAsm = add_CourseAsm(course, asmType, startDate, endDate, startTime, endTime)  
     return redirect(url_for('staff_views.get_calendar_page'))   
 
-@staff_views.route('/modifyAssessment/<string:caNum>', methods=['GET'])
-def get_modify_assessments_page(caNum):
-    print(caNum, ' modified')
-    #if post
-        #get form details
-        #update record
-        #redirect to /assessments
+# Modify selected assessment
+@staff_views.route('/modifyAssessment/<string:id>', methods=['GET'])
+def get_modify_assessments_page(id):
     #if get
         #get assessment details
         #pass details to frontend
-    return render_template('modifyAssessment.html')  
+    print(id)
+    return render_template('modifyAssessment.html') 
 
+# Gets Update assessment Page
+@staff_views.route('/modifyAssessment/<string:id>', methods=['POST'])
+def modify_assessment(id):
+    #if post
+        #get form details
+        #update record
+        #redirect to /assessments   
+    print(id, ' modified')    
+    return render_template('modifyAssessment.html') 
+
+# Delete selected assessment
 @staff_views.route('/deleteAssessment/<string:caNum>', methods=['GET'])
 def delete_assessment(caNum):
+    courseAsm = get_CourseAsm_id(caNum) # Gets selected assessment for course
+    delete_CourseAsm(courseAsm)
     print(caNum, ' deleted')
-    #get assessment
-    #delete record
     return redirect(url_for('staff_views.get_assessments_page')) 
 
-# get settings page
+# Get settings page
 @staff_views.route('/settings', methods=['GET'])
 @jwt_required()
 def get_settings_page():
     return render_template('settings.html')
 
-# route to change password of user
+# Route to change password of user
 @staff_views.route('/settings', methods=['POST'])
 @jwt_required()
 def changePassword():
