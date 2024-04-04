@@ -11,15 +11,14 @@ class Category(enum.Enum):
     ORALEXAM = "Oral Exam"
     PARTICIPATION = "Participation"
 
-class assessment(db.Model):
+class Assessment(db.Model):
     __tablename__ = 'assessment'
 
     a_ID = db.Column(db.Integer, primary_key=True, nullable=False, autoincrement=True)
     category = db.Column(db.Enum(Category), nullable=False)
 
-    def __init__(self, a_ID, category):
-        self.u_ID = u_ID,
-        self.category = Category.category.capitalize()
+    def __init__(self, category):
+        self.category = category
 
     def to_json(self):
         return {
