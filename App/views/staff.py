@@ -90,9 +90,9 @@ def register_staff_action():
         pwd = request.form.get('password')
          
         # Field Validation is on HTML Page
-        staff = register_staff(firstName, lastName, staffID, status, email, pwd)
-        # send_mail(staff)
-        return render_template('login.html')  # must login after registration to get access token
+        register_staff(firstName, lastName, staffID, status, email, pwd)
+        send_mail(email) # Send confirmation email to staff upon successful registration
+        return render_template('login.html')  # Must login after registration to get access token
     
 #Gets account page
 @staff_views.route('/account', methods=['GET'])
