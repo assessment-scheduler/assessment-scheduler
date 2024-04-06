@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import current_user
 from App.controllers import Staff
 from App.controllers import Course
@@ -156,7 +156,7 @@ def get_selected_courses():
         course_codes = json.loads(course_codes_json)
         for code in course_codes:
             obj=add_CourseStaff(id,code)   #add course to course-staff table
-        
+       
     return redirect(url_for('staff_views.get_account_page'))   
 
 #Gets assessments page

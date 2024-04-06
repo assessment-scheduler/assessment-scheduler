@@ -49,7 +49,13 @@
         </div>
     </nav>
     <div>
-      {% block content %}{% endblock %}
+        {% for message in get_flashed_messages() %}
+        <div class="flash-message">
+            <span>{{ message }}</span>
+            <button class="close-btn" onclick="this.parentElement.style.display = 'none';">×</button>
+        </div>
+        {% endfor %}
+        {% block content %}{% endblock %}
     </div>
     
 </body>
