@@ -56,15 +56,34 @@ def get_calendar_page():
             courses.append(course)
 
     #get assessments for registered courses
-    assessments=[{'courseCode':'COMP1601','a_ID':'Assignment','caNum':'0','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
-                {'courseCode':'COMP1602','a_ID':'Assignment','caNum':'1','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
-                {'courseCode':'COMP1601','a_ID':'Exam','caNum':'2','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'},
-                {'courseCode':'COMP1602','a_ID':'Exam','caNum':'3','startDate':'29-02-2024','endDate':'29-02-2024','startTime':'9:00','endTime':'9:00'}]
-   
+    all_assessments=[]
+    for course in myCourses:
+        all_assessments= all_assessments + get_CourseAsm_code(course)
     
+    print(all_assessments)
 
-    # for c in courses:
-    #     print(c.courseCode)
+    #format assessments for calendar js
+    assessments=[]
+    for item in all_assessments:
+        if item.startDate is None:
+            obj={'courseCode':item.courseCode,
+                'a_ID':get_Assessment_type(item.a_ID),
+                'caNum':item.id,
+                'startDate':item.startDate,
+                'endDate':item.endDate,
+                'startTime':item.startTime,
+                'endTime':item.endTime
+                }
+        else:    
+            obj={'courseCode':item.courseCode,
+                'a_ID':get_Assessment_type(item.a_ID),
+                'caNum':item.id,
+                'startDate':item.startDate.isoformat(),
+                'endDate':item.endDate.isoformat(),
+                'startTime':item.startTime.isoformat(),
+                'endTime':item.endTime.isoformat()
+                }
+        assessments.append(obj)
 
     # Ensure courses, myCourses, and assessments are not empty
     if not courses:
@@ -77,7 +96,29 @@ def get_calendar_page():
         assessments = []
 
     return render_template('index.html', courses=courses, myCourses=myCourses, assessments=assessments)        
- 
+
+@staff_views.route('/calendar', methods=['POST'])
+@jwt_required()
+def update_calendar_page():
+    #retrieve data from page
+    id = request.form.get('id')
+    startDate = request.form.get('startDate')
+    startTime = request.form.get('startTime')
+    endDate = request.form.get('endDate')
+    endTime = request.form.get('endTime')
+
+    #get course assessment
+    assessment=get_CourseAsm_id(id)
+    if assessment:
+        assessment.startDate=startDate
+        assessment.endDate=endDate
+        assessment.startTime=startTime
+        assessment.endTime=endTime
+
+        db.session.commit()
+
+    return redirect(url_for('staff_views.get_calendar_page'))
+
 # Retrieves info and stores it in database ie. register new staff
 @staff_views.route('/register', methods=['POST'])
 def register_staff_action():
@@ -128,14 +169,24 @@ def get_assessments_page():
     assessments=[]
     for course in registered_courses:
         for assessment in get_CourseAsm_code(course):  #get assessments by course code
-            obj={'id': assessment.id,
+            if assessment.startDate is None:
+                obj={'id': assessment.id,
                 'courseCode': assessment.courseCode,
                 'a_ID': get_Assessment_type(assessment.a_ID),   #convert a_ID to category value
-                'startDate': assessment.startDate.isoformat(),
-                'endDate': assessment.endDate.isoformat(),
-                'startTime': assessment.startTime.isoformat(),
-                'endTime': assessment.endTime.isoformat()
+                'startDate': assessment.startDate,
+                'endDate': assessment.endDate,
+                'startTime': assessment.startTime,
+                'endTime': assessment.endTime
                 }
+            else:
+                obj={'id': assessment.id,
+                    'courseCode': assessment.courseCode,
+                    'a_ID': get_Assessment_type(assessment.a_ID),   #convert a_ID to category value
+                    'startDate': assessment.startDate.isoformat(),
+                    'endDate': assessment.endDate.isoformat(),
+                    'startTime': assessment.startTime.isoformat(),
+                    'endTime': assessment.endTime.isoformat()
+                    }
             assessments.append(obj)     #add object to list of assessments
 
     return render_template('assessments.html', courses=registered_courses, assessments=assessments)      
@@ -160,8 +211,14 @@ def add_assessments_action():
     startTime = request.form.get('startTime')
     endTime = request.form.get('endTime')
     
+    if startDate=='' or endDate=='' or startTime=='' or endTime=='':
+        startDate=None
+        endDate=None
+        startTime=None
+        endTime=None
+
     newAsm = add_CourseAsm(course, asmType, startDate, endDate, startTime, endTime)  
-    return redirect(url_for('staff_views.get_calendar_page'))   
+    return redirect(url_for('staff_views.get_assessments_page'))   
 
 # Modify selected assessment
 @staff_views.route('/modifyAssessment/<string:id>', methods=['GET'])
@@ -186,10 +243,11 @@ def modify_assessment(id):
         assessment=get_CourseAsm_id(id)
         if assessment:
             assessment.a_ID=asmType
-            assessment.startDate=startDate
-            assessment.endDate=endDate
-            assessment.startTime=startTime
-            assessment.endTime=endTime
+            if startDate!='' and endDate!='' and startTime!='' and endTime!='':
+                assessment.startDate=startDate
+                assessment.endDate=endDate
+                assessment.startTime=startTime
+                assessment.endTime=endTime
 
             db.session.commit()
 

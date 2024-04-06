@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
       Other:"#C29203"
     }
 
+    const calendarEvents=[];
+
     myCourses.forEach((course) => {
         const courseCard = document.createElement('div');
         courseCard.classList.add('course-card'); // Add styling for the course card     
@@ -32,10 +34,27 @@ document.addEventListener('DOMContentLoaded', function() {
             eventEl.dataset.color = color;
             eventEl.style.backgroundColor = color;
             
-            eventEl.setAttribute('data-event-id',a.caNum);
-            eventEl.innerHTML = '<div class="fc-event-main">' + course + '-' + a.a_ID + '</div>';
-            eventsContainer.appendChild(eventEl);
-          }
+            const eventObj={
+              id: a.caNum,
+              title: course+'-'+a.a_ID,
+              backgroundColor: color
+            };
+
+
+            if (a.startDate && a.endDate){ //if start and end date exists, apply event to calendar
+              const isFullDay = a.startTime === '00:00:00' && (a.endTime === '23:59:00' || a.endTime === '00:00:00');
+              eventObj.start= a.startDate+'T'+a.startTime;
+              eventObj.end= a.endDate+'T'+a.endTime;
+              eventObj.allDay= isFullDay;
+              calendarEvents.push(eventObj);
+            }
+            else{
+              eventEl.setAttribute('data-event-id',a.caNum);
+              eventEl.innerHTML = '<div class="fc-event-main">' + course + '-' + a.a_ID + '</div>';
+              eventsContainer.appendChild(eventEl);
+            }
+
+            }  
         });
     
         courseCard.appendChild(eventsContainer);
@@ -65,60 +84,99 @@ document.addEventListener('DOMContentLoaded', function() {
       editable:true,
       selectable:true,
       droppable:true,
-        // {% for event in events %}
-        // {
-        //     title : '{{event.todo}}',
-        //     start : '{{event.date}}',
-        // },
-        // {% endfor %}
+      events: calendarEvents,
       eventResize:function(info){
         toEditItem(info.event);
       },
       eventDrop:function(info){
-        calendarEventDragged(info.event);
+        toEditItem(info.event);
       },
       drop: function(arg) {
-          arg.draggedEl.parentNode.removeChild(arg.draggedEl);
+        newItem(arg);
+        arg.draggedEl.parentNode.removeChild(arg.draggedEl);
       },
     });
     calendar.render();
   });
 
 
-function calendarEventDragged(event){
-    let id=event.id;
-    let sDate=formatDate(new Date(event.start));
-    let eDate=formatDate(new Date(event.end));
-    console.log("Update event ", id, sDate, eDate);
-    console.log(event.start);
-}
-
 function toEditItem(event){
     let id=event.id;
     let sDate=formatDate(new Date(event.start));
     let eDate=formatDate(new Date(event.end));
-    console.log("Event edited");
-    console.log(sDate);
-    console.log(eDate);
+    let sTime=formatTime(new Date(event.start));
+    let eTime=formatTime(new Date(event.end));
+
+    if (event.allDay || sTime=='' || eTime==''){
+      sTime='00:00:00';
+      eTime='23:59:00';
+    }
+    //make ajax request to backend
+    $.ajax({
+      url:'/calendar',
+      method:'POST',
+      data:{
+        id:id,
+        startDate:sDate,
+        endDate:eDate,
+        startTime:sTime,
+        endTime:eTime
+      }
+    });
 }
 
+function newItem(event){
+  let id=event.draggedEl.dataset.eventId;
+  let sDate=formatDate(new Date(event.date));
+  let eDate=formatDate(new Date(event.date));
+  let sTime=formatTime(new Date(event.date));
+  let eTime=formatTime(new Date(event.date));
+
+  if (event.allDay || sTime=='' || eTime==''){
+    sTime='00:00:00';
+    eTime='23:59:00';
+  }
+  console.log(id,sDate,eDate,sTime,eTime);
+  //make ajax request to backend
+  $.ajax({
+    url:'/calendar',
+    method:'POST',
+    data:{
+      id:id,
+      startDate:sDate,
+      endDate:eDate,
+      startTime:sTime,
+      endTime:eTime
+    }
+  });
+}
+
+
 function formatDate(dateObj){
-    let year=dateObj.getFullYear();
-    let month=dateObj.getMonth()+1;
-    let day=dateObj.getDate();
+  let year=dateObj.getFullYear();
+  let month=dateObj.getMonth()+1;
+  let day=dateObj.getDate();
 
-    let paddedMonth=month.toString()
-    if (paddedMonth.length < 2){
-        paddedMonth="0"+paddedMonth;
-    }
+  let paddedMonth=month.toString()
+  if (paddedMonth.length < 2){
+      paddedMonth="0"+paddedMonth;
+  }
 
-    let paddedDate=day.toString()
-    if (paddedDate.length < 2){
-        paddedDate="0"+paddedDate;
-    }
+  let paddedDate=day.toString()
+  if (paddedDate.length < 2){
+      paddedDate="0"+paddedDate;
+  }
 
-    let toStoreDate=`${year}-${paddedMonth}-${paddedDate}`;
-    return toStoreDate;
+  let toStoreDate=`${year}-${paddedMonth}-${paddedDate}`;
+  return toStoreDate;
+}
+
+function formatTime(timeObj){
+  let hours = timeObj.getHours().toString().padStart(2, '0');
+  let minutes = timeObj.getMinutes().toString().padStart(2, '0');
+  let seconds = timeObj.getSeconds().toString().padStart(2, '0');
+  let toStoreTime=`${hours}:${minutes}:${seconds}`;
+  return toStoreTime;
 }
 
 function getTypeOfAssessment(eventName) {
