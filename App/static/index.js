@@ -1,3 +1,5 @@
+var weekCounter=0;
+
 document.addEventListener('DOMContentLoaded', function() {
     const colors = {
       Assignment:"#3397b9", 
@@ -92,20 +94,8 @@ document.addEventListener('DOMContentLoaded', function() {
               end: semester.end
             },
             weekNumberContent: function(info) {
-              // Get the start date of the semester and the current date
-              var startDate = semester.start;
-              var currentDate = new Date();
-              var startOfWeek = new Date(startDate);
-              startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-              console.log(startOfWeek,startDate);
-              // Calculate the difference in milliseconds between the current date and the start date of the semester
-              var differenceInMilliseconds = currentDate - startDate;
-              // console.log(differenceInMilliseconds);
-              // Convert the difference to weeks
-              var weeksDifference = Math.ceil(differenceInMilliseconds / (7 * 24 * 60 * 60 * 1000));
-              // Return the week number
-              // console.log(weeksDifference);
-              return 'Week ' + weeksDifference;
+              weekCounter++;
+              return 'W' + weekCounter;
             }
           }
         },
