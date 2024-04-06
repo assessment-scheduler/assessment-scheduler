@@ -11,7 +11,7 @@
 <div id="container">
   <div id="filters">
       <select id="level">
-        <option value="" class="list-item">Level</option>
+        <option value="0" class="list-item">Level</option>
         <option value="1" class="list-item">1</option>
         <option value="2" class="list-item">2</option>
         <option value="3" class="list-item">3</option>
@@ -48,11 +48,11 @@
   var assessments={{ assessments | tojson }};
   var myCourses={{ myCourses | tojson }};  
   var semester={{ semester | tojson }};
+  var otherAssessments={{ otherAssessments | tojson }};
 </script>
 <script src="{{url_for('static', filename='index.js')}}"></script>
 <script src="{{url_for('static', filename='js/mobileMenu.js')}}"></script>
 
 {% endblock %}
 
-<!-- <script src="../static/index.js"></script> -->
 

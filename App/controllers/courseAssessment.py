@@ -1,5 +1,6 @@
 from App.models import CourseAssessment
 from App.models import Assessment
+from App.models import Course
 from App.database import db
 
 def add_CourseAsm(courseCode, a_ID, startDate, endDate, startTime, endTime):
@@ -27,6 +28,13 @@ def get_CourseAsm_id(id):
 
 def get_CourseAsm_code(code):
     return CourseAssessment.query.filter_by(courseCode=code).all()
+
+def get_CourseAsm_level(level):
+    courses = Course.query(level=level).all()
+    assessments=[]
+    for c in courses:
+        assessments = assessments + get_CourseAsm_code(c)
+    return assessments
 
 def delete_CourseAsm(courseAsm):
     db.session.delete(courseAsm)

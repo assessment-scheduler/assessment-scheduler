@@ -59,43 +59,58 @@ def get_calendar_page():
     all_assessments=[]
     for course in myCourses:
         all_assessments= all_assessments + get_CourseAsm_code(course)
-
-    #format assessments for calendar js
-    assessments=[]
+    #format assessments for calendar js - registered courses
+    myAssessments=[]
     for item in all_assessments:
-        if item.startDate is None:
-            obj={'courseCode':item.courseCode,
-                'a_ID':get_Assessment_type(item.a_ID),
-                'caNum':item.id,
-                'startDate':item.startDate,
-                'endDate':item.endDate,
-                'startTime':item.startTime,
-                'endTime':item.endTime
-                }
-        else:    
-            obj={'courseCode':item.courseCode,
-                'a_ID':get_Assessment_type(item.a_ID),
-                'caNum':item.id,
-                'startDate':item.startDate.isoformat(),
-                'endDate':item.endDate.isoformat(),
-                'startTime':item.startTime.isoformat(),
-                'endTime':item.endTime.isoformat()
-                }
+        obj=format_assessment(item)
+        myAssessments.append(obj)
+
+    # #get assessments for all other courses (for filters)
+    other_assessments=[]
+    for c in courses:
+        other_assessments = other_assessments + get_CourseAsm_code(c)
+    #format assessments for calendar js - filters
+    assessments=[]
+    for item in other_assessments:
+        obj=format_assessment(item)
         assessments.append(obj)
 
     # Ensure courses, myCourses, and assessments are not empty
     if not courses:
         courses = []
-
     if not myCourses:
         myCourses = []
-
+    if not myAssessments:
+        myAssessments = []
     if not assessments:
         assessments = []
 
     sem=db.session.query(Semester).first()
     semester = {'start':sem.startDate,'end':sem.endDate}
-    return render_template('index.html', courses=courses, myCourses=myCourses, assessments=assessments, semester=semester)        
+    return render_template('index.html', courses=courses, myCourses=myCourses, assessments=myAssessments, semester=semester, otherAssessments=assessments) 
+
+
+def format_assessment(item):
+    if item.startDate is None:
+        obj={'courseCode':item.courseCode,
+            'a_ID':get_Assessment_type(item.a_ID),
+            'caNum':item.id,
+            'startDate':item.startDate,
+            'endDate':item.endDate,
+            'startTime':item.startTime,
+            'endTime':item.endTime
+            }
+    else:    
+        obj={'courseCode':item.courseCode,
+            'a_ID':get_Assessment_type(item.a_ID),
+            'caNum':item.id,
+            'startDate':item.startDate.isoformat(),
+            'endDate':item.endDate.isoformat(),
+            'startTime':item.startTime.isoformat(),
+            'endTime':item.endTime.isoformat()
+            }
+    return obj
+        
 
 @staff_views.route('/calendar', methods=['POST'])
 @jwt_required()
