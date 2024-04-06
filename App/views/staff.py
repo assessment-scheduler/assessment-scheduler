@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import current_user
 from App.controllers import Staff
-from App.controllers import Course
+from App.controllers import Course, Semester
 from App.controllers import CourseAssessment
 from App.database import db
 from App.send_email import send_mail
@@ -59,8 +59,6 @@ def get_calendar_page():
     all_assessments=[]
     for course in myCourses:
         all_assessments= all_assessments + get_CourseAsm_code(course)
-    
-    print(all_assessments)
 
     #format assessments for calendar js
     assessments=[]
@@ -95,7 +93,9 @@ def get_calendar_page():
     if not assessments:
         assessments = []
 
-    return render_template('index.html', courses=courses, myCourses=myCourses, assessments=assessments)        
+    sem=db.session.query(Semester).first()
+    semester = {'start':sem.startDate,'end':sem.endDate}
+    return render_template('index.html', courses=courses, myCourses=myCourses, assessments=assessments, semester=semester)        
 
 @staff_views.route('/calendar', methods=['POST'])
 @jwt_required()

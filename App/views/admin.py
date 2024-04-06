@@ -13,14 +13,18 @@ from App.controllers.course import (
     delete_Course
 )
 
+from App.controllers.semester import(
+    add_sem
+)
+
 admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
  
 # Ensures that variables are set just once on application startup!
-@admin_views.before_app_first_request
-def set_variables():
-    global semBegins 
-    global semEnds
-    global semChoice
+# @admin_views.before_app_first_request
+# def set_variables():
+#     global semBegins 
+#     global semEnds
+#     global semChoice
 
 # Gets Semester Details Page
 @admin_views.route('/semester', methods=['GET'])
@@ -44,7 +48,7 @@ def new_semester_action():
         semBegins = request.form.get('teachingBegins')
         semEnds = request.form.get('teachingEnds')
         semChoice = request.form.get('semester')
-        
+        add_sem(semBegins,semEnds,semChoice)
         # Return course upload page to upload cvs file for courses offered that semester
         return render_template('uploadFiles.html')  
 
