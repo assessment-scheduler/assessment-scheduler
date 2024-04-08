@@ -48,7 +48,8 @@ def new_semester_action():
         semBegins = request.form.get('teachingBegins')
         semEnds = request.form.get('teachingEnds')
         semChoice = request.form.get('semester')
-        add_sem(semBegins,semEnds,semChoice)
+        maxAssessments = request.form.get('maxAssessments')
+        add_sem(semBegins,semEnds,semChoice,maxAssessments)
         # Return course upload page to upload cvs file for courses offered that semester
         return render_template('uploadFiles.html')  
 

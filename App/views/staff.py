@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, get_flashed_messages
 from flask_login import current_user
 from App.controllers import Staff
 from App.controllers import Course, Semester
@@ -86,9 +86,12 @@ def get_calendar_page():
     if not assessments:
         assessments = []
 
-    sem=db.session.query(Semester).first()
+    sem=Semester.query.order_by(Semester.id.desc()).first()
     semester = {'start':sem.startDate,'end':sem.endDate}
-    return render_template('index.html', courses=courses, myCourses=myCourses, assessments=myAssessments, semester=semester, otherAssessments=assessments) 
+    messages = request.args.get('message')
+    if messages:
+        flash(messages)
+    return render_template('index.html', courses=courses, myCourses=myCourses, assessments=myAssessments, semester=semester, otherAssessments=assessments,messages=messages) 
 
 
 def format_assessment(item):
@@ -125,6 +128,7 @@ def update_calendar_page():
 
     #get course assessment
     assessment=get_CourseAsm_id(id)
+    message=None
     if assessment:
         assessment.startDate=startDate
         assessment.endDate=endDate
@@ -133,15 +137,16 @@ def update_calendar_page():
 
         db.session.commit()
         
-        clash=detect_clash(assessment.id,3)
+        clash=detect_clash(assessment.id)
         if clash:
-            flash("Clash detected! The maximum amount of assessments for this level has been exceeded.")
+            message="Clash detected! The maximum amount of assessments for this level has been exceeded."
+    return redirect(url_for('staff_views.get_calendar_page',message=message))
 
-    return redirect(url_for('staff_views.get_calendar_page'))
-
-def detect_clash(id,max):
+def detect_clash(id):
     clash=0
-    new_assessment=get_CourseAsm_id(id)
+    sem=Semester.query.order_by(Semester.id.desc()).first() #get the weekly max num of assessments allowed per level
+    max=sem.maxAssessments
+    new_assessment=get_CourseAsm_id(id)                     #get current assessment info
     compare_code=new_assessment.courseCode.replace(' ','')
     all_assessments=CourseAssessment.query.all()
     relevant_assessments=[]
@@ -156,22 +161,21 @@ def detect_clash(id,max):
         dueDate=a.endDate
         if sunday <= dueDate <= saturday:
             clash=clash+1
-    
-    return clash>max
+
+    return clash>=max
 
 def get_week_range(iso_date_str):
-  date_obj = date.fromisoformat(iso_date_str)
-  day_of_week = date_obj.weekday()
+    date_obj = date.fromisoformat(iso_date_str)
+    day_of_week = date_obj.weekday()
 
-  if day_of_week != 6:
-      days_to_subtract = (day_of_week + 1) % 7 
-  else:
-      days_to_subtract = 0
+    if day_of_week != 6:
+        days_to_subtract = (day_of_week + 1) % 7 
+    else:
+        days_to_subtract = 0
 
-  sunday_date = date_obj - timedelta(days=days_to_subtract) #get sunday's date
-  saturday_date = sunday_date + timedelta(days=6) #get saturday's date
-
-  return sunday_date, saturday_date
+    sunday_date = date_obj - timedelta(days=days_to_subtract) #get sunday's date
+    saturday_date = sunday_date + timedelta(days=6) #get saturday's date
+    return sunday_date, saturday_date
 
 
 # Retrieves info and stores it in database ie. register new staff
@@ -274,7 +278,7 @@ def add_assessments_action():
 
     newAsm = add_CourseAsm(course, asmType, startDate, endDate, startTime, endTime)  
     if newAsm.startDate:
-        clash=detect_clash(newAsm.id,3)
+        clash=detect_clash(newAsm.id)
         if clash:
             flash("Clash detected! The maximum amount of assessments for this level has been exceeded.")
             time.sleep(1)
@@ -313,7 +317,7 @@ def modify_assessment(id):
 
             db.session.commit()
 
-            clash=detect_clash(assessment.id,3)
+            clash=detect_clash(assessment.id)
             if clash:
                 flash("Clash detected! The maximum amount of assessments for this level has been exceeded.")
                 time.sleep(1)

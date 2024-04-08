@@ -159,14 +159,9 @@ document.addEventListener('DOMContentLoaded', function() {
           type: 'dayGridMonth',
           duration: { weeks: 13 }, 
           buttonText: 'Semester',
-          weekNumbers: true, // Enable week numbers
           visibleRange: {
             start: semester.start,
             end: semester.end
-          },
-          weekNumberContent: function(info) {
-            weekCounter++;
-            return 'W' + weekCounter;
           }
         }
       },
@@ -192,7 +187,10 @@ document.addEventListener('DOMContentLoaded', function() {
 function toEditItem(event){
     let id=event.id;
     let sDate=formatDate(new Date(event.start));
-    let eDate=formatDate(new Date(event.end));
+    let eDate=formatDate(new Date(event.start));
+    if (event.end){
+      eDate=formatDate(new Date(event.end));
+    }
     let sTime=formatTime(new Date(event.start));
     let eTime=formatTime(new Date(event.end));
 
