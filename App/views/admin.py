@@ -131,7 +131,7 @@ def update_course():
 
         delete_Course(get_course(courseCode))
         add_Course(courseCode, title, description, level, semester, numAssessments)
-
+        flash("Course Updated Successfully!") 
     # Redirect to view course listings! 
     return redirect(url_for('admin_views.get_courses')) 
     # return jsonify({"message":f" {courseCode} successfully updated."}), 200 # for postman 
@@ -143,6 +143,7 @@ def delete_course_action(courseCode):
         course = get_course(courseCode) # Gets selected course
         delete_Course(course)
         print(courseCode, " deleted")
+        flash("Course Deleted Successfully!")
 
     # Redirect to view course listings!   
     return redirect(url_for('admin_views.get_courses'))    
