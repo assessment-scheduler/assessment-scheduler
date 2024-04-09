@@ -4,7 +4,7 @@ class CourseAssessment(db.Model):
     __tablename__ = 'courseAssessment'
 
     id = db.Column(db.Integer, primary_key= True, autoincrement=True)
-    courseCode = db.Column(db.String(8), db.ForeignKey('course.courseCode'), nullable = False)
+    courseCode = db.Column(db.String(9), db.ForeignKey('course.courseCode'), nullable = False)
     a_ID = db.Column(db.Integer, db.ForeignKey('assessment.a_ID'), nullable = False)
     startDate = db.Column(db.Date, nullable = True)
     endDate = db.Column(db.Date, nullable = True)

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, get_flashed_messages
 from flask_login import current_user
 from App.controllers import Staff
 from App.controllers import Course, Semester
@@ -8,6 +8,8 @@ from App.send_email import send_mail
 import json
 from flask_jwt_extended import current_user as jwt_current_user, get_jwt_identity
 from flask_jwt_extended import jwt_required
+from datetime import date, timedelta
+import time
 
 from App.controllers.staff import (
     register_staff,
@@ -46,7 +48,6 @@ def get_signup_page():
 @jwt_required()
 def get_calendar_page():
     id=get_uid(get_jwt_identity())  #gets u_id from email token
-
     #get courses for filter
     courses=[]
     allCourses=[course.courseCode for course in list_Courses()]
@@ -85,9 +86,12 @@ def get_calendar_page():
     if not assessments:
         assessments = []
 
-    sem=db.session.query(Semester).first()
+    sem=Semester.query.order_by(Semester.id.desc()).first()
     semester = {'start':sem.startDate,'end':sem.endDate}
-    return render_template('index.html', courses=courses, myCourses=myCourses, assessments=myAssessments, semester=semester, otherAssessments=assessments) 
+    messages = request.args.get('message')
+    if messages:
+        flash(messages)
+    return render_template('index.html', courses=courses, myCourses=myCourses, assessments=myAssessments, semester=semester, otherAssessments=assessments,messages=messages) 
 
 
 def format_assessment(item):
@@ -124,6 +128,7 @@ def update_calendar_page():
 
     #get course assessment
     assessment=get_CourseAsm_id(id)
+    message=None
     if assessment:
         assessment.startDate=startDate
         assessment.endDate=endDate
@@ -131,8 +136,47 @@ def update_calendar_page():
         assessment.endTime=endTime
 
         db.session.commit()
+        
+        clash=detect_clash(assessment.id)
+        if clash:
+            message="Clash detected! The maximum amount of assessments for this level has been exceeded."
+    return redirect(url_for('staff_views.get_calendar_page',message=message))
 
-    return redirect(url_for('staff_views.get_calendar_page'))
+def detect_clash(id):
+    clash=0
+    sem=Semester.query.order_by(Semester.id.desc()).first() #get the weekly max num of assessments allowed per level
+    max=sem.maxAssessments
+    new_assessment=get_CourseAsm_id(id)                     #get current assessment info
+    compare_code=new_assessment.courseCode.replace(' ','')
+    all_assessments=CourseAssessment.query.all()
+    relevant_assessments=[]
+    for a in all_assessments:
+        code=a.courseCode.replace(' ','')
+        if (code[4]==compare_code[4]) and (a.id!=new_assessment.id): #course are in the same level
+            if a.startDate is not None: #assessment has been scheduled
+                relevant_assessments.append(a)
+
+    sunday,saturday=get_week_range(new_assessment.endDate.isoformat())
+    for a in relevant_assessments:
+        dueDate=a.endDate
+        if sunday <= dueDate <= saturday:
+            clash=clash+1
+
+    return clash>=max
+
+def get_week_range(iso_date_str):
+    date_obj = date.fromisoformat(iso_date_str)
+    day_of_week = date_obj.weekday()
+
+    if day_of_week != 6:
+        days_to_subtract = (day_of_week + 1) % 7 
+    else:
+        days_to_subtract = 0
+
+    sunday_date = date_obj - timedelta(days=days_to_subtract) #get sunday's date
+    saturday_date = sunday_date + timedelta(days=6) #get saturday's date
+    return sunday_date, saturday_date
+
 
 # Retrieves info and stores it in database ie. register new staff
 @staff_views.route('/register', methods=['POST'])
@@ -233,7 +277,14 @@ def add_assessments_action():
         endTime=None
 
     newAsm = add_CourseAsm(course, asmType, startDate, endDate, startTime, endTime)  
+    if newAsm.startDate:
+        clash=detect_clash(newAsm.id)
+        if clash:
+            flash("Clash detected! The maximum amount of assessments for this level has been exceeded.")
+            time.sleep(1)
+
     return redirect(url_for('staff_views.get_assessments_page'))   
+    
 
 # Modify selected assessment
 @staff_views.route('/modifyAssessment/<string:id>', methods=['GET'])
@@ -265,6 +316,11 @@ def modify_assessment(id):
                 assessment.endTime=endTime
 
             db.session.commit()
+
+            clash=detect_clash(assessment.id)
+            if clash:
+                flash("Clash detected! The maximum amount of assessments for this level has been exceeded.")
+                time.sleep(1)
 
     return redirect(url_for('staff_views.get_assessments_page'))
 
