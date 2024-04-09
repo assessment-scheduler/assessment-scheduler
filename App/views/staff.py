@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, get_flashed_messages
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, get_flashed_messages, session
 from flask_login import current_user
 from App.controllers import Staff
 from App.controllers import Course, Semester
@@ -88,9 +88,11 @@ def get_calendar_page():
 
     sem=Semester.query.order_by(Semester.id.desc()).first()
     semester = {'start':sem.startDate,'end':sem.endDate}
-    messages = request.args.get('message')
-    if messages:
-        flash(messages)
+
+    messages=[]
+    message = session.pop('message',None)
+    if message:
+        messages.append(message)
     return render_template('index.html', courses=courses, myCourses=myCourses, assessments=myAssessments, semester=semester, otherAssessments=assessments,messages=messages) 
 
 
@@ -128,7 +130,6 @@ def update_calendar_page():
 
     #get course assessment
     assessment=get_CourseAsm_id(id)
-    message=None
     if assessment:
         assessment.startDate=startDate
         assessment.endDate=endDate
@@ -139,8 +140,10 @@ def update_calendar_page():
         
         clash=detect_clash(assessment.id)
         if clash:
-            message="Clash detected! The maximum amount of assessments for this level has been exceeded."
-    return redirect(url_for('staff_views.get_calendar_page',message=message))
+            session['message'] = assessment.courseCode+" - Clash detected! The maximum amount of assessments for this level has been exceeded."
+        else:
+            session['message'] = "Assessment modified"
+    return session['message']
 
 def detect_clash(id):
     clash=0

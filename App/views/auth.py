@@ -4,6 +4,7 @@ from flask_login import logout_user
 from App.controllers.auth import login
 from App.models.user import User
 from App.models.staff import Staff
+from App.models.admin import Admin
 from App.database import db
 
 auth_views = Blueprint('auth_views', __name__, template_folder='../templates')
@@ -22,15 +23,19 @@ def login_action():
     return response       
 
 def login_user(email, password):
-    user = db.session.query(Staff).filter(Staff.email == email).first()
-    if user and user.check_password(password):
+    admin_user=db.session.query(Admin).filter(Admin.email == email).first()
+    if admin_user and admin_user.check_password(password):
+        response = make_response(redirect(url_for('admin_views.get_upload_page')))    
         token = create_access_token(identity=email)
-        if email=='bob@gmail.com':
-            response = make_response(redirect(url_for('admin_views.get_upload_page')))    
-        else:
-            response = make_response(redirect(url_for('staff_views.get_calendar_page')))
         response.set_cookie('access_token', token)
         return response
+    else:
+        user = db.session.query(Staff).filter(Staff.email == email).first()
+        if user and user.check_password(password):
+            response = make_response(redirect(url_for('staff_views.get_calendar_page')))
+            token = create_access_token(identity=email)
+            response.set_cookie('access_token', token)
+            return response
     return jsonify(message="Invalid username or password"), 401
 
 @auth_views.route('/logout', methods=['GET'])

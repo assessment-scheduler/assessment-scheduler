@@ -1,5 +1,7 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
+from flask_jwt_extended import jwt_required
 from App.controllers import Course
+from App.models import Admin
 from App.database import db
 from werkzeug.utils import secure_filename
 import os, csv
@@ -28,21 +30,25 @@ admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
 
 # Gets Semester Details Page
 @admin_views.route('/semester', methods=['GET'])
+@jwt_required(Admin)
 def get_upload_page():
     return render_template('semester.html')
 
 @admin_views.route('/uploadFiles', methods=['GET'])
+@jwt_required(Admin)
 def get_uploadFiles_page():
     return render_template('uploadFiles.html')
     # return render_template('uploadFiles.html')
 
 # Gets Course Listings Page
 @admin_views.route('/coursesList', methods=['GET'])
+@jwt_required(Admin)
 def index():
     return render_template('courses.html')    
 
 # Retrieves semester details and stores it in global variables 
 @admin_views.route('/newSemester', methods=['POST'])
+@jwt_required(Admin)
 def new_semester_action():
     if request.method == 'POST':
         semBegins = request.form.get('teachingBegins')
@@ -55,6 +61,7 @@ def new_semester_action():
 
 # Gets csv file with course listings, parses it to store course data and stores it in application
 @admin_views.route('/uploadcourse', methods=['POST'])
+@jwt_required(Admin)
 def upload_course_file():
     if request.method == 'POST': 
         file = request.files['file'] 
@@ -84,6 +91,7 @@ def upload_course_file():
 
 # Pull course list from database
 @admin_views.route('/get_courses', methods=['GET'])
+@jwt_required(Admin)
 def get_courses():
     courses = list_Courses()
     return render_template('courses.html', courses=courses)
@@ -91,11 +99,13 @@ def get_courses():
 
 # Gets Add Course Page
 @admin_views.route('/newCourse', methods=['GET'])
+@jwt_required(Admin)
 def get_new_course():
     return render_template('addCourse.html')  
 
 # Retrieves course info and stores it in database ie. add new course
 @admin_views.route('/addNewCourse', methods=['POST'])
+@jwt_required(Admin)
 def add_course_action():
     if request.method == 'POST':
         courseCode = request.form.get('course_code')
@@ -113,6 +123,7 @@ def add_course_action():
 
 # Gets Update Course Page
 @admin_views.route('/modifyCourse/<string:courseCode>', methods=['GET'])
+@jwt_required(Admin)
 def get_update_course(courseCode):
     course = get_course(courseCode) # Gets selected course
 
@@ -120,6 +131,7 @@ def get_update_course(courseCode):
 
 # Selects new course details and updates existing course in database
 @admin_views.route('/updateCourse', methods=['POST'])
+@jwt_required(Admin)
 def update_course():
     if request.method == 'POST':
         courseCode = request.form.get('code')
@@ -139,6 +151,7 @@ def update_course():
 
 # Selects course and removes it from database
 @admin_views.route("/deleteCourse/<string:courseCode>", methods=["POST"])
+@jwt_required(Admin)
 def delete_course_action(courseCode):
     if request.method == 'POST':
         course = get_course(courseCode) # Gets selected course

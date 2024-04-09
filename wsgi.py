@@ -3,7 +3,7 @@ from flask import Flask
 from flask.cli import with_appcontext, AppGroup
 from App.database import db, get_migrate
 from App.main import create_app
-from App.models import Staff, Course, Assessment, Programme
+from App.models import Staff, Course, Assessment, Programme, Admin
 from App.controllers import Course
 
 from App.controllers.course import (
@@ -19,7 +19,8 @@ def initialize():
   db.drop_all()
   # db.init_app(app)
   db.create_all()
-  bob = Staff("bob", "test", 300456, "Lecturer 1", "bob@gmail.com", "bobpass")
+  # bob = Staff("bob", "test", 300456, "Lecturer 1", "bob@gmail.com", "bobpass")
+  bob = Admin(u_ID=999, email="bob@gmail.com", password="bobpass")
   db.session.add(bob)
   db.session.commit()
   print(bob)

@@ -1,7 +1,7 @@
-const navbarToggler = document.querySelector(".burger");
-const navbarMenu = document.querySelector(".links_container_mobile");
-const navbarLinks = document.querySelectorAll(".mobile_links");
-const exit = document.querySelector(".exit");
+navbarToggler = document.querySelector(".burger");
+navbarMenu = document.querySelector(".links_container_mobile");
+navbarLinks = document.querySelectorAll(".mobile_links");
+exit = document.querySelector(".exit");
 
 var tl = gsap.timeline({ defaults: { duration: 1, ease: Expo.easeInOut } })
 navbarToggler.addEventListener("click", navbarTogglerClick);

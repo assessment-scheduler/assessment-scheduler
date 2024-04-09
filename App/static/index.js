@@ -208,6 +208,12 @@ function toEditItem(event){
         endDate:eDate,
         startTime:sTime,
         endTime:eTime
+      },
+      success: function(response) {
+        location.reload(); // Reload the page
+      },
+      error: function(xhr, status, error) {
+          console.error('Error:', error);
       }
     });
 }
@@ -234,7 +240,13 @@ function newItem(event){
       endDate:eDate,
       startTime:sTime,
       endTime:eTime
-    }
+    },
+      success: function(response) {
+        location.reload(); // Reload the page
+      },
+      error: function(xhr, status, error) {
+          console.error('Error:', error);
+      }
   });
 }
 
