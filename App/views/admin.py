@@ -20,13 +20,6 @@ from App.controllers.semester import(
 )
 
 admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
- 
-# Ensures that variables are set just once on application startup!
-# @admin_views.before_app_first_request
-# def set_variables():
-#     global semBegins 
-#     global semEnds
-#     global semChoice
 
 # Gets Semester Details Page
 @admin_views.route('/semester', methods=['GET'])
@@ -38,7 +31,6 @@ def get_upload_page():
 @jwt_required(Admin)
 def get_uploadFiles_page():
     return render_template('uploadFiles.html')
-    # return render_template('uploadFiles.html')
 
 # Gets Course Listings Page
 @admin_views.route('/coursesList', methods=['GET'])
@@ -54,8 +46,9 @@ def new_semester_action():
         semBegins = request.form.get('teachingBegins')
         semEnds = request.form.get('teachingEnds')
         semChoice = request.form.get('semester')
-        maxAssessments = request.form.get('maxAssessments')
+        maxAssessments = request.form.get('maxAssessments') #used for class detection feature
         add_sem(semBegins,semEnds,semChoice,maxAssessments)
+
         # Return course upload page to upload cvs file for courses offered that semester
         return render_template('uploadFiles.html')  
 
@@ -87,15 +80,13 @@ def upload_course_file():
 
             # Redirect to view course listings!   
             return redirect(url_for('admin_views.get_courses'))    
-            # return jsonify({"message": "Courses file successfully uploaded."}), 200 # for postman   
-
+            
 # Pull course list from database
 @admin_views.route('/get_courses', methods=['GET'])
 @jwt_required(Admin)
 def get_courses():
     courses = list_Courses()
     return render_template('courses.html', courses=courses)
-    # return jsonify([course.to_json() for course in courses]), 200 #for postman
 
 # Gets Add Course Page
 @admin_views.route('/newCourse', methods=['GET'])
@@ -111,6 +102,7 @@ def add_course_action():
         courseCode = request.form.get('course_code')
         title = request.form.get('title')
         description = request.form.get('description')
+        data = request.form
         level = request.form.get('level')
         semester = request.form.get('semester')
         numAssessments = request.form.get('numAssessments')
@@ -119,14 +111,12 @@ def add_course_action():
 
         # Redirect to view course listings!  
         return redirect(url_for('admin_views.get_courses')) 
-        # return jsonify({"message":f" {courseCode} successfully added to course listings."}), 200  #for postman
-
+        
 # Gets Update Course Page
 @admin_views.route('/modifyCourse/<string:courseCode>', methods=['GET'])
 @jwt_required(Admin)
 def get_update_course(courseCode):
     course = get_course(courseCode) # Gets selected course
-
     return render_template('updateCourse.html', course=course)  
 
 # Selects new course details and updates existing course in database
@@ -145,9 +135,9 @@ def update_course():
         delete_Course(get_course(courseCode))
         add_Course(courseCode, title, description, level, semester, numAssessments)
         flash("Course Updated Successfully!") 
+
     # Redirect to view course listings! 
     return redirect(url_for('admin_views.get_courses')) 
-    # return jsonify({"message":f" {courseCode} successfully updated."}), 200 # for postman 
 
 # Selects course and removes it from database
 @admin_views.route("/deleteCourse/<string:courseCode>", methods=["POST"])
@@ -161,5 +151,4 @@ def delete_course_action(courseCode):
 
     # Redirect to view course listings!   
     return redirect(url_for('admin_views.get_courses'))    
-    # return jsonify({"message":f" {courseCode} successfully delete from course listings."}), 200 # for postman
-
+    

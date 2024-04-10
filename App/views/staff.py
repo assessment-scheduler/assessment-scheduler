@@ -43,12 +43,13 @@ staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
 def get_signup_page():
     return render_template('signup.html')
 
-# Gets Calendar Page
+# Gets Calendar Page 
 @staff_views.route('/calendar', methods=['GET'])
 @jwt_required()
 def get_calendar_page():
     id=get_uid(get_jwt_identity())  #gets u_id from email token
-    #get courses for filter
+
+    # Get courses for filter
     courses=[]
     allCourses=[course.courseCode for course in list_Courses()]
     myCourses=get_registered_courses(id)
@@ -56,21 +57,23 @@ def get_calendar_page():
         if course not in myCourses:
             courses.append(course)
 
-    #get assessments for registered courses
+    # Get assessments for registered courses
     all_assessments=[]
     for course in myCourses:
         all_assessments= all_assessments + get_CourseAsm_code(course)
-    #format assessments for calendar js - registered courses
+
+    # Format assessments for calendar js - registered courses
     myAssessments=[]
     for item in all_assessments:
         obj=format_assessment(item)
         myAssessments.append(obj)
 
-    # #get assessments for all other courses (for filters)
+    # Get assessments for all other courses (for filters)
     other_assessments=[]
     for c in courses:
         other_assessments = other_assessments + get_CourseAsm_code(c)
-    #format assessments for calendar js - filters
+
+    # Format assessments for calendar js - filters
     assessments=[]
     for item in other_assessments:
         obj=format_assessment(item)
@@ -121,14 +124,14 @@ def format_assessment(item):
 @staff_views.route('/calendar', methods=['POST'])
 @jwt_required()
 def update_calendar_page():
-    #retrieve data from page
+    # Retrieve data from page
     id = request.form.get('id')
     startDate = request.form.get('startDate')
     startTime = request.form.get('startTime')
     endDate = request.form.get('endDate')
     endTime = request.form.get('endTime')
 
-    #get course assessment
+    # Get course assessment
     assessment=get_CourseAsm_id(id)
     if assessment:
         assessment.startDate=startDate
@@ -180,8 +183,7 @@ def get_week_range(iso_date_str):
     saturday_date = sunday_date + timedelta(days=6) #get saturday's date
     return sunday_date, saturday_date
 
-
-# Retrieves info and stores it in database ie. register new staff
+# Retrieves staff info and stores it in database ie. register new staff
 @staff_views.route('/register', methods=['POST'])
 def register_staff_action():
     if request.method == 'POST':
@@ -192,12 +194,12 @@ def register_staff_action():
         email = request.form.get('email')
         pwd = request.form.get('password')
          
-        # Field Validation is on HTML Page
+        # Field Validation is on HTML Page!
         register_staff(firstName, lastName, staffID, status, email, pwd)
         send_mail(email) # Send confirmation email to staff upon successful registration
         return render_template('login.html')  # Must login after registration to get access token
     
-#Gets account page
+# Gets account page
 @staff_views.route('/account', methods=['GET'])
 @jwt_required()
 def get_account_page():
@@ -221,7 +223,7 @@ def get_selected_courses():
        
     return redirect(url_for('staff_views.get_account_page'))   
 
-#Gets assessments page
+# Gets assessments page
 @staff_views.route('/assessments', methods=['GET'])
 @jwt_required()
 def get_assessments_page():

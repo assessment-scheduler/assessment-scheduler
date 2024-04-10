@@ -19,6 +19,7 @@ pytest = "==7.0.1"
 flask-jwt-extended = "==4.4.4"
 werkzeug = "==2.2.3"
 gunicorn = "*"
+flask-mail = "*"
 
 [dev-packages]
 
