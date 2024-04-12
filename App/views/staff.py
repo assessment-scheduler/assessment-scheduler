@@ -1,9 +1,11 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, get_flashed_messages, session
 from flask_login import current_user
+from sqlalchemy import not_
 from App.controllers import Staff
 from App.controllers import Course, Semester
 from App.controllers import CourseAssessment
 from App.database import db
+from App.models.assessment import Assessment
 from App.send_email import send_mail
 import json
 from flask_jwt_extended import current_user as jwt_current_user, get_jwt_identity
@@ -107,7 +109,8 @@ def format_assessment(item):
             'startDate':item.startDate,
             'endDate':item.endDate,
             'startTime':item.startTime,
-            'endTime':item.endTime
+            'endTime':item.endTime,
+            'clashDetected':item.clashDetected
             }
     else:    
         obj={'courseCode':item.courseCode,
@@ -116,7 +119,8 @@ def format_assessment(item):
             'startDate':item.startDate.isoformat(),
             'endDate':item.endDate.isoformat(),
             'startTime':item.startTime.isoformat(),
-            'endTime':item.endTime.isoformat()
+            'endTime':item.endTime.isoformat(),
+            'clashDetected':item.clashDetected
             }
     return obj
         
@@ -143,6 +147,8 @@ def update_calendar_page():
         
         clash=detect_clash(assessment.id)
         if clash:
+            assessment.clashDetected = True
+            db.session.commit()
             session['message'] = assessment.courseCode+" - Clash detected! The maximum amount of assessments for this level has been exceeded."
         else:
             session['message'] = "Assessment modified"
@@ -154,7 +160,8 @@ def detect_clash(id):
     max=sem.maxAssessments
     new_assessment=get_CourseAsm_id(id)                     #get current assessment info
     compare_code=new_assessment.courseCode.replace(' ','')
-    all_assessments=CourseAssessment.query.all()
+    all_assessments = CourseAssessment.query.filter(not_(CourseAssessment.a_ID.in_([2, 4, 8]))).all()
+    print(all_assessments)
     relevant_assessments=[]
     for a in all_assessments:
         code=a.courseCode.replace(' ','')
@@ -281,10 +288,12 @@ def add_assessments_action():
         startTime=None
         endTime=None
 
-    newAsm = add_CourseAsm(course, asmType, startDate, endDate, startTime, endTime)  
+    newAsm = add_CourseAsm(course, asmType, startDate, endDate, startTime, endTime, False)  
     if newAsm.startDate:
         clash=detect_clash(newAsm.id)
         if clash:
+            newAsm.clashDetected = True
+            db.session.commit()
             flash("Clash detected! The maximum amount of assessments for this level has been exceeded.")
             time.sleep(1)
 
@@ -324,6 +333,8 @@ def modify_assessment(id):
 
             clash=detect_clash(assessment.id)
             if clash:
+                assessment.clashDetected = True
+                db.session.commit()
                 flash("Clash detected! The maximum amount of assessments for this level has been exceeded.")
                 time.sleep(1)
 

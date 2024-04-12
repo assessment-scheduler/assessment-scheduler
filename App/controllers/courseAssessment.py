@@ -3,11 +3,11 @@ from App.models import Assessment
 from App.models import Course
 from App.database import db
 
-def add_CourseAsm(courseCode, a_ID, startDate, endDate, startTime, endTime):
+def add_CourseAsm(courseCode, a_ID, startDate, endDate, startTime, endTime, clashDetected):
     #Add new Assessment to Course
     # newAsm = addCourseAsg(courseCode, a_ID, startDate, endDate, startTime, endTime)
     # return newAsm
-    newAsg = CourseAssessment(courseCode, a_ID, startDate, endDate, startTime, endTime)
+    newAsg = CourseAssessment(courseCode, a_ID, startDate, endDate, startTime, endTime, clashDetected)
     db.session.add(newAsg)  #add to db
     db.session.commit()
     return newAsg
@@ -41,3 +41,5 @@ def delete_CourseAsm(courseAsm):
     db.session.commit()
     return True        
      
+def get_clashes():
+    return CourseAssessment.query.filter_by(clashDetected=True).all()

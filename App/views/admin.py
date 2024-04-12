@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_jwt_extended import jwt_required
-from App.controllers import Course
+from App.controllers import Course, CourseAssessment
 from App.models import Admin
 from App.database import db
 from werkzeug.utils import secure_filename
@@ -17,6 +17,11 @@ from App.controllers.course import (
 
 from App.controllers.semester import(
     add_sem
+)
+
+from App.controllers.courseAssessment import(
+    get_clashes,
+    get_CourseAsm_id
 )
 
 admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
@@ -151,4 +156,30 @@ def delete_course_action(courseCode):
 
     # Redirect to view course listings!   
     return redirect(url_for('admin_views.get_courses'))    
-    
+
+@admin_views.route("/clashes", methods=["GET"])
+@jwt_required(Admin)
+def get_clashes_page():
+    assessments=get_clashes()
+    return render_template('clashes.html',assessments=assessments)
+
+@admin_views.route("/acceptOverride/<int:aID>", methods=['POST'])
+@jwt_required(Admin)
+def accept_override(aID):
+    ca=get_CourseAsm_id(aID)
+    if ca:
+        #ca.clashDetected=False
+        #db.session.commit()
+        print("Accepted override.")
+    return redirect(url_for('admin_views.get_clashes_page'))
+
+@admin_views.route("/rejectOverride/<int:aID>", methods=['POST'])
+@jwt_required(Admin)
+def reject_override(aID):
+    ca=get_CourseAsm_id(aID)
+    if ca:
+        #ca.clashDetected=False
+        #ca.startDate=''
+        #db.session.commit()
+        print("Rejected override.")
+    return redirect(url_for('admin_views.get_clashes_page'))
