@@ -68,6 +68,13 @@ assessments.forEach(assessment => {
     endDate.classList.add('end-time');
     endTime.textContent = assessment.endTime;
     
+    const clashDetectedLabel = document.createElement('p');
+    clashDetectedLabel.classList.add('card-label');
+    clashDetectedLabel.textContent = 'Clash Detected';
+    const clashDetected = document.createElement('p');
+    clashDetected.classList.add('clash-detected');
+    clashDetected.textContent = `${assessment.clashDetected}`;
+
 
     // Create action links (modify and delete can be replaced with actual functionality)
     const modifyLink = document.createElement('button');
@@ -98,6 +105,8 @@ assessments.forEach(assessment => {
     assessmentInfo.appendChild(startTime);
     assessmentInfo.appendChild(endTimeLabel);
     assessmentInfo.appendChild(endTime);
+    assessmentInfo.appendChild(clashDetectedLabel);
+    assessmentInfo.appendChild(clashDetected);
     actions.appendChild(modifyLink);
     actions.appendChild(deleteLink);
     card.appendChild(courseDetails);
