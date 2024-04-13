@@ -247,7 +247,8 @@ def get_assessments_page():
                 'startDate': assessment.startDate,
                 'endDate': assessment.endDate,
                 'startTime': assessment.startTime,
-                'endTime': assessment.endTime
+                'endTime': assessment.endTime,
+                'clashDetected':assessment.clashDetected
                 }
             else:
                 obj={'id': assessment.id,
@@ -256,7 +257,8 @@ def get_assessments_page():
                     'startDate': assessment.startDate.isoformat(),
                     'endDate': assessment.endDate.isoformat(),
                     'startTime': assessment.startTime.isoformat(),
-                    'endTime': assessment.endTime.isoformat()
+                    'endTime': assessment.endTime.isoformat(),
+                    'clashDetected':assessment.clashDetected
                     }
             assessments.append(obj)     #add object to list of assessments
 

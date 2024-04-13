@@ -168,8 +168,8 @@ def get_clashes_page():
 def accept_override(aID):
     ca=get_CourseAsm_id(aID)
     if ca:
-        #ca.clashDetected=False
-        #db.session.commit()
+        ca.clashDetected=False
+        db.session.commit()
         print("Accepted override.")
     return redirect(url_for('admin_views.get_clashes_page'))
 
@@ -178,8 +178,11 @@ def accept_override(aID):
 def reject_override(aID):
     ca=get_CourseAsm_id(aID)
     if ca:
-        #ca.clashDetected=False
-        #ca.startDate=''
-        #db.session.commit()
+        ca.clashDetected=False
+        ca.startDate=None
+        ca.endDate=None
+        ca.startTime=None
+        ca.endTime=None
+        db.session.commit()
         print("Rejected override.")
     return redirect(url_for('admin_views.get_clashes_page'))
