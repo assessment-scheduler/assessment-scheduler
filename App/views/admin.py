@@ -5,8 +5,7 @@ from App.models import Admin
 from App.database import db
 from werkzeug.utils import secure_filename
 import os, csv
-#from flask_jwt_extended import current_user as jwt_current_user
-#from flask_jwt_extended import jwt_required
+from datetime import datetime
 
 from App.controllers.course import (
     add_Course,
@@ -160,8 +159,22 @@ def delete_course_action(courseCode):
 @admin_views.route("/clashes", methods=["GET"])
 @jwt_required(Admin)
 def get_clashes_page():
+    #for search
+    all_assessments=CourseAssessment.query.all()
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    searchResults=[]
+    if start_date and end_date:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        for a in all_assessments:
+            if start_date <= a.startDate <= end_date or start_date <= a.endDate <= end_date:
+                searchResults.append(a)
+    #for table
     assessments=get_clashes()
-    return render_template('clashes.html',assessments=assessments)
+    return render_template('clashes.html',assessments=assessments,results=searchResults)
+
+
 
 @admin_views.route("/acceptOverride/<int:aID>", methods=['POST'])
 @jwt_required(Admin)

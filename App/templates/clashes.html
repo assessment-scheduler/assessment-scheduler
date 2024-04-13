@@ -8,6 +8,24 @@
 
 {% block content %}
 <table class="clashTable">
+    <div class="search-section">
+        <form action="/clashes" method="GET">
+            <label for="start-date">Start Date:</label>
+            <input type="date" id="start-date" name="start_date">
+            
+            <label for="end-date">End Date:</label>
+            <input type="date" id="end-date" name="end_date">
+            
+            <button type="submit" class="tableBtn">Search</button>
+        </form>
+        <div class="search-results">
+            {% for result in results %}
+            <p>{{ result.courseCode }}&emsp;&emsp;&emsp;&emsp;Start: {{ result.startDate }}&emsp;{{ result.startTime }}&emsp;&emsp;&emsp;&emsp;End: {{ result.endDate }}&emsp;{{ result.endTime }}</p>
+            {% endfor %}
+        
+        </div>
+    </div>
+    
     <thead>
         <tr>
             <th>Assessment ID</th>

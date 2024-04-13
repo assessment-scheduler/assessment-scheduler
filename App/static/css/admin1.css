@@ -181,3 +181,7 @@ h2{
 .clashTable td{
     text-align: center;
 }
+
+.search-section, .clashTable{
+    padding: 2%;
+}
