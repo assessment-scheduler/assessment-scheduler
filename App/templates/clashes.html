@@ -7,13 +7,13 @@
 {% endblock %}
 
 {% block content %}
-<table>
+<table class="clashTable">
     <thead>
         <tr>
             <th>Assessment ID</th>
             <th>Course</th>
-            <th>Start</th>
-            <th>End</th>
+            <th>Start Date</th>
+            <th>End Date</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -25,11 +25,11 @@
                 <td>{{a.startDate}}</td>
                 <td>{{a.endDate}}</td>
                 <td>
-                    <form action="/acceptOverride/{{ a.id }}" method="POST">
-                        <button type="submit">Accept</button>
+                    <form action="/acceptOverride/{{ a.id }}" method="POST" style="display: inline-block;">
+                        <button type="submit" class="tableBtn">Accept</button>
                     </form>
-                    <form action="/rejectOverride/{{ a.id }}" method="POST">
-                        <button type="submit">Reject</button>
+                    <form action="/rejectOverride/{{ a.id }}" method="POST" style="display: inline-block;">
+                        <button type="submit" class="tableBtn">Reject</button>
                     </form>
                 </td>
             </tr>

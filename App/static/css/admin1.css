@@ -171,3 +171,13 @@ h2{
         font-size: 18px;
     }
 }
+
+.tableBtn{
+    background: var(--tertiary-color);
+    color: white;
+    padding: 10px;
+}
+
+.clashTable td{
+    text-align: center;
+}
