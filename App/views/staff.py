@@ -78,8 +78,10 @@ def get_calendar_page():
     # Format assessments for calendar js - filters
     assessments=[]
     for item in other_assessments:
-        obj=format_assessment(item)
-        assessments.append(obj)
+        if not item.clashDetected:
+            obj=format_assessment(item)
+            assessments.append(obj)
+
 
     # Ensure courses, myCourses, and assessments are not empty
     if not courses:

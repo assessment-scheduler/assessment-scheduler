@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
     Project:"#006064", 
     Exam:"#CC4E4E", 
     Presentation:"#cc7a50",
-    Other:"#C29203"
+    Other:"#C29203",
+    Pending: "#999999"
   }
 
   const calendarEvents=[];
@@ -102,7 +103,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const typeOfAssessment = getTypeOfAssessment(a.a_ID);
         var color = colors[typeOfAssessment];
-
+        if(a.clashDetected){
+          color=colors['Pending'];
+        }
         eventEl.dataset.color = color;
         eventEl.style.backgroundColor = color;
         
