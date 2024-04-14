@@ -1,26 +1,24 @@
-# import smtplib
+from flask import current_app as app
+from flask_mail import Mail, Message
+from mailbox import Message
 
-# # Takes veryy long but works
-# def send_mail(email):
-#     smtp_server = "smtp-mail.outlook.com"
-#     sender_email = 'vanessa.aubin@hotmail.com'
-#     receiver_email = email
-#     appPassword = 'urbskwoytvlmzowc'
-#     message = 'This is a test email!'
+def send_mail():
+    #  Flask mail configs
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 465
+    app.config['MAIL_USERNAME'] = 'vanessa.onica@gmail.com'
+    app.config['MAIL_DEFAULT_SENDER'] = 'vanessa.onica@gmail.com'
+    app.config['MAIL_PASSWORD'] = 'urbskwoytvlmzowc' # App Password used 
+    app.config['MAIL_USE_TLS'] = False
+    app.config['MAIL_USE_SSL'] = True 
+    mail = Mail(app)
 
-#     # Send email
-#     with smtplib.SMTP(smtp_server, 587) as server:
-#         server.ehlo()
-#         server.starttls()
-#         server.login(sender_email, appPassword)
-#         server.sendmail(sender_email, receiver_email, message)
-#         server.close()     
-
-
-    # Flask mail configs
-    # app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-    # app.config['MAIL_PORT'] = 465
-    # app.config['MAIL_USERNAME'] = 'vanessa.onica@gmail.com'
-    # app.config['MAIL_PASSWORD'] = 'urbskwoytvlmzowc' # App Password used 
-    # app.config['MAIL_USE_TLS'] = False
-    # app.config['MAIL_USE_SSL'] = True        
+    receiver_email = 'vanessa.aubin@hotmail.com'
+    
+    msg = Message()
+    msg.subject = 'Test Email!'
+    msg.body = 'Successful Registration'
+    msg.recipients = ['vanessa.aubin@hotmail.com']
+    mail.send(msg)
+    return print('Success')
+   

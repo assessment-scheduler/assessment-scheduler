@@ -1,12 +1,14 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, get_flashed_messages, session
 from flask_login import current_user
+from flask import current_app as app
+from flask_mail import Mail, Message
+from mailbox import Message
 from sqlalchemy import not_
 from App.controllers import Staff
 from App.controllers import Course, Semester
 from App.controllers import CourseAssessment
 from App.database import db
 from App.models.assessment import Assessment
-from App.send_email import send_mail
 import json
 from flask_jwt_extended import current_user as jwt_current_user, get_jwt_identity
 from flask_jwt_extended import jwt_required
@@ -192,6 +194,18 @@ def get_week_range(iso_date_str):
     saturday_date = sunday_date + timedelta(days=6) #get saturday's date
     return sunday_date, saturday_date
 
+# Sends confirmation email to staff upon registering
+@staff_views.route('/send_email', methods=['GET','POST'])
+def send_email():
+    mail = Mail(app) # Create mail instance
+
+    msg = Message()
+    msg.subject = 'Test Email!'
+    msg.body = 'Successful Registration'
+    msg.recipients = ['vanessa.aubin@hotmail.com']
+    mail.send(msg)
+    return render_template('login.html')  
+
 # Retrieves staff info and stores it in database ie. register new staff
 @staff_views.route('/register', methods=['POST'])
 def register_staff_action():
@@ -205,8 +219,7 @@ def register_staff_action():
          
         # Field Validation is on HTML Page!
         register_staff(firstName, lastName, staffID, status, email, pwd)
-        send_mail(email) # Send confirmation email to staff upon successful registration
-        return render_template('login.html')  # Must login after registration to get access token
+        return redirect(url_for('staff_views.send_email'))  
     
 # Gets account page
 @staff_views.route('/account', methods=['GET'])
