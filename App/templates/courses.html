@@ -16,6 +16,7 @@
         {% for course in courses %}
         <tr class="course-row" data="{{ course.courseCode }}">
           <td>{{course.courseCode }}</td> 
+          <td>{{course.courseTitle }}</td> 
         </tr>
         {% endfor %}
       </tbody>

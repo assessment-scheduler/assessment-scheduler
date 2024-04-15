@@ -220,7 +220,8 @@ def register_staff_action():
          
         # Field Validation is on HTML Page!
         register_staff(firstName, lastName, staffID, status, email, pwd)
-        return redirect(url_for('staff_views.send_email'))  
+        return render_template('login.html')  
+        # return redirect(url_for('staff_views.send_email'))  
     
 # Gets account page
 @staff_views.route('/account', methods=['GET'])
