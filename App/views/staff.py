@@ -164,7 +164,8 @@ def detect_clash(id):
     new_assessment=get_CourseAsm_id(id)                     #get current assessment info
     compare_code=new_assessment.courseCode.replace(' ','')
     all_assessments = CourseAssessment.query.filter(not_(CourseAssessment.a_ID.in_([2, 4, 8]))).all()
-    print(all_assessments)
+    if not new_assessment.endDate: #dates not set yet
+        return False
     relevant_assessments=[]
     for a in all_assessments:
         code=a.courseCode.replace(' ','')
