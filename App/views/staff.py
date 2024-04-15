@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify, render_template, redirect, url_fo
 from flask_login import current_user
 from flask import current_app as app
 from flask_mail import Mail, Message
-from mailbox import Message
 from sqlalchemy import not_
 from App.controllers import Staff
 from App.controllers import Course, Semester
@@ -199,10 +198,11 @@ def get_week_range(iso_date_str):
 def send_email():
     mail = Mail(app) # Create mail instance
 
-    msg = Message()
-    msg.subject = 'Test Email!'
-    msg.body = 'Successful Registration'
-    msg.recipients = ['vanessa.aubin@hotmail.com']
+    subject = 'Test Email!'
+    receiver = request.form.get('email')
+    body = 'Successful Registration'
+    
+    msg = Message(subject, recipients=[receiver], html=body)
     mail.send(msg)
     return render_template('login.html')  
 

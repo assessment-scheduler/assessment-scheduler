@@ -15,6 +15,7 @@ def load_config():
         config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI')
         config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
         config['DEBUG'] = config['ENV'].upper() != 'PRODUCTION'
+
         delta = int(os.environ.get('JWT_ACCESS_TOKEN_EXPIRES', 7))
 
     config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=int(delta))
@@ -24,6 +25,11 @@ def load_config():
     config['PREFERRED_URL_SCHEME'] = 'https'
     config['UPLOADED_PHOTOS_DEST'] = "App/uploads"
     config["JWT_TOKEN_LOCATION"] = ["headers"]
+    config['MAIL_SERVER'] = 'smtp.gmail.com'
+    config['MAIL_PORT'] = 465
+    config['MAIL_USERNAME'] = 'assessment.scheduler.emails@gmail.com'
+    config['MAIL_PASSWORD'] = 'mygl qlni lqrz naxm' # App Password used 
+    config['MAIL_USE_TLS'] = True 
     return config
 
 config = load_config()
