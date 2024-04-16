@@ -1,20 +1,20 @@
-## Assessment Scheduler App
+# Assessment Scheduler App #
 
-# Collaborators:
--Ashley Jacob
--Vanessa Aubin
--Victor Solano
--Luc-Aidan Roberts
+### Collaborators: ###
+* Ashley Jacob
+* Vanessa Aubin
+* Victor Solano
+* Luc-Aidan Roberts
 
-# Dependencies & Tools:
--pip3
--FullCalendar
--Full List of packages are in requirements.txt file.
+### Dependencies & Tools: ###
+* pip3
+* FullCalendar
+* Full List of packages are in requirements.txt file.
 
-# To install Dependencies:
--pip install -r requirements.txt
+### To install Dependencies: ###
+pip install -r requirements.txt
 
-# How To Run
+### How To Run ###
 Run by executing
 ```
 npm run start
