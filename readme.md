@@ -14,7 +14,7 @@
 ### To install Dependencies: ###
 pip install -r requirements.txt
 
-### How To Run ###
+### How To Run: ###
 Run by executing
 1. flask init 
 2. flask asm
