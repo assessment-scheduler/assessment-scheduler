@@ -16,6 +16,6 @@ pip install -r requirements.txt
 
 ### How To Run ###
 Run by executing
-- flask init 
-- flask asm
-- flask run
+1. flask init 
+2. flask asm
+3. flask run
