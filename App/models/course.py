@@ -1,38 +1,37 @@
 from App.database import db
+from .class_size import ClassSize
 
 class Course(db.Model):
-  __tablename__ = 'course'
+    __tablename__ = 'course'
+  
+    course_code = db.Column(db.String(9), primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.String(1024), nullable=False)
+    level = db.Column(db.Integer, nullable=False)
+    semester = db.Column(db.Integer, nullable=False)
+    a_num = db.Column(db.Integer, nullable=False, default=0)
 
-  courseCode = db.Column(db.String(9), primary_key=True)
-  courseTitle = db.Column(db.String(120), nullable=False)
-  description = db.Column(db.String(1024), nullable=False)
-  level = db.Column(db.Integer, nullable=False)
-  semester = db.Column(db.Integer, nullable=False)
-  aNum = db.Column(db.Integer, nullable=False, default=0)
-  # creates reverse relationship from Course back to Assessment to access assessments for a specific course
-  # assessmentsAssigned = db.relationship('assessment', backref=db.backref('assessment', lazy='joined'))
+    def __init__(self, course_code, name, description, level, semester, a_num):
+        self.course_code = course_code
+        self.name = name
+        self.description = description
+        self.level = level
+        self.semester = semester
+        self.a_num = a_num
 
-  def __init__(self, courseCode, courseTitle, description, level, semester, aNum):
-    self.courseCode = courseCode
-    self.courseTitle = courseTitle
-    self.description = description
-    self.level = level
-    self.semester = semester
-    self.aNum = aNum
+    def to_json(self):
+        return {
+            "course_code": self.course_code,
+            "name": self.name,
+            "description": self.description,
+            "level": self.level,
+            "semester": self.semester,
+            "a_num": self.a_num,
+        }
 
-  def to_json(self):
-    return {
-      "courseCode" : self.courseCode,
-      "courseTitle" : self.courseTitle,
-      "description" : self.description,
-      "level" : self.level,
-      "semester" : self.semester,
-      "aNum" : self.aNum,
-    }
-
-  #Add new Course
-  def addCourse(courseCode, courseTitle, description, level, semester, aNum):
-    newCourse = Course(courseCode, courseTitle, description, level, semester, aNum)
-    db.session.add(newCourse)  #add to db
-    db.session.commit()
-    return newCourse
+    @staticmethod
+    def add_course(course_code, name, description, level, semester, a_num):
+        new_course = Course(course_code, name, description, level, semester, a_num)
+        db.session.add(new_course)  # add to db
+        db.session.commit()
+        return new_course

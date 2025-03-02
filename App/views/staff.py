@@ -13,6 +13,7 @@ from flask_jwt_extended import current_user as jwt_current_user, get_jwt_identit
 from flask_jwt_extended import jwt_required
 from datetime import date, timedelta
 import time
+import datetime
 
 from App.controllers.staff import (
     register_staff,
@@ -95,7 +96,15 @@ def get_calendar_page():
         assessments = []
 
     sem=Semester.query.order_by(Semester.id.desc()).first()
-    semester = {'start':sem.startDate,'end':sem.endDate}
+    if sem:
+        semester = {'start': sem.startDate, 'end': sem.endDate}
+    else:
+        # Default to current year if no semester exists
+        current_year = datetime.date.today().year
+        semester = {
+            'start': datetime.date(current_year, 1, 1),
+            'end': datetime.date(current_year, 12, 31)
+        }
 
     messages=[]
     message = session.pop('message',None)
@@ -160,7 +169,10 @@ def update_calendar_page():
 def detect_clash(id):
     clash=0
     sem=Semester.query.order_by(Semester.id.desc()).first() #get the weekly max num of assessments allowed per level
-    max=sem.maxAssessments
+    if sem:
+        max=sem.maxAssessments
+    else:
+        max=3  # Default value if no semester exists
     new_assessment=get_CourseAsm_id(id)                     #get current assessment info
     compare_code=new_assessment.courseCode.replace(' ','')
     all_assessments = CourseAssessment.query.filter(not_(CourseAssessment.a_ID.in_([2, 4, 8]))).all()

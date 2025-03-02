@@ -8,3 +8,6 @@ from .courseStaff import *
 from .courseAssessment import *
 from .courseProgramme import *
 from .semester import *
+from .class_size import *
+from .solver_config import SolverConfig
+from .problem import LinearProblem
