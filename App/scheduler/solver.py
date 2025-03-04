@@ -42,8 +42,8 @@ class ScheduleSolver:
         self.weekend_penalty = config.weekend_penalty
         
         # Calculate the date range for the semester
-        self.start_date = semester.startDate
-        self.end_date = semester.endDate
+        self.start_date = semester.start_date
+        self.end_date = semester.end_date
         self.num_days = (self.end_date - self.start_date).days + 1
         
         # Create a mapping of course and assessment combinations
@@ -57,9 +57,9 @@ class ScheduleSolver:
         Solve the scheduling problem and return the solution.
         
         Returns:
-            A tuple of (schedule, U_star, probability) where:
+            A tuple of (schedule, u_star, probability) where:
             - schedule is a list of tuples (day, week, day_of_week, course, assessment)
-            - U_star is the objective value
+            - u_star is the objective value
             - probability is the solution probability
         """
         model = cp_model.CpModel()
@@ -148,13 +148,13 @@ class ScheduleSolver:
             schedule.sort(key=lambda x: x[0])
             
             # Calculate objective value and probability
-            U_star = 0
+            u_star = 0
             if weekend_vars:
-                U_star = sum(solver.Value(var) for var in weekend_vars) * self.weekend_penalty
+                u_star = sum(solver.Value(var) for var in weekend_vars) * self.weekend_penalty
             
             # Calculate probability (placeholder)
             probability = 1.0
             
-            return schedule, U_star, probability
+            return schedule, u_star, probability
         
         return None, 0, 0 

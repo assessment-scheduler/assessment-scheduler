@@ -2,11 +2,12 @@ from App.database import db
 from datetime import datetime
 
 class ScheduleSolution(db.Model):
-    __tablename__ = 'schedule_solutions'
+    __tablename__ = 'schedule_solution'
+    
     id = db.Column(db.Integer, primary_key=True)
     config_id = db.Column(db.Integer, db.ForeignKey('solver_config.id'), nullable=False)
-    U_star = db.Column(db.Float, nullable=False)
-    Y_star = db.Column(db.Float, nullable=False)
+    u_star = db.Column(db.Float, nullable=False)
+    y_star = db.Column(db.Float, nullable=False)
     probability = db.Column(db.Float, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -20,19 +21,19 @@ class ScheduleSolution(db.Model):
         cascade='all, delete-orphan',
         lazy='dynamic')
     
-    def __init__(self, config_id, U_star, Y_star, probability):
+    def __init__(self, config_id, u_star, y_star, probability):
         self.config_id = config_id
-        self.U_star = U_star
-        self.Y_star = Y_star
+        self.u_star = u_star
+        self.y_star = y_star
         self.probability = probability
     
-    def get_json(self):
+    def to_json(self):
         return {
             'id': self.id,
             'config_id': self.config_id,
-            'U_star': self.U_star,
-            'Y_star': self.Y_star,
+            'u_star': self.u_star,
+            'y_star': self.y_star,
             'probability': self.probability,
             'created_at': self.created_at.isoformat(),
-            'assignments': [sa.get_json() for sa in self.assignments]
+            'assignments': [sa.to_json() for sa in self.assignments]
         }

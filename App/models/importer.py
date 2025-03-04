@@ -26,16 +26,16 @@ def load_courses(csv_file):
             reader = csv.DictReader(file)
             for row in reader:
                 course = Course(
-                    courseCode=row['courseCode'],
-                    courseTitle=row['courseTitle'],
+                    course_code=row.get('course_code', row.get('courseCode')),
+                    course_title=row.get('course_title', row.get('courseTitle')),
                     description=row.get('description', ''),
                     level=row.get('level', ''),
                     semester=row.get('semester', ''),
-                    preReqs=row.get('preReqs', ''),
-                    p_ID=row.get('p_ID', None)
+                    pre_reqs=row.get('pre_reqs', row.get('preReqs', '')),
+                    p_id=row.get('p_id', row.get('p_ID', None))
                 )
                 db.session.add(course)
-                courses[course.courseCode] = course
+                courses[course.course_code] = course
         
         db.session.commit()
         return courses
@@ -61,11 +61,17 @@ def load_assessments(csv_file, courses=None):
         with open(csv_file, 'r') as file:
             reader = csv.DictReader(file)
             for row in reader:
+                course_code = row.get('course_code', row.get('courseCode'))
                 assessment = Assessment(
-                    a_ID=row.get('a_ID'),
-                    category=row['category'],
-                    weight=float(row.get('weight', 0)),
-                    duration=int(row.get('duration', 0))
+                    course_id=course_code,
+                    name=row.get('name', ''),
+                    percentage=float(row.get('percentage', 0)),
+                    start_week=int(row.get('start_week', 0)),
+                    start_day=int(row.get('start_day', 0)),
+                    end_week=int(row.get('end_week', 0)),
+                    end_day=int(row.get('end_day', 0)),
+                    proctored=row.get('proctored', 'False').lower() == 'true',
+                    category=row.get('category', 'EXAM').strip()
                 )
                 db.session.add(assessment)
                 assessments.append(assessment)
@@ -94,18 +100,13 @@ def load_class_sizes(csv_file, courses=None):
         with open(csv_file, 'r') as file:
             reader = csv.DictReader(file)
             for row in reader:
-                course_code = row['courseCode']
-                
-                # Get course ID if courses dictionary is provided
-                course_id = None
-                if courses and course_code in courses:
-                    course_id = courses[course_code].id
+                course_code = row.get('course_code', row.get('courseCode'))
+                other_course_code = row.get('other_course_code', row.get('other_courseCode'))
                 
                 class_size = ClassSize(
                     course_code=course_code,
-                    course_id=course_id,
-                    size=int(row['size']),
-                    year=int(row.get('year', 2023))
+                    other_course_code=other_course_code,
+                    size=int(row.get('size', 0))
                 )
                 db.session.add(class_size)
                 class_sizes.append(class_size)

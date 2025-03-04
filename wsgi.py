@@ -10,10 +10,15 @@ from App.controllers import create_user, get_all_users_json, get_all_users, init
 from App.models.solver import LPSolver
 from App.controllers.lp import create_sample_problem, solve_lp_problem
 from App.models.importer import load_courses, load_assessments, load_class_sizes
-
+from App.models.problem import LinearProblem
+from App.models.constraint import LPConstraint
+from App.models.variable import LPVariable
+from App.models.kris import solve_stage1, solve_stage2, print_schedule
 from App.controllers.course import (
     add_Course
 )
+from App.models.schedule_solution import ScheduleSolution
+from App.models.scheduled_assessment import ScheduledAssessment
 
 # Get migration instance
 
@@ -22,8 +27,11 @@ app = create_app()
 migrate = get_migrate(app)
 
 # Add this after the app is created but before the lp_cli commands
-lp_cli = app.cli.group('lp', help='Linear programming commands')
-schedule_cli = app.cli.group('schedule', help='Scheduling commands')
+lp_cli = AppGroup('lp', help='Linear programming commands')
+schedule_cli = AppGroup('schedule', help='Scheduling commands')
+
+app.cli.add_command(lp_cli)
+app.cli.add_command(schedule_cli)
 
 # This command creates and initializes the database
 @app.cli.command("init", help="Creates and initializes the database")
@@ -32,7 +40,7 @@ def initialize():
     # db.init_app(app)
     db.create_all()
     # bob = Staff("bob", "test", 300456, "Lecturer 1", "bob@gmail.com", "bobpass")
-    bob = Admin(u_ID=999, email="bob@gmail.com", password="bobpass")
+    bob = Admin(u_id=999, email="bob@gmail.com", password="bobpass")
     db.session.add(bob)
     db.session.commit()
     print(bob)
@@ -149,18 +157,26 @@ def sample_problem_command():
         objective="max",
         objective_function="3x1 + 2x2"
     )
+    db.session.add(problem)
+    db.session.commit()
     
     # Add variables
     x1 = LPVariable("x1", lower_bound=0)
     x2 = LPVariable("x2", lower_bound=0)
-    problem.add_variable(x1)
-    problem.add_variable(x2)
+    x1.problem_id = problem.id
+    x2.problem_id = problem.id
+    db.session.add(x1)
+    db.session.add(x2)
+    db.session.commit()
     
     # Add constraints with relation operators
-    const1 = LPConstraint("x1 + x2 <= 10", "<=")  # Fixed: Added <= and proper RHS
-    const2 = LPConstraint("2x1 + x2 <= 16", "<=")  # Fixed: Added <= and proper RHS
-    problem.add_constraint(const1)
-    problem.add_constraint(const2)
+    const1 = LPConstraint("x1 + x2 <= 10", "<=")
+    const2 = LPConstraint("2x1 + x2 <= 16", "<=")
+    const1.problem_id = problem.id
+    const2.problem_id = problem.id
+    db.session.add(const1)
+    db.session.add(const2)
+    db.session.commit()
     
     # Create solver and solve
     solver = LPSolver(problem)
@@ -170,14 +186,7 @@ def sample_problem_command():
     print("Problem Definition:")
     problem.print_problem()
     print("\nSolution:")
-    print(f"Status: {result['status']}")
-    if result['status'] == 'OPTIMAL':
-        print(f"Objective Value: {result['objective_value']}")
-        print("Variable Values:")
-        for var_name, value in result['variables'].items():
-            print(f"  {var_name}: {value}")
-    else:
-        print(f"Error: {result.get('error', 'Unknown error')}")
+    print(result)
 
 @lp_cli.command("solve", help="Solve a linear programming problem")
 def solve_problem_command():
@@ -195,11 +204,11 @@ def solve_problem_command():
         print(f"Status: {result['status']}")
         print(f"Objective Value: {result['objective_value']}")
         print("\nVariable Values:")
-        for var_name, value in result['variables'].items():
+        for var_name, value in sorted(result['variables'].items()):
             print(f"  {var_name} = {value}")
     else:
         print(f"Status: {result['status']}")
-        print(f"Error: {result['error']}")
+        print(f"Error: {result.get('error', 'Unknown error')}")
 
 @schedule_cli.command("solve", help="Solve the scheduling problem using database data")
 def solve_schedule():
@@ -231,14 +240,26 @@ def solve_schedule():
     n = len(courses)
     c = [[0 for _ in range(n)] for _ in range(n)]
     
-    for i, course in enumerate(courses):
-        for class_size in course.class_sizes:
-            j = next(idx for idx, c in enumerate(courses) 
-                    if c.id == class_size.other_course_id)
+    # Get class sizes from database
+    class_sizes = ClassSize.query.all()
+    for class_size in class_sizes:
+        i = next((idx for idx, course in enumerate(courses) if course.course_code == class_size.course_code), None)
+        j = next((idx for idx, course in enumerate(courses) if course.course_code == class_size.other_course_code), None)
+        if i is not None and j is not None:
             c[i][j] = class_size.size
     
     # Generate phi matrix
     phi = [[1 if ci > 0 else 0 for ci in row] for row in c]
+    
+    # Create a LinearProblem object
+    problem = LinearProblem(
+        name="Assessment Scheduling",
+        description="Scheduling assessments to minimize clashes",
+        c=c,
+        phi=phi
+    )
+    db.session.add(problem)
+    db.session.commit()
     
     # Solve using config parameters
     U_star, solver, x = solve_stage1(courses_list, c, 
@@ -253,8 +274,8 @@ def solve_schedule():
     # Save solution
     solution = ScheduleSolution(
         config_id=config.id,
-        U_star=U_star,
-        Y_star=Y_star,
+        u_star=U_star,
+        y_star=Y_star,
         probability=probability
     )
     db.session.add(solution)
@@ -263,7 +284,7 @@ def solve_schedule():
     for day, week, day_of_week, course_name, assessment_name in schedule:
         assessment = Assessment.query.filter_by(name=assessment_name.split('-')[0]).first()
         if assessment:
-            scheduled = ScheduledAssignment(
+            scheduled = ScheduledAssessment(
                 solution_id=solution.id,
                 assessment_id=assessment.id,
                 scheduled_day=day

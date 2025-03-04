@@ -3,43 +3,43 @@ from App.models import Assessment
 from App.models import Course
 from App.database import db
 
-def add_CourseAsm(courseCode, a_ID, startDate, endDate, startTime, endTime, clashDetected):
+def add_course_assessment(course_code, a_id, start_date, end_date, start_time, end_time, clash_detected):
     #Add new Assessment to Course
-    # newAsm = addCourseAsg(courseCode, a_ID, startDate, endDate, startTime, endTime)
+    # newAsm = add_course_asg(course_code, a_id, start_date, end_date, start_time, end_time)
     # return newAsm
-    newAsg = CourseAssessment(courseCode, a_ID, startDate, endDate, startTime, endTime, clashDetected)
-    db.session.add(newAsg)  #add to db
+    new_asg = CourseAssessment(course_code, a_id, start_date, end_date, start_time, end_time, clash_detected)
+    db.session.add(new_asg)  #add to db
     db.session.commit()
-    return newAsg
+    return new_asg
 
-def list_Assessments():
+def list_assessments():
     return Assessment.query.all()  
 
-def get_Assessment_id(aType):
-    assessment=Assessment.query.filter_by(category=aType).first()
-    return assessment.a_ID
+def get_assessment_id(a_type):
+    assessment = Assessment.query.filter_by(category=a_type).first()
+    return assessment.a_id
 
-def get_Assessment_type(id):
-    assessment=Assessment.query.filter_by(a_ID=id).first()
+def get_assessment_type(id):
+    assessment = Assessment.query.filter_by(a_id=id).first()
     return assessment.category.name
 
-def get_CourseAsm_id(id):
+def get_course_assessment_by_id(id):
     return CourseAssessment.query.filter_by(id=id).first()   
 
-def get_CourseAsm_code(code):
-    return CourseAssessment.query.filter_by(courseCode=code).all()
+def get_course_assessment_by_code(code):
+    return CourseAssessment.query.filter_by(course_code=code).all()
 
-def get_CourseAsm_level(level):
-    courses = Course.query(level=level).all()
-    assessments=[]
+def get_course_assessment_by_level(level):
+    courses = Course.query.filter_by(level=level).all()
+    assessments = []
     for c in courses:
-        assessments = assessments + get_CourseAsm_code(c)
+        assessments = assessments + get_course_assessment_by_code(c.course_code)
     return assessments
 
-def delete_CourseAsm(courseAsm):
-    db.session.delete(courseAsm)
+def delete_course_assessment(course_asm):
+    db.session.delete(course_asm)
     db.session.commit()
     return True        
      
 def get_clashes():
-    return CourseAssessment.query.filter_by(clashDetected=True).all()
+    return CourseAssessment.query.filter_by(clash_detected=True).all()

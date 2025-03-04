@@ -56,7 +56,7 @@ def generate_schedule(courses, assessments, min_spacing=3, max_per_day=2, avoid_
         avoid_weekends: Whether to avoid scheduling on weekends
     
     Returns:
-        A tuple of (schedule, U_star, probability) or (None, 0, 0) if no solution is found
+        A tuple of (schedule, u_star, probability) or (None, 0, 0) if no solution is found
     """
     # Get current semester
     semester = get_current_semester()
@@ -115,7 +115,7 @@ def apply_schedule(schedule, courses, assessments):
             
             if course and assessment:
                 # Calculate the date
-                date = semester.startDate + datetime.timedelta(days=day)
+                date = semester.start_date + datetime.timedelta(days=day)
                 
                 # Find the course assessment
                 course_assessment = CourseAssessment.query.filter_by(

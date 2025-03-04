@@ -12,16 +12,26 @@ def create_sample_problem():
     # Create a simple maximization problem
     problem = LinearProblem(
         name="Sample Problem",
-        objective="3x + 4y",
-        objective_type="max",
-        constraints=[
-            "x + y <= 10",
-            "2x + y <= 15",
-            "x >= 0",
-            "y >= 0"
-        ],
-        variables=["x", "y"]
+        description="Maximize 3x1 + 2x2 subject to constraints",
+        c=[[0, 0], [0, 0]],  # Placeholder for c matrix
+        phi=[[0, 0], [0, 0]],  # Placeholder for phi matrix
+        objective="max",
+        objective_function="3x1 + 2x2"
     )
+    
+    # Add variables
+    from App.models.variable import LPVariable
+    x1_var = LPVariable("x1", lower_bound=0)
+    x2_var = LPVariable("x2", lower_bound=0)
+    problem.add_variable(x1_var)
+    problem.add_variable(x2_var)
+    
+    # Add constraints
+    from App.models.constraint import LPConstraint
+    constraint1 = LPConstraint("x1 + x2 <= 10", "<=")
+    constraint2 = LPConstraint("2x1 + x2 <= 16", "<=")
+    problem.add_constraint(constraint1)
+    problem.add_constraint(constraint2)
     
     # Save to database
     db.session.add(problem)
@@ -40,7 +50,9 @@ def solve_lp_problem(problem_id=None):
         Dictionary with solution details
     """
     # Get the problem
-    if problem_id:
+    if isinstance(problem_id, LinearProblem):
+        problem = problem_id
+    elif problem_id:
         problem = LinearProblem.query.get(problem_id)
     else:
         problem = LinearProblem.query.order_by(LinearProblem.id.desc()).first()

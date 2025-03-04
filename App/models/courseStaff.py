@@ -6,20 +6,20 @@ class CourseStaff(db.Model):
   __tablename__ = 'courseStaff'
 
   id = db.Column(db.Integer, primary_key= True, autoincrement=True)
-  u_ID = db.Column(db.Integer, db.ForeignKey('staff.u_ID'), nullable=False)
-  courseCode = db.Column(db.String(120), db.ForeignKey('course.courseCode'), nullable=False)
+  u_id = db.Column(db.Integer, db.ForeignKey('staff.u_id'), nullable=False)
+  course_code = db.Column(db.String(120), db.ForeignKey('course.course_code'), nullable=False)
 
-def __init__(self, u_ID, courseCode):
-  self.u_ID = u_ID
-  self.courseCode = courseCode
+def __init__(self, u_id, course_code):
+  self.u_id = u_id
+  self.course_code = course_code
 
 def to_json(self):
   return{
-    "u_ID":self.u_ID,
-    "courseCode":self.courseCode,
+    "u_ID":self.u_id,
+    "courseCode":self.course_code,
   }
 
 #Add new CourseStaff
-def addCourseStaff(self):
+def add_course_staff(self):
   db.session.add(self)
   db.session.commit()

@@ -22,12 +22,13 @@ class LPSolver:
             if not part.strip():
                 continue
 
-            match: re.Match[str] | None = re.match(r'^(\d*\.?\d*)?([a-zA-Z]\d+)$', part)
+            # Match patterns like "3x1", "x1", "3.5x1"
+            match: re.Match[str] | None = re.match(r'^(\d*\.?\d*)?([a-zA-Z]\w*)$', part)
             if match:
                 coeff_str, var = match.groups()
                 coeff: float = float(coeff_str) if coeff_str else 1.0
                 terms.append((current_coeff * coeff, var))
-            
+        
         return terms
 
 
@@ -83,17 +84,26 @@ class LPSolver:
 
     def _parse_constraint(self, expression: str) -> Tuple[List[Tuple[float, str]], float, str]:
         """Parses a constraint and returns (terms, RHS value, relation type)."""
-        expr_parts = expression.split()
-        for i, part in enumerate(expr_parts):
-            if part in ['<=', '>=', '=']:
-                try:
-                    rhs_value = float(expr_parts[i + 1])
-                    lhs_expr = ' '.join(expr_parts[:i])
-                    lhs_terms = self._parse_expression(lhs_expr)
-                    return lhs_terms, rhs_value, part
-                except (ValueError, IndexError):
-                    return None, None, None  # Invalid constraint format
-        return None, None, None
+        # Find the relation operator
+        relation_match = re.search(r'(<=|>=|=)', expression)
+        if not relation_match:
+            return None, None, None  # Invalid constraint format
+        
+        relation_type = relation_match.group(1)
+        parts = expression.split(relation_type)
+        
+        if len(parts) != 2:
+            return None, None, None  # Invalid constraint format
+        
+        lhs_expr = parts[0].strip()
+        rhs_expr = parts[1].strip()
+        
+        try:
+            rhs_value = float(rhs_expr)
+            lhs_terms = self._parse_expression(lhs_expr)
+            return lhs_terms, rhs_value, relation_type
+        except ValueError:
+            return None, None, None  # Invalid RHS value
 
     def _create_constraint(self, relation_type: str, rhs_value: float) -> pywraplp.Constraint:
         """Creates a constraint based on the relation type."""

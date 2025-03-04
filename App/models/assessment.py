@@ -1,22 +1,18 @@
 from App.database import db
-import enum
+from enum import Enum
 
-class Category(enum.Enum):
-    EXAM = "Exam"
-    ASSIGNMENT = "Assignment"
-    QUIZ = "Quiz"
-    PROJECT = "Project"
-    DEBATE = "Debate"
-    PRESENTATION = "Presentation"
-    ORALEXAM = "Oral Exam"
-    PARTICIPATION = "Participation"
+class Category(Enum):
+    EXAM = "EXAM"
+    QUIZ = "QUIZ"
+    PROJECT = "PROJECT"
+    ASSIGNMENT = "ASSIGNMENT"
 
 class Assessment(db.Model):
-    __tablename__ = 'assessments'
-
-    id = db.Column(db.Integer, primary_key=True, nullable=False, autoincrement=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
-    name = db.Column(db.String(50), nullable=False)
+    __tablename__ = 'assessment'
+    
+    a_id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.String(9), db.ForeignKey('course.course_code'), nullable=False)
+    name = db.Column(db.String(120), nullable=False)
     percentage = db.Column(db.Float, nullable=False)
     start_week = db.Column(db.Integer, nullable=False)
     start_day = db.Column(db.Integer, nullable=False)
@@ -28,7 +24,8 @@ class Assessment(db.Model):
     # Relationship
     course = db.relationship('Course', back_populates='assessments')
 
-    def __init__(self, name, percentage, start_week, start_day, end_week, end_day, proctored=False, category=None):
+    def __init__(self, course_id, name, percentage, start_week, start_day, end_week, end_day, proctored, category):
+        self.course_id = course_id
         self.name = name
         self.percentage = percentage
         self.start_week = start_week
@@ -38,15 +35,16 @@ class Assessment(db.Model):
         self.proctored = proctored
         self.category = category
 
-    def get_json(self):
+    def to_json(self):
         return {
-            'id': self.id,
-            'name': self.name,
-            'percentage': self.percentage,
-            'start_week': self.start_week,
-            'start_day': self.start_day,
-            'end_week': self.end_week,
-            'end_day': self.end_day,
-            'proctored': self.proctored,
-            'category': self.category
+            "a_id": self.a_id,
+            "course_id": self.course_id,
+            "name": self.name,
+            "percentage": self.percentage,
+            "start_week": self.start_week,
+            "start_day": self.start_day,
+            "end_week": self.end_week,
+            "end_day": self.end_day,
+            "proctored": self.proctored,
+            "category": self.category.value
         }

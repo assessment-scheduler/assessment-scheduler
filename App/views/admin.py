@@ -20,7 +20,7 @@ from App.controllers.semester import(
 
 from App.controllers.courseAssessment import(
     get_clashes,
-    get_CourseAsm_id
+    get_course_assessment_by_id
 )
 
 admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
@@ -47,11 +47,11 @@ def index():
 @jwt_required(Admin)
 def new_semester_action():
     if request.method == 'POST':
-        semBegins = request.form.get('teachingBegins')
-        semEnds = request.form.get('teachingEnds')
-        semChoice = request.form.get('semester')
-        maxAssessments = request.form.get('maxAssessments') #used for class detection feature
-        add_sem(semBegins,semEnds,semChoice,maxAssessments)
+        start_date = request.form.get('teachingBegins')
+        end_date = request.form.get('teachingEnds')
+        sem_num = request.form.get('semester')
+        max_assessments = request.form.get('maxAssessments') #used for class detection feature
+        add_sem(start_date, end_date, sem_num, max_assessments)
 
         # Return course upload page to upload cvs file for courses offered that semester
         return render_template('uploadFiles.html')  
@@ -168,20 +168,30 @@ def get_clashes_page():
         start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
         for a in all_assessments:
-            if start_date <= a.startDate <= end_date or start_date <= a.endDate <= end_date:
+            if start_date <= a.start_date <= end_date or start_date <= a.end_date <= end_date:
                 searchResults.append(a)
     #for table
     assessments=get_clashes()
     return render_template('clashes.html',assessments=assessments,results=searchResults)
 
+@admin_views.route('/clashes/<string:aID>', methods=['GET'])
+@jwt_required(Admin)
+def get_clash_page(aID):
+    ca=get_course_assessment_by_id(aID)
+    # ... existing code ...
 
+@admin_views.route('/clashes/<string:aID>/resolve', methods=['POST'])
+@jwt_required(Admin)
+def resolve_clash(aID):
+    ca=get_course_assessment_by_id(aID)
+    # ... existing code ...
 
 @admin_views.route("/acceptOverride/<int:aID>", methods=['POST'])
 @jwt_required(Admin)
 def accept_override(aID):
-    ca=get_CourseAsm_id(aID)
+    ca=get_course_assessment_by_id(aID)
     if ca:
-        ca.clashDetected=False
+        ca.clash_detected=False
         db.session.commit()
         print("Accepted override.")
     return redirect(url_for('admin_views.get_clashes_page'))
@@ -189,13 +199,13 @@ def accept_override(aID):
 @admin_views.route("/rejectOverride/<int:aID>", methods=['POST'])
 @jwt_required(Admin)
 def reject_override(aID):
-    ca=get_CourseAsm_id(aID)
+    ca=get_course_assessment_by_id(aID)
     if ca:
-        ca.clashDetected=False
-        ca.startDate=None
-        ca.endDate=None
-        ca.startTime=None
-        ca.endTime=None
+        ca.clash_detected=False
+        ca.start_date=None
+        ca.end_date=None
+        ca.start_time=None
+        ca.end_time=None
         db.session.commit()
         print("Rejected override.")
     return redirect(url_for('admin_views.get_clashes_page'))

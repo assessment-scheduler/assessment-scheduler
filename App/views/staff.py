@@ -31,13 +31,13 @@ from App.controllers.user import(
 )
 
 from App.controllers.courseAssessment import(
-    get_CourseAsm_id,
-    get_CourseAsm_code,
-    add_CourseAsm,
-    delete_CourseAsm,
-    list_Assessments,
-    get_Assessment_id,
-    get_Assessment_type
+    get_course_assessment_by_id,
+    get_course_assessment_by_code,
+    add_course_assessment,
+    delete_course_assessment,
+    list_assessments,
+    get_assessment_id,
+    get_assessment_type
 )
 
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
@@ -51,53 +51,44 @@ def get_signup_page():
 @staff_views.route('/calendar', methods=['GET'])
 @jwt_required()
 def get_calendar_page():
-    id=get_uid(get_jwt_identity())  #gets u_id from email token
-
-    # Get courses for filter
-    courses=[]
-    allCourses=[course.courseCode for course in list_Courses()]
-    myCourses=get_registered_courses(id)
-    for course in allCourses:
-        if course not in myCourses:
-            courses.append(course)
-
-    # Get assessments for registered courses
-    all_assessments=[]
-    for course in myCourses:
-        all_assessments= all_assessments + get_CourseAsm_code(course)
-
-    # Format assessments for calendar js - registered courses
-    myAssessments=[]
-    for item in all_assessments:
-        obj=format_assessment(item)
-        myAssessments.append(obj)
-
-    # Get assessments for all other courses (for filters)
-    other_assessments=[]
-    for c in courses:
-        other_assessments = other_assessments + get_CourseAsm_code(c)
-
-    # Format assessments for calendar js - filters
-    assessments=[]
-    for item in other_assessments:
-        if not item.clashDetected:
-            obj=format_assessment(item)
-            assessments.append(obj)
-
-
-    # Ensure courses, myCourses, and assessments are not empty
-    if not courses:
-        courses = []
-    if not myCourses:
-        myCourses = []
-    if not myAssessments:
-        myAssessments = []
+    # Get the current user
+    current_user = get_jwt_identity()
+    staff = Staff.query.filter_by(email=current_user).first()
+    
+    # Get all courses
+    courses = Course.query.all()
+    
+    # Get courses assigned to this staff
+    my_courses = []
+    if staff:
+        my_courses = get_registered_courses(staff.u_ID)
+    
+    # Get assessments for this staff's courses
+    my_assessments = []
+    if my_courses:
+        for course in my_courses:
+            assessments = get_course_assessment_by_code(course)
+            for assessment in assessments:
+                my_assessments.append(assessment)
+    
+    # Get assessments for all other courses
+    assessments = []
+    for course in courses:
+        if course not in my_courses:
+            course_assessments = get_course_assessment_by_code(course)
+            for assessment in course_assessments:
+                assessments.append(assessment)
+    
+    if not my_courses:
+        my_courses = []
+    if not my_assessments:
+        my_assessments = []
     if not assessments:
         assessments = []
 
-    sem=Semester.query.order_by(Semester.id.desc()).first()
+    sem = Semester.query.order_by(Semester.id.desc()).first()
     if sem:
-        semester = {'start': sem.startDate, 'end': sem.endDate}
+        semester = {'start': sem.start_date, 'end': sem.end_date}
     else:
         # Default to current year if no semester exists
         current_year = datetime.date.today().year
@@ -106,33 +97,33 @@ def get_calendar_page():
             'end': datetime.date(current_year, 12, 31)
         }
 
-    messages=[]
-    message = session.pop('message',None)
+    messages = []
+    message = session.pop('message', None)
     if message:
         messages.append(message)
-    return render_template('index.html', courses=courses, myCourses=myCourses, assessments=myAssessments, semester=semester, otherAssessments=assessments,messages=messages) 
+    return render_template('index.html', courses=courses, myCourses=my_courses, assessments=my_assessments, semester=semester, otherAssessments=assessments, messages=messages)
 
 
 def format_assessment(item):
-    if item.startDate is None:
-        obj={'courseCode':item.courseCode,
-            'a_ID':get_Assessment_type(item.a_ID),
+    if item.start_date is None:
+        obj={'courseCode':item.course_code,
+            'a_ID':get_assessment_type(item.a_id),
             'caNum':item.id,
-            'startDate':item.startDate,
-            'endDate':item.endDate,
-            'startTime':item.startTime,
-            'endTime':item.endTime,
-            'clashDetected':item.clashDetected
+            'startDate':item.start_date,
+            'endDate':item.end_date,
+            'startTime':item.start_time,
+            'endTime':item.end_time,
+            'clashDetected':item.clash_detected
             }
     else:    
-        obj={'courseCode':item.courseCode,
-            'a_ID':get_Assessment_type(item.a_ID),
+        obj={'courseCode':item.course_code,
+            'a_ID':get_assessment_type(item.a_id),
             'caNum':item.id,
-            'startDate':item.startDate.isoformat(),
-            'endDate':item.endDate.isoformat(),
-            'startTime':item.startTime.isoformat(),
-            'endTime':item.endTime.isoformat(),
-            'clashDetected':item.clashDetected
+            'startDate':item.start_date.isoformat(),
+            'endDate':item.end_date.isoformat(),
+            'startTime':item.start_time.isoformat(),
+            'endTime':item.end_time.isoformat(),
+            'clashDetected':item.clash_detected
             }
     return obj
         
@@ -142,56 +133,57 @@ def format_assessment(item):
 def update_calendar_page():
     # Retrieve data from page
     id = request.form.get('id')
-    startDate = request.form.get('startDate')
-    startTime = request.form.get('startTime')
-    endDate = request.form.get('endDate')
-    endTime = request.form.get('endTime')
+    start_date = request.form.get('startDate')
+    start_time = request.form.get('startTime')
+    end_date = request.form.get('endDate')
+    end_time = request.form.get('endTime')
 
     # Get course assessment
-    assessment=get_CourseAsm_id(id)
+    assessment=get_course_assessment_by_id(id)
     if assessment:
-        assessment.startDate=startDate
-        assessment.endDate=endDate
-        assessment.startTime=startTime
-        assessment.endTime=endTime
+        assessment.start_date=start_date
+        assessment.end_date=end_date
+        assessment.start_time=start_time
+        assessment.end_time=end_time
 
         db.session.commit()
         
         clash=detect_clash(assessment.id)
         if clash:
-            assessment.clashDetected = True
+            assessment.clash_detected = True
             db.session.commit()
-            session['message'] = assessment.courseCode+" - Clash detected! The maximum amount of assessments for this level has been exceeded."
+            session['message'] = assessment.course_code+" - Clash detected! The maximum amount of assessments for this level has been exceeded."
         else:
             session['message'] = "Assessment modified"
     return session['message']
 
 def detect_clash(id):
-    clash=0
-    sem=Semester.query.order_by(Semester.id.desc()).first() #get the weekly max num of assessments allowed per level
+    clash = 0
+    sem = Semester.query.order_by(Semester.id.desc()).first() # get the weekly max num of assessments allowed per level
     if sem:
-        max=sem.maxAssessments
+        max_assessments = sem.max_assessments
     else:
-        max=3  # Default value if no semester exists
-    new_assessment=get_CourseAsm_id(id)                     #get current assessment info
-    compare_code=new_assessment.courseCode.replace(' ','')
-    all_assessments = CourseAssessment.query.filter(not_(CourseAssessment.a_ID.in_([2, 4, 8]))).all()
-    if not new_assessment.endDate: #dates not set yet
+        max_assessments = 3  # Default value if no semester exists
+    
+    new_assessment = get_course_assessment_by_id(id)  # get current assessment info
+    compare_code = new_assessment.course_code.replace(' ','')
+    all_assessments = CourseAssessment.query.filter(not_(CourseAssessment.a_id.in_([2, 4, 8]))).all()
+    if not new_assessment.end_date: #dates not set yet
         return False
     relevant_assessments=[]
     for a in all_assessments:
-        code=a.courseCode.replace(' ','')
+        code=a.course_code.replace(' ','')
         if (code[4]==compare_code[4]) and (a.id!=new_assessment.id): #course are in the same level
-            if a.startDate is not None: #assessment has been scheduled
+            if a.start_date is not None: #assessment has been scheduled
                 relevant_assessments.append(a)
 
-    sunday,saturday=get_week_range(new_assessment.endDate.isoformat())
+    sunday,saturday=get_week_range(new_assessment.end_date.isoformat())
     for a in relevant_assessments:
-        dueDate=a.endDate
-        if sunday <= dueDate <= saturday:
+        due_date=a.end_date
+        if sunday <= due_date <= saturday:
             clash=clash+1
 
-    return clash>=max
+    return clash>=max_assessments
 
 def get_week_range(iso_date_str):
     date_obj = date.fromisoformat(iso_date_str)
@@ -268,26 +260,26 @@ def get_assessments_page():
     
     assessments=[]
     for course in registered_courses:
-        for assessment in get_CourseAsm_code(course):  #get assessments by course code
-            if assessment.startDate is None:
+        for assessment in get_course_assessment_by_code(course):  #get assessments by course code
+            if assessment.start_date is None:
                 obj={'id': assessment.id,
-                'courseCode': assessment.courseCode,
-                'a_ID': get_Assessment_type(assessment.a_ID),   #convert a_ID to category value
-                'startDate': assessment.startDate,
-                'endDate': assessment.endDate,
-                'startTime': assessment.startTime,
-                'endTime': assessment.endTime,
-                'clashDetected':assessment.clashDetected
+                'courseCode': assessment.course_code,
+                'a_ID': get_assessment_type(assessment.a_id),   #convert a_ID to category value
+                'startDate': assessment.start_date,
+                'endDate': assessment.end_date,
+                'startTime': assessment.start_time,
+                'endTime': assessment.end_time,
+                'clashDetected':assessment.clash_detected
                 }
             else:
                 obj={'id': assessment.id,
-                    'courseCode': assessment.courseCode,
-                    'a_ID': get_Assessment_type(assessment.a_ID),   #convert a_ID to category value
-                    'startDate': assessment.startDate.isoformat(),
-                    'endDate': assessment.endDate.isoformat(),
-                    'startTime': assessment.startTime.isoformat(),
-                    'endTime': assessment.endTime.isoformat(),
-                    'clashDetected':assessment.clashDetected
+                    'courseCode': assessment.course_code,
+                    'a_ID': get_assessment_type(assessment.a_id),   #convert a_ID to category value
+                    'startDate': assessment.start_date.isoformat(),
+                    'endDate': assessment.end_date.isoformat(),
+                    'startTime': assessment.start_time.isoformat(),
+                    'endTime': assessment.end_time.isoformat(),
+                    'clashDetected':assessment.clash_detected
                     }
             assessments.append(obj)     #add object to list of assessments
 
@@ -299,83 +291,78 @@ def get_assessments_page():
 def get_add_assessments_page():
     id=get_uid(get_jwt_identity())  #gets u_id from email token
     registered_courses = get_registered_courses(id)
-    allAsm = list_Assessments()
+    allAsm = list_assessments()
     return render_template('addAssessment.html', courses=registered_courses, assessments=allAsm)   
 
 # Retrieves assessment info and creates new assessment for course
 @staff_views.route('/addAssessment', methods=['POST'])
 @jwt_required()
 def add_assessments_action():       
-    course = request.form.get('myCourses')
-    asmType = request.form.get('AssessmentType')
-    startDate = request.form.get('startDate')
-    endDate = request.form.get('endDate')
-    startTime = request.form.get('startTime')
-    endTime = request.form.get('endTime')
-    
-    if startDate=='' or endDate=='' or startTime=='' or endTime=='':
-        startDate=None
-        endDate=None
-        startTime=None
-        endTime=None
+    course = request.form.get('course')
+    asmType = request.form.get('asmType')
+    start_date = request.form.get('startDate')
+    end_date = request.form.get('endDate')
+    start_time = request.form.get('startTime')
+    end_time = request.form.get('endTime')
 
-    newAsm = add_CourseAsm(course, asmType, startDate, endDate, startTime, endTime, False)  
-    if newAsm.startDate:
+    if start_date=='' or end_date=='' or start_time=='' or end_time=='':
+        start_date=None
+        end_date=None
+        start_time=None
+        end_time=None
+
+    newAsm = add_course_assessment(course, asmType, start_date, end_date, start_time, end_time, False)  
+    if newAsm.start_date:
         clash=detect_clash(newAsm.id)
         if clash:
-            newAsm.clashDetected = True
+            newAsm.clash_detected = True
             db.session.commit()
-            flash("Clash detected! The maximum amount of assessments for this level has been exceeded.")
-            time.sleep(1)
-
+    
     return redirect(url_for('staff_views.get_assessments_page'))   
     
 
 # Modify selected assessment
 @staff_views.route('/modifyAssessment/<string:id>', methods=['GET'])
 def get_modify_assessments_page(id):
-    allAsm = list_Assessments()         #get assessment types
-    assessment=get_CourseAsm_id(id)     #get assessment details
+    allAsm = list_assessments()         #get assessment types
+    assessment=get_course_assessment_by_id(id)     #get assessment details
     return render_template('modifyAssessment.html', assessments=allAsm, ca=assessment) 
 
 # Gets Update assessment Page
 @staff_views.route('/modifyAssessment/<string:id>', methods=['POST'])
 def modify_assessment(id):
-    if request.method=='POST':
-        #get form details
-        course = request.form.get('myCourses')
-        asmType = request.form.get('AssessmentType')
-        startDate = request.form.get('startDate')
-        endDate = request.form.get('endDate')
-        startTime = request.form.get('startTime')
-        endTime = request.form.get('endTime')
+    if request.method == 'POST':
+        asmType = request.form.get('asmType')
+        start_date = request.form.get('startDate')
+        end_date = request.form.get('endDate')
+        start_time = request.form.get('startTime')
+        end_time = request.form.get('endTime')
 
         #update record
-        assessment=get_CourseAsm_id(id)
+        assessment=get_course_assessment_by_id(id)
         if assessment:
-            assessment.a_ID=asmType
-            if startDate!='' and endDate!='' and startTime!='' and endTime!='':
-                assessment.startDate=startDate
-                assessment.endDate=endDate
-                assessment.startTime=startTime
-                assessment.endTime=endTime
-
-            db.session.commit()
-
-            clash=detect_clash(assessment.id)
-            if clash:
-                assessment.clashDetected = True
+            assessment.a_id=asmType
+            if start_date!='' and end_date!='' and start_time!='' and end_time!='':
+                assessment.start_date=start_date
+                assessment.end_date=end_date
+                assessment.start_time=start_time
+                assessment.end_time=end_time
                 db.session.commit()
-                flash("Clash detected! The maximum amount of assessments for this level has been exceeded.")
-                time.sleep(1)
-
+                
+                clash=detect_clash(assessment.id)
+                if clash:
+                    assessment.clash_detected = True
+                    db.session.commit()
+                    flash("Clash detected! The maximum amount of assessments for this level has been exceeded.")
+                    time.sleep(1)
+    
     return redirect(url_for('staff_views.get_assessments_page'))
 
 # Delete selected assessment
 @staff_views.route('/deleteAssessment/<string:caNum>', methods=['GET'])
 def delete_assessment(caNum):
-    courseAsm = get_CourseAsm_id(caNum) # Gets selected assessment for course
-    delete_CourseAsm(courseAsm)
+    courseAsm = get_course_assessment_by_id(caNum) # Gets selected assessment for course
+    delete_course_assessment(courseAsm)
     print(caNum, ' deleted')
     return redirect(url_for('staff_views.get_assessments_page')) 
 
@@ -411,3 +398,5 @@ def changePassword():
             db.session.commit()
     
     return render_template('settings.html')
+
+
