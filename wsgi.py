@@ -46,6 +46,38 @@ def initialize():
     db.session.commit()
     print(bob)
     print('Database initialized')
+    
+    # Load all data from CSV files
+    try:
+        # Clear existing data
+        ClassSize.query.delete()
+        Assessment.query.delete()
+        Course.query.delete()
+        SolverConfig.query.delete()
+        db.session.commit()
+        
+        # Load courses first
+        courses_dict = load_courses("App/data/courses.csv")
+        print(f"Loaded {len(courses_dict)} courses")
+        
+        # Load assessments for the courses
+        assessments = load_assessments("App/data/assessments.csv", courses_dict)
+        print(f"Loaded {len(assessments)} assessments")
+        
+        # Load class sizes
+        class_sizes = load_class_sizes("App/data/class_sizes.csv", courses_dict)
+        print(f"Loaded {len(class_sizes)} class sizes")
+        
+        # Create default config
+        config = SolverConfig()
+        db.session.add(config)
+        db.session.commit()
+        print(f"Created default config: K={config.semester_days}, d={config.min_spacing}, M={config.large_m}")
+        
+        print("Schedule data loaded successfully")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error loading schedule data: {e}")
 
 # This command retrieves all staff objects
 @app.cli.command('get-users')
@@ -380,10 +412,8 @@ class Importer:
                 try:
                     category_enum = Category[category.strip().upper()]
                 except (KeyError, ValueError):
-                    # Default to ASSIGNMENT if category is not valid
                     category_enum = Category.ASSIGNMENT
                 
-                # Create assessment with the new category field
                 assessment = Assessment(
                     course_id=course_code,
                     name=name,
