@@ -1,6 +1,28 @@
 from App.models import Staff, CourseStaff, Course
 from App.database import db
 
+def add_staff(firstName, lastName, u_ID, status, password, department, faculty):
+    """
+    Add a new staff member
+    
+    Args:
+        firstName: First name of the staff member
+        lastName: Last name of the staff member
+        u_ID: Unique ID for the staff member
+        status: Status/role of the staff member
+        password: Password for the staff member
+        department: Department the staff member belongs to
+        faculty: Faculty the staff member belongs to
+        
+    Returns:
+        The newly created staff member or None if registration fails
+    """
+    # Generate email from first name and last name
+    email = f"{firstName.lower()}.{lastName.lower()}@sta.uwi.edu"
+    
+    # Register the staff member
+    return register_staff(firstName, lastName, u_ID, status, email, password, department, faculty)
+
 def register_staff(firstName, lastName, u_ID, status, email, pwd, department, faculty):
     """
     Register a new staff member
@@ -178,7 +200,8 @@ def get_staff_courses(staff_id):
     direct_courses = list(staff.courses)
     
     # Get courses assigned through CourseStaff
-    course_staff_assignments = staff.course_staff.all()
+    # Handle course_staff as a list, not a query object
+    course_staff_assignments = staff.course_staff
     course_codes = [assignment.course_code for assignment in course_staff_assignments]
     indirect_courses = Course.query.filter(Course.course_code.in_(course_codes)).all()
     

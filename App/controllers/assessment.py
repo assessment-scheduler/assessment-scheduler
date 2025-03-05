@@ -3,6 +3,15 @@ from App.models.course import Course
 from App.database import db
 from datetime import datetime, timedelta
 
+def get_all_assessments():
+    """
+    Get all assessments
+    
+    Returns:
+        List of Assessment objects
+    """
+    return Assessment.query.all()
+
 def get_assessments_by_course(course_id):
     return Assessment.query.filter_by(course_id=course_id).all()
 

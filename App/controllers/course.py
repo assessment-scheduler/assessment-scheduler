@@ -2,6 +2,82 @@ from App.models import Course, Staff
 from App.database import db
 from flask import session
 
+def get_all_courses():
+    """
+    Get all courses
+    
+    Returns:
+        List of Course objects
+    """
+    return list_Courses()
+
+def get_course_by_code(course_code):
+    """
+    Get a course by code
+    
+    Args:
+        course_code: Code of the course
+        
+    Returns:
+        Course object if found, None otherwise
+    """
+    return get_course(course_code)
+
+def add_course(course_code, course_title, description, level, semester, department, faculty, staff_id=None, active=True):
+    """
+    Add a new course
+    
+    Args:
+        course_code: Code of the course
+        course_title: Title of the course
+        description: Description of the course
+        level: Level of the course
+        semester: Semester the course is offered in
+        department: Department the course belongs to
+        faculty: Faculty the course belongs to
+        staff_id: ID of the staff member assigned to the course
+        active: Whether the course is active
+        
+    Returns:
+        Course object
+    """
+    return add_Course(course_code, course_title, description, level, semester, 0, department, faculty, staff_id, active)
+
+def update_course(course_code, course_title, description, level, semester, department, faculty, active=True, staff_id=None):
+    """
+    Update a course
+    
+    Args:
+        course_code: Code of the course
+        course_title: Title of the course
+        description: Description of the course
+        level: Level of the course
+        semester: Semester the course is offered in
+        department: Department the course belongs to
+        faculty: Faculty the course belongs to
+        active: Whether the course is active
+        staff_id: ID of the staff member assigned to the course
+        
+    Returns:
+        Course object if found, None otherwise
+    """
+    return edit_course(course_code, course_title, description, level, semester, department, faculty, active, staff_id)
+
+def delete_course(course_code):
+    """
+    Delete a course
+    
+    Args:
+        course_code: Code of the course
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    course = get_course(course_code)
+    if course:
+        return delete_Course(course)
+    return False
+
 def add_Course(courseCode, courseTitle, description, level, semester, aNum, department, faculty, staff_id=None, active=True):
     # Check if courseCode is already in db ie. course was already added
     course = get_course(courseCode)

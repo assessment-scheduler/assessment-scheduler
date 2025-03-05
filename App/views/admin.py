@@ -1,11 +1,10 @@
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, session
 from flask_jwt_extended import jwt_required
-from App.controllers import Course, CourseAssessment
-from App.models import Admin, Staff, Config
 from App.database import db
 from werkzeug.utils import secure_filename
 import os, csv
 from datetime import datetime
+import uuid
 
 from App.controllers.course import (
     add_Course,
@@ -23,24 +22,31 @@ from App.controllers.semester import(
 )
 
 from App.controllers.courseAssessment import(
-    # Commenting out get_clashes import
-    # get_clashes,
-    get_course_assessment_by_id
+    get_course_assessment_by_id,
+    get_clashes
 )
 
 from App.controllers.staff import (
+    add_staff,
     get_all_staff,
     get_staff_by_id,
-    register_staff,
     update_staff,
     delete_staff,
     get_staff_courses
 )
 
 from App.controllers.courseStaff import (
-    add_CourseStaff,
-    remove_CourseStaff
+    assign_staff_to_course,
+    remove_staff_from_course
 )
+
+from App.controllers.admin import get_admin_by_id
+from App.controllers.config import get_config
+from App.controllers.class_size import get_all_class_sizes, add_class_size
+from App.controllers.semester import get_current_semester, create_semester
+from App.controllers.course import get_all_courses, get_course_by_code, add_course, update_course, delete_course
+from App.controllers.assessment import get_all_assessments
+from App.middleware.auth import Admin
 
 admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
 
@@ -148,31 +154,22 @@ def upload_class_sizes_file():
         file.save(os.path.join('App/uploads', filename)) 
         
         try:
-            from App.models.class_size import ClassSize
-            from App.database import db
-            
-            # Retrieves class size details from file and stores it in database
-            fpath = 'App/uploads/' + filename
-            class_sizes_added = 0
-            with open(fpath, 'r') as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    # Create class size object
-                    class_size = ClassSize(
-                        course_code=row['course_code'],
-                        other_course_code=row['other_course_code'],
-                        size=int(row['size'])
-                    )
-                    db.session.add(class_size)
-                    class_sizes_added += 1
-            
-            db.session.commit()
-            message = f'<strong>Success!</strong> {class_sizes_added} class size relationships have been added to the database.'
-            return render_template('uploadFiles.html', message=message)
+            # Use controller function instead of direct model access
+            with open(os.path.join('App/uploads', filename), 'r') as csv_file:
+                csv_reader = csv.reader(csv_file)
+                next(csv_reader)  # Skip header row
+                
+                for row in csv_reader:
+                    if len(row) >= 2:
+                        course_code = row[0]
+                        class_size = int(row[1])
+                        add_class_size(course_code, class_size)
+                        
+            flash('Class sizes uploaded successfully!', 'success')
+            return redirect(url_for('admin_views.get_uploadFiles_page'))
         except Exception as e:
-            db.session.rollback()
-            message = f'<strong>Error:</strong> {str(e)}'
-            return render_template('uploadFiles.html', message=message)
+            flash(f'<strong>Error:</strong> {str(e)}', 'error')
+            return redirect(url_for('admin_views.get_uploadFiles_page'))
 
 # Pull course list from database
 @admin_views.route('/get_courses', methods=['GET'])
@@ -433,12 +430,14 @@ def add_staff_action():
             return redirect(url_for('admin_views.get_new_staff_page'))
         
         # Auto-generate staff ID (get the highest current ID and increment by 1)
-        from App.models.staff import Staff
-        highest_staff = Staff.query.order_by(Staff.u_id.desc()).first()
-        if highest_staff:
-            u_id = highest_staff.u_id + 1
+        all_staff = get_all_staff()
+        if all_staff:
+            # Find the highest staff ID
+            highest_id = max(staff.u_id for staff in all_staff)
+            u_id = highest_id + 1
         else:
-            u_id = 1000  # Start from 1000 if no staff exists
+            # Start from 1000 if no staff exists
+            u_id = 1000
         
         # Register staff
         staff = register_staff(f_name, l_name, u_id, status, email, password, department, faculty)
