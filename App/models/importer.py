@@ -27,7 +27,7 @@ def load_courses(csv_file):
             for row in reader:
                 course = Course(
                     course_code=row.get('course_code', row.get('courseCode')),
-                    course_title=row.get('course_title', row.get('courseTitle')),
+                    course_title=row.get('course_title', row.get('name', 'Course')),  # Default to 'Course' if not provided
                     description=row.get('description', ''),
                     level=row.get('level', ''),
                     semester=row.get('semester', ''),
@@ -62,6 +62,22 @@ def load_assessments(csv_file, courses=None):
             reader = csv.DictReader(file)
             for row in reader:
                 course_code = row.get('course_code', row.get('courseCode'))
+                
+                # Convert proctored to boolean
+                proctored_value = row.get('proctored', '0')
+                if isinstance(proctored_value, str):
+                    proctored = proctored_value.lower() in ('true', '1', 't', 'yes')
+                else:
+                    proctored = bool(int(proctored_value))
+                
+                # Get category or default to ASSIGNMENT
+                category_value = row.get('category', 'ASSIGNMENT').strip().upper()
+                from App.models.assessment import Category
+                try:
+                    category = Category[category_value]
+                except (KeyError, ValueError):
+                    category = Category.ASSIGNMENT
+                
                 assessment = Assessment(
                     course_id=course_code,
                     name=row.get('name', ''),
@@ -70,8 +86,8 @@ def load_assessments(csv_file, courses=None):
                     start_day=int(row.get('start_day', 0)),
                     end_week=int(row.get('end_week', 0)),
                     end_day=int(row.get('end_day', 0)),
-                    proctored=row.get('proctored', 'False').lower() == 'true',
-                    category=row.get('category', 'EXAM').strip()
+                    proctored=proctored,
+                    category=category
                 )
                 db.session.add(assessment)
                 assessments.append(assessment)

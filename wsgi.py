@@ -19,6 +19,7 @@ from App.controllers.course import (
 )
 from App.models.schedule_solution import ScheduleSolution
 from App.models.scheduled_assessment import ScheduledAssessment
+import csv
 
 # Get migration instance
 
@@ -220,19 +221,30 @@ def solve_schedule():
     courses = Course.query.all()
     courses_list = []
     
+    # Print debug info
+    print("Courses and assessments loaded from database:")
     for course in courses:
+        print(f"Course: {course.course_code}")
+        for a in course.assessments:
+            print(f"  - {a.name} ({a.percentage}%) - Week {a.start_week}-{a.end_week}, Proctored: {a.proctored}")
+    
+    # Format courses in the exact format expected by kris.py
+    for i, course in enumerate(courses):
+        assessments_list = []
+        for a in course.assessments:
+            assessments_list.append({
+                'name': a.name,
+                'percentage': int(a.percentage),
+                'start_week': a.start_week,
+                'start_day': a.start_day,
+                'end_week': a.end_week,
+                'end_day': a.end_day,
+                'proctored': int(a.proctored)
+            })
+        
+        # Note: kris.py expects courses without 'name' field, it generates course names as C160{i+1}
         course_data = {
-            'assessments': [
-                {
-                    'name': a.name,
-                    'percentage': int(a.percentage),
-                    'start_week': a.start_week,
-                    'start_day': a.start_day,
-                    'end_week': a.end_week,
-                    'end_day': a.end_day,
-                    'proctored': int(a.proctored)
-                } for a in course.assessments
-            ]
+            'assessments': assessments_list
         }
         courses_list.append(course_data)
     
@@ -248,72 +260,98 @@ def solve_schedule():
         if i is not None and j is not None:
             c[i][j] = class_size.size
     
+    # Print class sizes matrix for debugging
+    print("\nClass sizes matrix:")
+    for i, row in enumerate(c):
+        print(f"{courses[i].course_code}: {row}")
+    
     # Generate phi matrix
     phi = [[1 if ci > 0 else 0 for ci in row] for row in c]
     
-    # Create a LinearProblem object
-    problem = LinearProblem(
-        name="Assessment Scheduling",
-        description="Scheduling assessments to minimize clashes",
-        c=c,
-        phi=phi
-    )
-    db.session.add(problem)
-    db.session.commit()
-    
-    # Solve using config parameters
-    U_star, solver, x = solve_stage1(courses_list, c, 
-                                   config.semester_days,
-                                   config.large_m)
-    
-    schedule, Y_star, probability = solve_stage2(courses_list, c, phi, U_star,
-                                               config.semester_days,
-                                               config.min_spacing,
-                                               config.large_m)
-    
-    # Save solution
-    solution = ScheduleSolution(
-        config_id=config.id,
-        u_star=U_star,
-        y_star=Y_star,
-        probability=probability
-    )
-    db.session.add(solution)
-    
-    # Save scheduled assignments
-    for day, week, day_of_week, course_name, assessment_name in schedule:
-        assessment = Assessment.query.filter_by(name=assessment_name.split('-')[0]).first()
-        if assessment:
-            scheduled = ScheduledAssessment(
-                solution_id=solution.id,
-                assessment_id=assessment.id,
-                scheduled_day=day
-            )
-            db.session.add(scheduled)
-    
-    db.session.commit()
-    
-    # Print the schedule
-    print_schedule(schedule, U_star, config.min_spacing, probability)
+    try:
+        # Solve using config parameters
+        print(f"\nSolving with parameters: K={config.semester_days}, d={config.min_spacing}, M={config.large_m}")
+        U_star, solver, x = solve_stage1(courses_list, c, 
+                                       config.semester_days,
+                                       config.large_m)
+        
+        schedule, Y_star, probability = solve_stage2(courses_list, c, phi, U_star,
+                                                   config.semester_days,
+                                                   config.min_spacing,
+                                                   config.large_m)
+        
+        # Print schedule details for debugging
+        print("\nSchedule details:")
+        for k, week, day, course, assessment in schedule:
+            print(f"Day {k}, Week {week}, Day {day}: {course}-{assessment}")
+        
+        # Save solution
+        solution = ScheduleSolution(
+            config_id=config.id,
+            u_star=U_star,
+            y_star=Y_star,
+            probability=probability
+        )
+        db.session.add(solution)
+        db.session.commit()
+        
+        # Let kris.py handle the printing of the schedule
+        print_schedule(schedule, U_star, config.min_spacing, probability)
+    except Exception as e:
+        print(f"Error solving schedule: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        db.session.rollback()
 
 @schedule_cli.command("load", help="Load scheduling data from CSV files")
-@click.argument("courses_csv", default="data/courses.csv")
-@click.argument("assessments_csv", default="data/assessments.csv")
-@click.argument("class_sizes_csv", default="data/class_sizes.csv")
-def load_schedule_data(courses_csv, assessments_csv, class_sizes_csv):
-    # Clear existing data
-    ClassSize.query.delete()
-    Assessment.query.delete()
-    Course.query.delete()
-    db.session.commit()
-    
-    # Load courses first
-    courses_dict = load_courses(courses_csv)
-    
-    # Load assessments for the courses
-    load_assessments(assessments_csv, courses_dict)
-    
-    # Load class sizes
-    load_class_sizes(class_sizes_csv, courses_dict)
-    
-    print("Schedule data loaded successfully")
+@click.argument("courses_csv", default="App/data/courses.csv")
+@click.argument("assessments_csv", default="App/data/assessments.csv")
+@click.argument("class_sizes_csv", default="App/data/class_sizes.csv")
+@click.argument("config_csv", default="App/data/config.csv")
+def load_schedule_data(courses_csv, assessments_csv, class_sizes_csv, config_csv):
+    """Load scheduling data from CSV files"""
+    try:
+        # Clear existing data
+        ClassSize.query.delete()
+        Assessment.query.delete()
+        Course.query.delete()
+        SolverConfig.query.delete()
+        db.session.commit()
+        
+        # Load courses first
+        courses_dict = load_courses(courses_csv)
+        print(f"Loaded {len(courses_dict)} courses")
+        
+        # Load assessments for the courses
+        assessments = load_assessments(assessments_csv, courses_dict)
+        print(f"Loaded {len(assessments)} assessments")
+        
+        # Load class sizes
+        class_sizes = load_class_sizes(class_sizes_csv, courses_dict)
+        print(f"Loaded {len(class_sizes)} class sizes")
+        
+        # Load config if available
+        try:
+            with open(config_csv, 'r') as file:
+                reader = csv.DictReader(file)
+                config_data = next(reader)
+                config = SolverConfig(
+                    semester_days=int(config_data.get('time_horizon', 84)),
+                    min_spacing=int(config_data.get('min_spacing', 3)),
+                    large_m=int(config_data.get('big_m', 1000)),
+                    weekend_penalty=float(config_data.get('weekend_penalty', 1.5))
+                )
+                db.session.add(config)
+                db.session.commit()
+                print(f"Loaded config: K={config.semester_days}, d={config.min_spacing}, M={config.large_m}")
+        except Exception as e:
+            # Create default config if loading fails
+            config = SolverConfig()
+            db.session.add(config)
+            db.session.commit()
+            print(f"Created default config: K={config.semester_days}, d={config.min_spacing}, M={config.large_m}")
+        
+        print("Schedule data loaded successfully")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error loading schedule data: {e}")

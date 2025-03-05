@@ -1,7 +1,0 @@
-course_code,course_title,description,level,semester,pre_reqs,p_id
-COMP1600,Introduction to Programming,Introductory programming course,1,1,,1
-COMP1601,Data Structures and Algorithms,Fundamental data structures and algorithms,1,2,COMP1600,1
-COMP2600,Software Engineering,Software development methodologies and practices,2,1,COMP1601,1
-COMP2601,Database Systems,Database design and implementation,2,2,COMP1601,1
-COMP3600,Artificial Intelligence,Introduction to AI concepts and algorithms,3,1,COMP2600,1
-COMP3601,Computer Networks,Network protocols and architecture,3,2,COMP2600,1 
