@@ -417,6 +417,7 @@ def solve_schedule():
         
         # Add course with its assessments to the formatted list
         formatted_courses.append({
+            'code': course.course_code,  # Add the course code
             'assessments': formatted_assessments
         })
     
@@ -461,11 +462,6 @@ def solve_schedule():
         
         # Print schedule in the original format
         print_schedule(schedule, U_star, semester.d, probability)
-        
-        # Also print a mapping of course codes to solver course names for reference
-        print("\nCourse mapping:")
-        for i, code in enumerate(course_codes):
-            print(f"C160{i+1} = {code}")
         
         # Save solution
         solution = ScheduleSolution(

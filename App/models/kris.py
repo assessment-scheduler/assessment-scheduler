@@ -164,7 +164,7 @@ def solve_stage2(courses, c, phi, U_star, K, d, M):
                 assessment = courses[i]['assessments'][j_idx]
                 week = (k - 1) // 7 + 1
                 day_of_week = (k - 1) % 7 + 1
-                course_name = courses[i]['name']
+                course_name = courses[i]['code']
                 assessment_name = f"{assessment['name']}-({assessment['percentage']})"
                 schedule.append((k, week, day_of_week, course_name, assessment_name))
         schedule.sort(key=lambda x: x[0])
@@ -190,6 +190,7 @@ def main():
     # Data
     courses = [
         {  # C1601 (index 0)
+            'code': 'C1601',
             'assessments': [
                 {'name': 'A1', 'percentage': 5, 'start_week': 3, 'start_day': 1,
                  'end_week': 4, 'end_day': 7, 'proctored': 0},
@@ -204,6 +205,7 @@ def main():
             ]
         },
         {  # C1602 (index 1)
+            'code': 'C1602',
             'assessments': [
                 {'name': 'A1', 'percentage': 5, 'start_week': 3, 'start_day': 1,
                  'end_week': 4, 'end_day': 7, 'proctored': 0},
@@ -218,6 +220,7 @@ def main():
             ]
         },
         {  # C1603 (index 2)
+            'code': 'C1603',
             'assessments': [
                 {'name': 'A1', 'percentage': 6, 'start_week': 3, 'start_day': 1,
                  'end_week': 4, 'end_day': 7, 'proctored': 0},
