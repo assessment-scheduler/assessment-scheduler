@@ -355,3 +355,47 @@ def load_schedule_data(courses_csv, assessments_csv, class_sizes_csv, config_csv
     except Exception as e:
         db.session.rollback()
         print(f"Error loading schedule data: {e}")
+
+class Importer:
+    def __init__(self, app):
+        self.app = app
+
+    def import_assessments(self):
+        with open('data/assessments.csv', 'r') as f:
+            reader = csv.reader(f)
+            next(reader)  # Skip header row
+            for row in reader:
+                course_code, name, percentage, start_week, start_day, end_week, end_day, proctored, category = row
+                
+                # Convert values to appropriate types
+                percentage = int(percentage)
+                start_week = int(start_week)
+                start_day = int(start_day)
+                end_week = int(end_week)
+                end_day = int(end_day)
+                proctored = proctored.lower() == 'true'
+                
+                # Convert category string to Category enum
+                from App.models.assessment import Category
+                try:
+                    category_enum = Category[category.strip().upper()]
+                except (KeyError, ValueError):
+                    # Default to ASSIGNMENT if category is not valid
+                    category_enum = Category.ASSIGNMENT
+                
+                # Create assessment with the new category field
+                assessment = Assessment(
+                    course_id=course_code,
+                    name=name,
+                    percentage=percentage,
+                    start_week=start_week,
+                    start_day=start_day,
+                    end_week=end_week,
+                    end_day=end_day,
+                    proctored=proctored,
+                    category=category_enum  # Use the enum value instead of the string
+                )
+                
+                db.session.add(assessment)
+        
+        db.session.commit()

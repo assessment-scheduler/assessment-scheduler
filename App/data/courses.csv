@@ -1,4 +1,4 @@
-course_code,name
-C1601,Course 1
-C1602,Course 2
-C1603,Course 3
+course_code,course_title,description,level,semester
+COMP1601,Introduction to Programming,Introduction to programming concepts,1,1
+COMP1602,Data Structures and Algorithms,Study of data structures and algorithms,1,2
+COMP1603,Object-Oriented Programming,Introduction to object-oriented programming,1,2
