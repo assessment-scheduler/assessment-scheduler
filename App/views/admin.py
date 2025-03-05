@@ -47,6 +47,7 @@ from App.controllers.semester import get_current_semester, create_semester
 from App.controllers.course import get_all_courses, get_course_by_code, add_course, update_course, delete_course
 from App.controllers.assessment import get_all_assessments
 from App.middleware.auth import Admin
+from App.models.staff import Staff
 
 admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
 
@@ -419,7 +420,6 @@ def add_staff_action():
         f_name = request.form.get('firstName')
         l_name = request.form.get('lastName')
         status = request.form.get('status')
-        email = f"{f_name.lower()}.{l_name.lower()}@sta.uwi.edu"
         password = request.form.get('password')
         department = request.form.get('department')
         faculty = request.form.get('faculty')
@@ -432,15 +432,15 @@ def add_staff_action():
         # Auto-generate staff ID (get the highest current ID and increment by 1)
         all_staff = get_all_staff()
         if all_staff:
-            # Find the highest staff ID
-            highest_id = max(staff.u_id for staff in all_staff)
+            # Find the highest staff ID - use the correct attribute name 'id'
+            highest_id = max(staff.id for staff in all_staff)
             u_id = highest_id + 1
         else:
             # Start from 1000 if no staff exists
             u_id = 1000
         
-        # Register staff
-        staff = register_staff(f_name, l_name, u_id, status, email, password, department, faculty)
+        # Use the imported add_staff function
+        staff = add_staff(f_name, l_name, u_id, status, password, department, faculty)
         
         if staff:
             flash(f'Staff member added successfully with ID: {u_id}', 'success')
