@@ -164,7 +164,7 @@ def solve_stage2(courses, c, phi, U_star, K, d, M):
                 assessment = courses[i]['assessments'][j_idx]
                 week = (k - 1) // 7 + 1
                 day_of_week = (k - 1) % 7 + 1
-                course_name = f"C160{i+1}"
+                course_name = courses[i]['name']
                 assessment_name = f"{assessment['name']}-({assessment['percentage']})"
                 schedule.append((k, week, day_of_week, course_name, assessment_name))
         schedule.sort(key=lambda x: x[0])
@@ -184,8 +184,8 @@ def print_schedule(schedule, U_star, d, probability):
         k, week, day, course, assessment = entry
         print(f"| {k:<2} | {week:<3} | {day:<4} | {course}-{assessment:<30} |")
     print("-" * 55)
-
-
+    
+"""
 def main():
     # Data
     courses = [
@@ -253,3 +253,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
+"""
