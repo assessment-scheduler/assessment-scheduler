@@ -25,6 +25,8 @@ class Staff(User, UserMixin):
     
     # Relationship with courses - one staff can have many courses
     courses = db.relationship('Course', back_populates='staff', lazy='dynamic')
+    # Relationship with course staff assignments
+    course_staff = db.relationship('CourseStaff', back_populates='staff_member', foreign_keys='CourseStaff.u_id', overlaps="course_assignments")
 
     def __init__(self, f_name, l_name, u_id, status, email, password, department, faculty):
         super().__init__(u_id, password, email)
@@ -73,26 +75,28 @@ class Staff(User, UserMixin):
         return self.courses.all()
 
     def has_access_to_course(self, course_code):
-        """Check if staff member has access to a course"""
-        # Check direct assignment through Course model
-        direct_assignment = self.courses.filter_by(course_code=course_code).first()
-        if direct_assignment:
+        """Check if staff has access to a specific course"""
+        # Direct course assignment
+        if self.courses.filter_by(course_code=course_code).first():
             return True
-            
-        # Check assignment through CourseStaff model
-        from .courseStaff import CourseStaff
-        course_staff = CourseStaff.query.filter_by(u_id=self.u_id, course_code=course_code).first()
-        return course_staff is not None
+        
+        # Assignment through CourseStaff
+        if self.course_staff.filter_by(courseCode=course_code).first():
+            return True
+        
+        return False
 
     @staticmethod
     def get_all_staff():
-        """Get all staff members"""
         return Staff.query.all()
     
     @staticmethod
     def get_staff_by_id(staff_id):
-        """Get a staff member by ID"""
         return Staff.query.get(staff_id)
+    
+    @staticmethod
+    def get_staff_by_email(email):
+        return Staff.query.filter_by(email=email).first()
     
     @staticmethod
     def update_staff(staff_id, f_name, l_name, status, department, faculty):

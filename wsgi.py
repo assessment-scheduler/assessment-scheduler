@@ -373,13 +373,15 @@ def solve_schedule():
         traceback.print_exc()
         db.session.rollback()
 
+# Commenting out the load function as it won't be used anymore
+"""
 @schedule_cli.command("load", help="Load scheduling data from CSV files")
 @click.argument("courses_csv", default="App/data/courses.csv")
 @click.argument("assessments_csv", default="App/data/assessments.csv")
 @click.argument("class_sizes_csv", default="App/data/class_sizes.csv")
 @click.argument("config_csv", default="App/data/config.csv")
 def load_schedule_data(courses_csv, assessments_csv, class_sizes_csv, config_csv):
-    """Load scheduling data from CSV files"""
+    # Load scheduling data from CSV files
     try:
         # Clear existing data
         ClassSize.query.delete()
@@ -398,33 +400,35 @@ def load_schedule_data(courses_csv, assessments_csv, class_sizes_csv, config_csv
         
         # Load class sizes
         class_sizes = load_class_sizes(class_sizes_csv, courses_dict)
-        print(f"Loaded {len(class_sizes)} class sizes")
+        print(f"Loaded {len(class_sizes)} class size relationships")
         
-        # Load config if available
+        # Load config
         try:
-            with open(config_csv, 'r') as file:
-                reader = csv.DictReader(file)
-                config_data = next(reader)
+            with open(config_csv, 'r') as f:
+                reader = csv.DictReader(f)
+                row = next(reader)
                 config = SolverConfig(
-                    semester_days=int(config_data.get('time_horizon', 84)),
-                    min_spacing=int(config_data.get('min_spacing', 3)),
-                    large_m=int(config_data.get('big_m', 1000)),
-                    weekend_penalty=float(config_data.get('weekend_penalty', 1.5))
+                    semester_days=int(row.get('semester_days', 70)),
+                    min_spacing=int(row.get('min_spacing', 3)),
+                    large_m=int(row.get('large_m', 1000))
                 )
                 db.session.add(config)
                 db.session.commit()
                 print(f"Loaded config: K={config.semester_days}, d={config.min_spacing}, M={config.large_m}")
         except Exception as e:
-            # Create default config if loading fails
+            print(f"Error loading config: {str(e)}")
+            # Use default config
             config = SolverConfig()
             db.session.add(config)
             db.session.commit()
-            print(f"Created default config: K={config.semester_days}, d={config.min_spacing}, M={config.large_m}")
+            print(f"Using default config: K={config.semester_days}, d={config.min_spacing}, M={config.large_m}")
         
-        print("Schedule data loaded successfully")
     except Exception as e:
+        print(f"Error loading data: {str(e)}")
+        import traceback
+        traceback.print_exc()
         db.session.rollback()
-        print(f"Error loading schedule data: {e}")
+"""
 
 class Importer:
     def __init__(self, app):

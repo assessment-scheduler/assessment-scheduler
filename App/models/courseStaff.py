@@ -10,7 +10,8 @@ class CourseStaff(db.Model):
   course_code = db.Column(db.String(120), db.ForeignKey('course.course_code'), nullable=False)
   
   # Define relationships
-  staff = db.relationship('Staff', backref=db.backref('course_assignments', lazy='dynamic'))
+  staff = db.relationship('Staff', backref=db.backref('course_assignments', lazy='dynamic'), overlaps="course_staff,staff_member")
+  staff_member = db.relationship('Staff', back_populates='course_staff', foreign_keys=[u_id], overlaps="course_assignments,staff")
   course = db.relationship('Course', backref=db.backref('staff_assignments', lazy='dynamic'))
 
   def __init__(self, u_id, course_code):
@@ -20,7 +21,7 @@ class CourseStaff(db.Model):
   def to_json(self):
     return{
       "u_ID": self.u_id,
-      "courseCode": self.course_code,
+      "course_code": self.course_code,
     }
 
   #Add new CourseStaff

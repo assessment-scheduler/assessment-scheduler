@@ -41,5 +41,8 @@ def delete_course_assessment(course_asm):
     db.session.commit()
     return True        
      
+# Commenting out clash detection
+'''
 def get_clashes():
     return CourseAssessment.query.filter_by(clash_detected=True).all()
+'''

@@ -5,6 +5,10 @@ from .semester import *
 from .user import *
 from .auth import *
 from .scheduler import *
+from .assessment import *
+from .admin import *
+from .lp import *
+from .courseStaff import *
 
 # Add initialize function for database initialization
 def initialize():

@@ -23,7 +23,8 @@ from App.controllers.semester import(
 )
 
 from App.controllers.courseAssessment import(
-    get_clashes,
+    # Commenting out get_clashes import
+    # get_clashes,
     get_course_assessment_by_id
 )
 
@@ -85,24 +86,94 @@ def upload_course_file():
         if (file.filename == ''):
             message = 'No file selected!' 
             return render_template('uploadFiles.html', message = message) 
-        else:
-            # Secure filename
-            filename = secure_filename(file.filename)
         
-            # Save file to uploads folder
-            file.save(os.path.join('App/uploads', filename)) 
+        # Check if file is a CSV
+        if not file.filename.lower().endswith('.csv'):
+            message = 'Only CSV files are allowed!'
+            return render_template('uploadFiles.html', message = message)
             
+        # Secure filename
+        filename = secure_filename(file.filename)
+    
+        # Save file to uploads folder
+        file.save(os.path.join('App/uploads', filename)) 
+        
+        try:
             # Retrieves course details from file and stores it in database ie. store course info 
             fpath = 'App/uploads/' + filename
+            courses_added = 0
             with open(fpath, 'r') as file:
                 reader = csv.DictReader(file)
                 for row in reader:
-                    #create object
-                    course = add_Course(courseCode=row['Course Code'], courseTitle=row['Course Title'], description=row['Course Description'], level=int(row['Level']), semester=int(row['Semester']), aNum=int(row['Assessment No.']))
-
-            # Redirect to view course listings!   
-            return redirect(url_for('admin_views.get_courses'))    
+                    # Create course object
+                    course = add_Course(
+                        courseCode=row['course_code'], 
+                        courseTitle=row['course_name'], 
+                        description='', 
+                        level=int(row['level']), 
+                        semester=int(row['semester']), 
+                        aNum=0,
+                        department=row['department'],
+                        faculty=row['faculty']
+                    )
+                    if course:
+                        courses_added += 1
             
+            message = f'<strong>Success!</strong> {courses_added} courses have been added to the database.'
+            return render_template('uploadFiles.html', message=message)
+        except Exception as e:
+            message = f'<strong>Error:</strong> {str(e)}'
+            return render_template('uploadFiles.html', message=message)
+
+@admin_views.route('/uploadclasssizes', methods=['POST'])
+@jwt_required(Admin)
+def upload_class_sizes_file():
+    if request.method == 'POST': 
+        file = request.files['file'] 
+
+        # Check if file is present
+        if (file.filename == ''):
+            message = 'No file selected!' 
+            return render_template('uploadFiles.html', message = message) 
+        
+        # Check if file is a CSV
+        if not file.filename.lower().endswith('.csv'):
+            message = 'Only CSV files are allowed!'
+            return render_template('uploadFiles.html', message = message)
+            
+        # Secure filename
+        filename = secure_filename(file.filename)
+    
+        # Save file to uploads folder
+        file.save(os.path.join('App/uploads', filename)) 
+        
+        try:
+            from App.models.class_size import ClassSize
+            from App.database import db
+            
+            # Retrieves class size details from file and stores it in database
+            fpath = 'App/uploads/' + filename
+            class_sizes_added = 0
+            with open(fpath, 'r') as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    # Create class size object
+                    class_size = ClassSize(
+                        course_code=row['course_code'],
+                        other_course_code=row['other_course_code'],
+                        size=int(row['size'])
+                    )
+                    db.session.add(class_size)
+                    class_sizes_added += 1
+            
+            db.session.commit()
+            message = f'<strong>Success!</strong> {class_sizes_added} class size relationships have been added to the database.'
+            return render_template('uploadFiles.html', message=message)
+        except Exception as e:
+            db.session.rollback()
+            message = f'<strong>Error:</strong> {str(e)}'
+            return render_template('uploadFiles.html', message=message)
+
 # Pull course list from database
 @admin_views.route('/get_courses', methods=['GET'])
 @jwt_required(Admin)
@@ -271,6 +342,8 @@ def delete_course_action(courseCode):
     # Redirect to view course listings!   
     return redirect(url_for('admin_views.get_courses'))    
 
+# Commenting out clash-related routes
+"""
 @admin_views.route("/clashes", methods=["GET"])
 @jwt_required(Admin)
 def get_clashes_page():
@@ -324,6 +397,7 @@ def reject_override(aID):
         db.session.commit()
         print("Rejected override.")
     return redirect(url_for('admin_views.get_clashes_page'))
+"""
 
 # Staff Management Routes
 @admin_views.route('/staffList', methods=['GET'])
@@ -347,7 +421,6 @@ def add_staff_action():
         # Get form data
         f_name = request.form.get('firstName')
         l_name = request.form.get('lastName')
-        u_id = request.form.get('staffID')
         status = request.form.get('status')
         email = f"{f_name.lower()}.{l_name.lower()}@sta.uwi.edu"
         password = request.form.get('password')
@@ -355,15 +428,23 @@ def add_staff_action():
         faculty = request.form.get('faculty')
         
         # Validate data
-        if not all([f_name, l_name, u_id, status, password, department, faculty]):
+        if not all([f_name, l_name, status, password, department, faculty]):
             flash('All fields are required', 'error')
             return redirect(url_for('admin_views.get_new_staff_page'))
+        
+        # Auto-generate staff ID (get the highest current ID and increment by 1)
+        from App.models.staff import Staff
+        highest_staff = Staff.query.order_by(Staff.u_id.desc()).first()
+        if highest_staff:
+            u_id = highest_staff.u_id + 1
+        else:
+            u_id = 1000  # Start from 1000 if no staff exists
         
         # Register staff
         staff = register_staff(f_name, l_name, u_id, status, email, password, department, faculty)
         
         if staff:
-            flash('Staff member added successfully', 'success')
+            flash(f'Staff member added successfully with ID: {u_id}', 'success')
             return redirect(url_for('admin_views.get_staff_list'))
         else:
             flash('Email already in use', 'error')
