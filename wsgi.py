@@ -5,11 +5,12 @@ from flask import Flask
 from flask.cli import AppGroup
 from App.database import db, get_migrate
 from App.main import create_app
-from App.models import User, Staff, Course, Assessment, Programme, Admin, ClassSize, SolverConfig
+from App.models import User, Staff, Course, Assessment, Programme, Admin, ClassSize, SolverConfig, Semester
 from App.controllers import create_user, get_all_users_json, get_all_users, initialize, Course
+from App.controllers.assessment import get_assessments_by_course
 from App.models.solver import LPSolver
 from App.controllers.lp import create_sample_problem, solve_lp_problem
-from App.models.importer import load_courses, load_assessments, load_class_sizes
+from App.models.importer import load_courses, load_assessments, load_class_sizes, load_semester
 from App.models.problem import LinearProblem
 from App.models.constraint import LPConstraint
 from App.models.variable import LPVariable
@@ -55,6 +56,7 @@ def initialize():
         Assessment.query.delete()
         Course.query.delete()
         SolverConfig.query.delete()
+        Semester.query.delete()
         db.session.commit()
         
         # Load courses first
@@ -69,11 +71,47 @@ def initialize():
         class_sizes = load_class_sizes("App/data/class_sizes.csv", courses_dict)
         print(f"Loaded {len(class_sizes)} class sizes")
         
-        # Create default config
-        config = SolverConfig()
-        db.session.add(config)
+        # Load semester data
+        semester_csv_path = "App/data/semester.csv"
+        semester = load_semester(semester_csv_path)
+        if not semester:
+            # Create default semester with specified values
+            from datetime import date, timedelta
+            today = date.today()
+            end_date = today + timedelta(days=120)  # Approximately 4 months
+            semester = Semester(
+                start_date=today,
+                end_date=end_date,
+                sem_num=1,
+                max_assessments=3,
+                K=84,
+                d=3,
+                M=1000
+            )
+            db.session.add(semester)
+            db.session.commit()
+            print(f"Created default semester with K={semester.K}, d={semester.d}, M={semester.M}")
+        
+        # Set this as the current semester in Config
+        from App.models.config import Config
+        config = Config.query.first()
+        if not config:
+            config = Config(semester=semester.sem_num)
+            db.session.add(config)
+        else:
+            config.semester = semester.sem_num
         db.session.commit()
-        print(f"Created default config: K={config.semester_days}, d={config.min_spacing}, M={config.large_m}")
+        print(f"Set semester {semester.sem_num} as current semester")
+        
+        # Create solver config using semester values
+        solver_config = SolverConfig(
+            semester_days=semester.K,
+            min_spacing=semester.d,
+            large_m=semester.M
+        )
+        db.session.add(solver_config)
+        db.session.commit()
+        print(f"Created solver config with semester values: K={solver_config.semester_days}, d={solver_config.min_spacing}, M={solver_config.large_m}")
         
         # Load staff data from CSV
         staff_count = 0
@@ -283,77 +321,151 @@ def solve_problem_command():
 
 @schedule_cli.command("solve", help="Solve the scheduling problem using database data")
 def solve_schedule():
-    # Get or create config
-    config = SolverConfig.query.first() or SolverConfig()
-    db.session.add(config)
+    """Solve the scheduling problem using database data"""
+    # Get current semester
+    from App.controllers.semester import get_current_semester
+    from App.models.semester import Semester
+    from App.controllers.assessment import get_assessments_by_course
+    from App.models.kris import print_schedule
     
-    # Get all courses and convert to solver format
-    courses = Course.query.all()
-    courses_list = []
+    semester = get_current_semester()
     
-    # Print debug info
-    print("Courses and assessments loaded from database:")
+    if not semester:
+        # Check if any semesters exist
+        semesters = Semester.query.all()
+        if not semesters:
+            print("No semesters found in the database. Please create a semester first.")
+            return
+        
+        # Use the first semester if no current semester is set
+        semester = semesters[0]
+        print(f"No current semester set. Using semester {semester.sem_num} as fallback.")
+        
+        # Set this as the current semester
+        from App.models.config import Config
+        config = Config.query.first()
+        if not config:
+            config = Config(semester=semester.sem_num)
+            db.session.add(config)
+        else:
+            config.semester = semester.sem_num
+        db.session.commit()
+        print(f"Set semester {semester.sem_num} as current semester")
+    
+    print(f"Using semester {semester.sem_num} parameters:")
+    print(f"  - K (total days): {semester.K}")
+    print(f"  - d (min spacing): {semester.d}")
+    print(f"  - M (constraint constant): {semester.M}")
+    
+    # Get or create config and update with semester parameters
+    config = SolverConfig.query.first()
+    if not config:
+        config = SolverConfig(
+            semester_days=semester.K,
+            min_spacing=semester.d,
+            large_m=semester.M
+        )
+        db.session.add(config)
+    else:
+        # Always update config with current semester values
+        config.semester_days = semester.K
+        config.min_spacing = semester.d
+        config.large_m = semester.M
+    
+    db.session.commit()
+    
+    # Get all active courses
+    courses = Course.query.filter_by(active=True).all()
+    
+    if not courses:
+        print("No active courses found in database")
+        return
+    
+    print(f"Found {len(courses)} active courses")
+    
+    # Get all assessments and format data for solver using the controller method
+    formatted_courses = []
+    course_codes = []
+    
     for course in courses:
-        print(f"Course: {course.course_code}")
-        for a in course.assessments:
-            print(f"  - {a.name} ({a.percentage}%) - Week {a.start_week}-{a.end_week}, Proctored: {a.proctored}")
-    
-    # Format courses in the exact format expected by kris.py
-    for i, course in enumerate(courses):
-        assessments_list = []
-        for a in course.assessments:
-            assessments_list.append({
-                'name': a.name,
-                'percentage': int(a.percentage),
-                'start_week': a.start_week,
-                'start_day': a.start_day,
-                'end_week': a.end_week,
-                'end_day': a.end_day,
-                'proctored': int(a.proctored)
+        # Use the controller method to get assessments for this course
+        course_assessments = get_assessments_by_course(course.course_code)
+        if not course_assessments:
+            continue
+            
+        course_codes.append(course.course_code)
+        
+        # Format assessments for this course
+        formatted_assessments = []
+        for assessment in course_assessments:
+            # Convert percentage to integer by multiplying by 100 if it's a decimal (e.g., 0.25 -> 25)
+            percentage = assessment.percentage
+            if percentage < 100:  # If it's already stored as a percentage (e.g., 25 for 25%)
+                percentage_int = int(percentage)
+            else:  # If it's stored as a decimal (e.g., 0.25 for 25%)
+                percentage_int = int(percentage * 100)
+                
+            formatted_assessments.append({
+                'name': assessment.name,
+                'percentage': percentage_int,  # Use integer percentage
+                'start_week': assessment.start_week,
+                'start_day': assessment.start_day,
+                'end_week': assessment.end_week,
+                'end_day': assessment.end_day,
+                'proctored': 1 if assessment.proctored else 0  # Convert boolean to int
             })
         
-        # Note: kris.py expects courses without 'name' field, it generates course names as C160{i+1}
-        course_data = {
-            'assessments': assessments_list
-        }
-        courses_list.append(course_data)
+        # Add course with its assessments to the formatted list
+        formatted_courses.append({
+            'assessments': formatted_assessments
+        })
     
-    # Build class sizes matrix
-    n = len(courses)
+    if not formatted_courses:
+        print("No assessments found in database")
+        return
+    
+    total_assessments = sum(len(course['assessments']) for course in formatted_courses)
+    print(f"Found {total_assessments} assessments")
+    
+    # Initialize class sizes matrix
+    n = len(formatted_courses)
     c = [[0 for _ in range(n)] for _ in range(n)]
     
     # Get class sizes from database
     class_sizes = ClassSize.query.all()
     for class_size in class_sizes:
-        i = next((idx for idx, course in enumerate(courses) if course.course_code == class_size.course_code), None)
-        j = next((idx for idx, course in enumerate(courses) if course.course_code == class_size.other_course_code), None)
+        i = next((idx for idx, code in enumerate(course_codes) if code == class_size.course_code), None)
+        j = next((idx for idx, code in enumerate(course_codes) if code == class_size.other_course_code), None)
         if i is not None and j is not None:
             c[i][j] = class_size.size
     
     # Print class sizes matrix for debugging
     print("\nClass sizes matrix:")
     for i, row in enumerate(c):
-        print(f"{courses[i].course_code}: {row}")
+        print(f"{course_codes[i]}: {row}")
     
     # Generate phi matrix
     phi = [[1 if ci > 0 else 0 for ci in row] for row in c]
     
     try:
-        # Solve using config parameters
-        print(f"\nSolving with parameters: K={config.semester_days}, d={config.min_spacing}, M={config.large_m}")
-        U_star, solver, x = solve_stage1(courses_list, c, 
-                                       config.semester_days,
-                                       config.large_m)
+        # Solve using semester parameters
+        print(f"\nSolving with parameters: K={semester.K}, d={semester.d}, M={semester.M}")
+        U_star, solver, x = solve_stage1(formatted_courses, c, 
+                                       semester.K,
+                                       semester.M)
         
-        schedule, Y_star, probability = solve_stage2(courses_list, c, phi, U_star,
-                                                   config.semester_days,
-                                                   config.min_spacing,
-                                                   config.large_m)
+        schedule, Y_star, probability = solve_stage2(formatted_courses, c, phi, U_star,
+                                                   semester.K,
+                                                   semester.d,
+                                                   semester.M)
         
-        # Print schedule details for debugging
-        print("\nSchedule details:")
-        for k, week, day, course, assessment in schedule:
-            print(f"Day {k}, Week {week}, Day {day}: {course}-{assessment}")
+        # Print schedule in the original format
+        print_schedule(schedule, U_star, semester.d, probability)
+        
+        # Also print a mapping of course codes to solver course names for reference
+        print("\nCourse mapping:")
+        for i, code in enumerate(course_codes):
+            print(f"C160{i+1} = {code}")
         
         # Save solution
         solution = ScheduleSolution(
@@ -365,13 +477,12 @@ def solve_schedule():
         db.session.add(solution)
         db.session.commit()
         
-        # Let kris.py handle the printing of the schedule
-        print_schedule(schedule, U_star, config.min_spacing, probability)
+        print(f"\nSolution saved with ID {solution.id}")
+        
     except Exception as e:
-        print(f"Error solving schedule: {str(e)}")
         import traceback
+        print(f"Error solving schedule: {str(e)}")
         traceback.print_exc()
-        db.session.rollback()
 
 # Commenting out the load function as it won't be used anymore
 """
@@ -471,3 +582,155 @@ class Importer:
                 db.session.add(assessment)
         
         db.session.commit()
+
+@app.cli.command("import-semester", help="Import semester data from a CSV file")
+@click.argument("csv_file", default="App/data/semester.csv")
+def import_semester_command(csv_file):
+    """Import semester data from a CSV file"""
+    try:
+        semester = load_semester(csv_file)
+        if semester:
+            print(f"Successfully imported semester {semester.sem_num} with parameters:")
+            print(f"  - Start date: {semester.start_date}")
+            print(f"  - End date: {semester.end_date}")
+            print(f"  - Max assessments: {semester.max_assessments}")
+            print(f"  - K (total days): {semester.K}")
+            print(f"  - d (min spacing): {semester.d}")
+            print(f"  - M (constraint constant): {semester.M}")
+            
+            # Set this as the current semester
+            from App.models.config import Config
+            config = Config.query.first()
+            if not config:
+                config = Config(semester=semester.sem_num)
+                db.session.add(config)
+            else:
+                config.semester = semester.sem_num
+            db.session.commit()
+            print(f"Set semester {semester.sem_num} as current semester")
+            
+            # Update solver config with semester parameters
+            solver_config = SolverConfig.query.first()
+            if not solver_config:
+                solver_config = SolverConfig(
+                    semester_days=semester.K,
+                    min_spacing=semester.d,
+                    large_m=semester.M
+                )
+                db.session.add(solver_config)
+            else:
+                solver_config.semester_days = semester.K
+                solver_config.min_spacing = semester.d
+                solver_config.large_m = semester.M
+            db.session.commit()
+            print(f"Updated solver configuration with semester parameters")
+        else:
+            print(f"Failed to import semester data from {csv_file}")
+    except Exception as e:
+        print(f"Error importing semester data: {str(e)}")
+
+@app.cli.command("export-semester", help="Export current semester data to a CSV file")
+@click.argument("csv_file", default="App/data/semester_export.csv")
+def export_semester_command(csv_file):
+    """Export current semester data to a CSV file"""
+    from App.controllers.semester import get_current_semester
+    import csv
+    
+    semester = get_current_semester()
+    if not semester:
+        print("No current semester found to export")
+        return
+    
+    try:
+        with open(csv_file, 'w', newline='') as f:
+            writer = csv.writer(f)
+            # Write header
+            writer.writerow(['start_date', 'end_date', 'sem_num', 'max_assessments', 'K', 'd', 'M'])
+            # Write data
+            writer.writerow([
+                semester.start_date.strftime('%Y-%m-%d'),
+                semester.end_date.strftime('%Y-%m-%d'),
+                semester.sem_num,
+                semester.max_assessments,
+                semester.K,
+                semester.d,
+                semester.M
+            ])
+        print(f"Successfully exported semester {semester.sem_num} data to {csv_file}")
+    except Exception as e:
+        print(f"Error exporting semester data: {str(e)}")
+
+@app.cli.command("create-semester", help="Create a new semester with specified parameters")
+@click.option("--start-date", required=True, help="Start date (YYYY-MM-DD)")
+@click.option("--end-date", required=True, help="End date (YYYY-MM-DD)")
+@click.option("--sem-num", required=True, type=int, help="Semester number")
+@click.option("--max-assessments", required=True, type=int, help="Maximum assessments per level")
+@click.option("--k", default=84, type=int, help="Total days in semester")
+@click.option("--d", default=3, type=int, help="Days between assessments for overlapping courses")
+@click.option("--m", default=1000, type=int, help="Constraint constant")
+def create_semester_command(start_date, end_date, sem_num, max_assessments, k, d, m):
+    """Create a new semester with specified parameters"""
+    from datetime import datetime
+    from App.controllers.semester import create_semester
+    
+    try:
+        # Parse dates
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        
+        # Create semester
+        semester = create_semester(start_date, end_date, sem_num, max_assessments, k, d, m)
+        
+        print(f"Successfully created semester {semester.sem_num} with parameters:")
+        print(f"  - Start date: {semester.start_date}")
+        print(f"  - End date: {semester.end_date}")
+        print(f"  - Max assessments: {semester.max_assessments}")
+        print(f"  - K (total days): {semester.K}")
+        print(f"  - d (min spacing): {semester.d}")
+        print(f"  - M (constraint constant): {semester.M}")
+        
+        # Note: create_semester already sets this as the current semester in Config
+        
+        # Update solver config with semester parameters
+        solver_config = SolverConfig.query.first()
+        if not solver_config:
+            solver_config = SolverConfig(
+                semester_days=semester.K,
+                min_spacing=semester.d,
+                large_m=semester.M
+            )
+            db.session.add(solver_config)
+        else:
+            solver_config.semester_days = semester.K
+            solver_config.min_spacing = semester.d
+            solver_config.large_m = semester.M
+        db.session.commit()
+        print(f"Updated solver configuration with semester parameters")
+    except Exception as e:
+        print(f"Error creating semester: {str(e)}")
+
+@app.cli.command("list-semesters", help="List all semesters in the database")
+def list_semesters_command():
+    """List all semesters in the database"""
+    from App.models.semester import Semester
+    from App.controllers.semester import get_current_semester
+    
+    semesters = Semester.query.all()
+    current_semester = get_current_semester()
+    
+    if not semesters:
+        print("No semesters found in the database")
+        return
+    
+    print(f"Found {len(semesters)} semester(s):")
+    for semester in semesters:
+        current_marker = " (current)" if current_semester and semester.id == current_semester.id else ""
+        print(f"Semester {semester.sem_num}{current_marker}:")
+        print(f"  - ID: {semester.id}")
+        print(f"  - Start date: {semester.start_date}")
+        print(f"  - End date: {semester.end_date}")
+        print(f"  - Max assessments: {semester.max_assessments}")
+        print(f"  - K (total days): {semester.K}")
+        print(f"  - d (min spacing): {semester.d}")
+        print(f"  - M (constraint constant): {semester.M}")
+        print()

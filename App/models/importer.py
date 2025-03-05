@@ -8,7 +8,8 @@ from App.models.course import Course
 from App.models.assessment import Assessment, Category
 from App.models.class_size import ClassSize
 from App.models.solver_config import SolverConfig
-from datetime import datetime
+from App.models.semester import Semester
+from datetime import datetime, date
 
 def load_courses(csv_file):
     """
@@ -188,3 +189,68 @@ def load_solver_config(config_dict=None):
     
     db.session.commit()
     return config
+
+def load_semester(csv_file):
+    """
+    Load semester data from a CSV file.
+    Expected columns: start_date,end_date,sem_num,max_assessments,K,d,M
+    
+    Returns:
+        Semester object or None if file doesn't exist
+    """
+    if not os.path.exists(csv_file):
+        print(f"Warning: Semester CSV file {csv_file} not found")
+        return None
+    
+    with open(csv_file, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            # Parse dates
+            try:
+                start_date = datetime.strptime(row['start_date'], '%Y-%m-%d').date()
+                end_date = datetime.strptime(row['end_date'], '%Y-%m-%d').date()
+            except ValueError:
+                print(f"Error: Invalid date format in {csv_file}. Expected YYYY-MM-DD")
+                continue
+            
+            # Parse integers
+            try:
+                sem_num = int(row['sem_num'])
+                max_assessments = int(row['max_assessments'])
+                K = int(row.get('K', 84))  # Default to 84 if not provided
+                d = int(row.get('d', 3))   # Default to 3 if not provided
+                M = int(row.get('M', 1000)) # Default to 1000 if not provided
+            except ValueError:
+                print(f"Error: Invalid numeric values in {csv_file}")
+                continue
+            
+            # Check if semester already exists
+            existing_semester = Semester.query.filter_by(sem_num=sem_num).first()
+            if existing_semester:
+                # Update existing semester
+                existing_semester.start_date = start_date
+                existing_semester.end_date = end_date
+                existing_semester.max_assessments = max_assessments
+                existing_semester.K = K
+                existing_semester.d = d
+                existing_semester.M = M
+                db.session.commit()
+                print(f"Updated semester {sem_num}")
+                return existing_semester
+            else:
+                # Create new semester
+                new_semester = Semester(
+                    start_date=start_date,
+                    end_date=end_date,
+                    sem_num=sem_num,
+                    max_assessments=max_assessments,
+                    K=K,
+                    d=d,
+                    M=M
+                )
+                db.session.add(new_semester)
+                db.session.commit()
+                print(f"Created new semester {sem_num}")
+                return new_semester
+    
+    return None

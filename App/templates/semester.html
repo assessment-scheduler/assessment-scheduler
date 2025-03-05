@@ -30,6 +30,18 @@
         <label for="maxAssessments" class="input-label">Maximum Weekly Assessments Allowed per Level</label>
         <input type="number" name="maxAssessments" id="maxAssessments">
     </div>
+    <div class="field_containers">
+        <label for="K" class="input-label">Total Days in Semester (K)</label>
+        <input type="number" name="K" id="K" value="84">
+    </div>
+    <div class="field_containers">
+        <label for="d" class="input-label">Days Between Assessments for Overlapping Courses (d)</label>
+        <input type="number" name="d" id="d" value="3">
+    </div>
+    <div class="field_containers">
+        <label for="M" class="input-label">Constraint Constant (M)</label>
+        <input type="number" name="M" id="M" value="1000">
+    </div>
     <button id="save_btn" class="formBtn saveSemesterBtn" type="submit">Save</button>
 
 </form>
