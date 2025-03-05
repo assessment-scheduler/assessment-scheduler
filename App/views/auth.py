@@ -19,24 +19,26 @@ def login_action():
     password = request.form.get('password')     #To be linked to login button
     response = login_user(email, password)
     if not response:
-        flash('Bad email or password given'), 401 
-    return response       
+        flash('Bad email or password given', 'error') 
+        return redirect(url_for('auth_views.get_login_page'))
+    return response
 
 def login_user(email, password):
-    admin_user=db.session.query(Admin).filter(Admin.email == email).first()
+    admin_user = Admin.query.filter_by(email=email).first()
     if admin_user and admin_user.check_password(password):
         response = make_response(redirect(url_for('admin_views.get_upload_page')))    
         token = create_access_token(identity=email)
         response.set_cookie('access_token', token)
         return response
-    else:
-        user = db.session.query(Staff).filter(Staff.email == email).first()
-        if user and user.check_password(password):
-            response = make_response(redirect(url_for('staff_views.get_calendar_page')))
-            token = create_access_token(identity=email)
-            response.set_cookie('access_token', token)
-            return response
-    return jsonify(message="Invalid username or password"), 401
+    
+    staff_user = Staff.query.filter_by(email=email).first()
+    if staff_user and staff_user.check_password(password):
+        response = make_response(redirect(url_for('staff_views.get_account_page')))
+        token = create_access_token(identity=email)
+        response.set_cookie('access_token', token)
+        return response
+    
+    return None
 
 @auth_views.route('/logout', methods=['GET'])
 @jwt_required()

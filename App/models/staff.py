@@ -16,7 +16,7 @@ class Status(enum.Enum):
 class Staff(User, UserMixin):
     __tablename__ = 'staff'
 
-    u_id = db.Column(db.Integer, db.ForeignKey('user.u_id'), primary_key=True)
+    id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     f_name = db.Column(db.String(120), nullable=False)
     l_name = db.Column(db.String(120), nullable=False)
     status = db.Column(db.String(120), nullable=False)
@@ -26,10 +26,10 @@ class Staff(User, UserMixin):
     # Relationship with courses - one staff can have many courses
     courses = db.relationship('Course', back_populates='staff', lazy='dynamic')
     # Relationship with course staff assignments
-    course_staff = db.relationship('CourseStaff', back_populates='staff_member', foreign_keys='CourseStaff.u_id', overlaps="course_assignments")
+    course_staff = db.relationship('CourseStaff', back_populates='staff_member', foreign_keys='CourseStaff.staff_id', overlaps="course_assignments")
 
-    def __init__(self, f_name, l_name, u_id, status, email, password, department, faculty):
-        super().__init__(u_id, password, email)
+    def __init__(self, f_name, l_name, id, status, email, password, department, faculty):
+        super().__init__(id, password, email)
         self.f_name = f_name
         self.l_name = l_name
         self.status = status
@@ -37,11 +37,11 @@ class Staff(User, UserMixin):
         self.faculty = faculty
 
     def get_id(self):
-        return self.u_id
+        return self.id
 
     def to_json(self):
         return {
-            "staff_ID": self.u_id,
+            "staff_ID": self.id,
             "firstName": self.f_name,
             "lastName": self.l_name,
             "status": self.status,
@@ -52,21 +52,21 @@ class Staff(User, UserMixin):
         }
 
     def __repr__(self):
-        return f"Staff(id={self.u_id}, email={self.email})"
+        return f"Staff(id={self.id}, email={self.email})"
 
     @staticmethod
-    def register(f_name, l_name, u_id, status, email, password, department, faculty):
-        new_staff = Staff(f_name, l_name, u_id, status, email, password, department, faculty)
-        db.session.add(new_staff)
+    def register(f_name, l_name, id, status, email, password, department, faculty):
+        staff = Staff(f_name=f_name, l_name=l_name, id=id, status=status, email=email, password=password, department=department, faculty=faculty)
+        db.session.add(staff)
         db.session.commit()
-        return new_staff
+        return staff
 
     def login(self):
         return flask_login.login_user(self)
 
     def assign_course(self, course):
         """Assign a course to this staff member"""
-        course.staff_id = self.u_id
+        course.staff_id = self.id
         db.session.commit()
         return True
         

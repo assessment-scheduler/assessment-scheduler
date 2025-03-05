@@ -81,7 +81,8 @@ def get_account_page():
         'account.html', 
         courses=all_courses, 
         staff_courses=staff_courses,
-        staff_course_codes=staff_course_codes
+        staff_course_codes=staff_course_codes,
+        registered=staff_course_codes
     )
 
 @staff_views.route('/account', methods=['POST'])

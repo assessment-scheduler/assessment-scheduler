@@ -42,7 +42,7 @@ def initialize():
     # db.init_app(app)
     db.create_all()
     # bob = Staff("bob", "test", 300456, "Lecturer 1", "bob@gmail.com", "bobpass")
-    bob = Admin(u_id=999, email="bob@gmail.com", password="bobpass")
+    bob = Admin(id=999, email="bob@gmail.com", password="bobpass")
     db.session.add(bob)
     db.session.commit()
     print(bob)
@@ -83,13 +83,13 @@ def initialize():
                 reader = csv.DictReader(file)
                 for row in reader:
                     # Check if staff already exists
-                    existing_staff = Staff.query.filter_by(u_id=int(row['ID'])).first()
+                    existing_staff = Staff.query.filter_by(id=int(row['ID'])).first()
                     if not existing_staff:
                         # Register new staff
                         Staff.register(
                             f_name=row['First Name'],
                             l_name=row['Last Name'],
-                            u_id=int(row['ID']),
+                            id=int(row['ID']),
                             status=row['Status'],
                             email=row['Email'],
                             password=row['Password'],
@@ -185,7 +185,7 @@ def load_Pgr():
 @app.cli.command("add-course")
 @click.argument("staff_ID")
 def assign_course(staff_ID):
-    bob = Staff.query.filter_by(u_ID=staff_ID).first()
+    bob = Staff.query.filter_by(id=staff_ID).first()
   
     if not bob:
         print(f'Staff with ID: {staff_ID} not found!')

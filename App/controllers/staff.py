@@ -1,14 +1,14 @@
 from App.models import Staff, CourseStaff, Course
 from App.database import db
 
-def add_staff(firstName, lastName, u_ID, status, password, department, faculty):
+def add_staff(firstName, lastName, id, status, password, department, faculty):
     """
     Add a new staff member
     
     Args:
         firstName: First name of the staff member
         lastName: Last name of the staff member
-        u_ID: Unique ID for the staff member
+        id: Unique ID for the staff member
         status: Status/role of the staff member
         password: Password for the staff member
         department: Department the staff member belongs to
@@ -21,16 +21,16 @@ def add_staff(firstName, lastName, u_ID, status, password, department, faculty):
     email = f"{firstName.lower()}.{lastName.lower()}@sta.uwi.edu"
     
     # Register the staff member
-    return register_staff(firstName, lastName, u_ID, status, email, password, department, faculty)
+    return register_staff(firstName, lastName, id, status, email, password, department, faculty)
 
-def register_staff(firstName, lastName, u_ID, status, email, pwd, department, faculty):
+def register_staff(firstName, lastName, id, status, email, pwd, department, faculty):
     """
     Register a new staff member
     
     Args:
         firstName: First name of the staff member
         lastName: Last name of the staff member
-        u_ID: Unique ID for the staff member
+        id: Unique ID for the staff member
         status: Status/role of the staff member
         email: Email address of the staff member
         pwd: Password for the staff member
@@ -49,7 +49,7 @@ def register_staff(firstName, lastName, u_ID, status, email, pwd, department, fa
     new_staff = Staff(
         f_name=firstName,
         l_name=lastName,
-        u_id=u_ID,
+        id=id,
         status=status,
         email=email,
         password=pwd,

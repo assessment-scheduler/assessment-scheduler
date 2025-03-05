@@ -13,7 +13,7 @@ class Course(db.Model):
     faculty = db.Column(db.String(120), nullable=False)
     pre_reqs = db.Column(db.String(120), nullable=True)
     p_id = db.Column(db.Integer, nullable=True)
-    staff_id = db.Column(db.Integer, db.ForeignKey('staff.u_id'), nullable=True)
+    staff_id = db.Column(db.Integer, db.ForeignKey('staff.id'), nullable=True)
     active = db.Column(db.Boolean, nullable=False, default=True)
     
     # Relationships

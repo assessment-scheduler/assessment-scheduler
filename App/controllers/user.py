@@ -1,5 +1,6 @@
 from App.models import User, Admin, Staff
 from App.database import db
+from flask import jsonify
 
 def validate_staff(email, password):
     staff = Staff.query.filter_by(email=email).first()
@@ -14,15 +15,16 @@ def validate_admin(email, password):
     return None
 
 def get_user(email, password):
-    user = validate_staff(email, password)
-    if user is not None:
-        return user
-    user = validate_admin(email, password)
-    if user is not None:
+    """
+    Returns the user object if the email and password are correct
+    """
+    user = User.query.filter_by(email=email).first()
+    if user and user.check_password(password):
         return user
     return None
 
-def get_user_id(email): return Staff.query.filter_by(email=email).first().u_ID
+def get_user_id(email): 
+    return Staff.query.filter_by(email=email).first().id
 
 def get_uid(id):
     """
@@ -34,45 +36,41 @@ def get_uid(id):
         return user.id
     return None
 
-def create_user(username, password, u_ID, role, email):
+def create_user(username, password, id, role, email):
     """
     Creates a new user with the given parameters
     """
-    try:
-        # Check if user with this email already exists
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
-            return None
-        
-        # Create new user based on role
-        if role.lower() == 'admin':
-            new_user = Admin(u_ID=u_ID, email=email, password=password)
-        else:
-            new_user = Staff(username=username, password=password, u_ID=u_ID, 
-                            role=role, email=email)
-        
-        # Add to database
-        db.session.add(new_user)
-        db.session.commit()
-        return new_user
-    except Exception as e:
-        print(f"Error creating user: {e}")
-        db.session.rollback()
+    # Check if user already exists
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
         return None
+    
+    # Create new user based on role
+    if role == 'admin':
+        new_user = Admin(id=id, password=password, email=email)
+    elif role == 'staff':
+        new_user = Staff(f_name=username, l_name="", id=id, status="", email=email, password=password, department="", faculty="")
+    else:
+        return None
+    
+    # Add to database
+    db.session.add(new_user)
+    db.session.commit()
+    
+    return new_user
 
 def get_all_users():
     """
     Returns all users in the database
     """
-    staff = Staff.query.all()
-    admins = Admin.query.all()
-    return staff + admins
+    return User.query.all()
 
 def get_all_users_json():
     """
-    Returns all users in JSON format
+    Returns all users in the database as a JSON response
     """
-    users = get_all_users()
+    users = User.query.all()
     if not users:
-        return []
-    return [user.to_json() for user in users]
+        return jsonify([])
+    users_json = [user.to_json() for user in users]
+    return jsonify(users_json)
