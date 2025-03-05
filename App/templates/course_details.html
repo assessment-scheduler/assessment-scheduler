@@ -108,8 +108,11 @@
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     console.log('Course details page loaded');
-    console.log('Course:', {{ course|tojson|safe }});
-    console.log('Assessments:', {{ assessments|tojson|safe }});
+    var courseData = JSON.parse('{{ course|tojson|safe }}');
+    var assessmentsData = JSON.parse('{{ assessments|tojson|safe }}');
+    
+    console.log('Course:', courseData);
+    console.log('Assessments:', assessmentsData);
   });
 </script>
 {% endblock %} 
