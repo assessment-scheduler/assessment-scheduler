@@ -124,7 +124,7 @@
   <h2>Update Staff Member</h2>
   
   <form action="/updateStaff" method="POST">
-    <input type="hidden" name="staffID" value="{{ staff.u_id }}">
+    <input type="hidden" name="staffID" value="{{ staff.id }}">
     
     <div class="form-row">
       <div class="form-col">
@@ -143,7 +143,7 @@
     
     <div class="form-group">
       <label>Staff ID</label>
-      <div class="email-display">{{ staff.u_id }}</div>
+      <div class="email-display">{{ staff.id }}</div>
     </div>
     
     <div class="form-group">

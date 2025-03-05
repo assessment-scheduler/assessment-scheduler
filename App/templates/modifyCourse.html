@@ -120,7 +120,7 @@
             <select name="staff_id" id="staff_id">
                 <option value="">-- Select Staff Member --</option>
                 {% for staff in staff_list %}
-                <option value="{{ staff.u_id }}" {% if course.staff_id == staff.u_id %}selected{% endif %}>
+                <option value="{{ staff.id }}" {% if course.staff_id == staff.id %}selected{% endif %}>
                     {{ staff.f_name }} {{ staff.l_name }} ({{ staff.status }})
                 </option>
                 {% endfor %}

@@ -538,7 +538,7 @@ def assign_staff_to_course_page(course_code):
     
     # Get staff already assigned to this course
     assigned_staff = get_course_staff(course_code)
-    assigned_staff_ids = [staff.u_id for staff in assigned_staff]
+    assigned_staff_ids = [staff.id for staff in assigned_staff]
     
     # Get unique departments for filter
     departments = sorted(list(set([staff.department for staff in all_staff])))

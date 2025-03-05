@@ -132,7 +132,7 @@
             <select name="staff_id" id="staff_id">
                 <option value="">-- Select Staff Member --</option>
                 {% for staff in staff_list %}
-                <option value="{{ staff.u_id }}">{{ staff.f_name }} {{ staff.l_name }} ({{ staff.status }})</option>
+                <option value="{{ staff.id }}">{{ staff.f_name }} {{ staff.l_name }} ({{ staff.status }})</option>
                 {% endfor %}
             </select>
         </div>

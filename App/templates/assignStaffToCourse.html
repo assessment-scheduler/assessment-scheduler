@@ -358,8 +358,8 @@
       </thead>
       <tbody id="staffTableBody">
         {% for member in staff %}
-        <tr class="staff-row" data-id="{{ member.u_id }}">
-          <td>{{ member.u_id }}</td>
+        <tr class="staff-row" data-id="{{ member.id }}">
+          <td>{{ member.id }}</td>
           <td>{{ member.f_name }} {{ member.l_name }}</td>
           <td><span class="email-text">{{ member.email }}</span></td>
           <td>{{ member.department }}</td>
@@ -377,19 +377,19 @@
             </span>
           </td>
           <td>
-            {% if member.u_id in assigned_staff_ids %}
+            {% if member.id in assigned_staff_ids %}
             <span class="assigned-badge">Assigned</span>
             {% else %}
             <span class="not-assigned-badge">Not Assigned</span>
             {% endif %}
           </td>
           <td>
-            {% if member.u_id in assigned_staff_ids %}
-            <form action="/removeCourseStaff/{{ course.course_code }}/{{ member.u_id }}" method="POST" style="display: inline;">
+            {% if member.id in assigned_staff_ids %}
+            <form action="/removeCourseStaff/{{ course.course_code }}/{{ member.id }}" method="POST" style="display: inline;">
               <button type="submit" class="btn btn-danger">Remove</button>
             </form>
             {% else %}
-            <form action="/assignCourseStaff/{{ course.course_code }}/{{ member.u_id }}" method="POST" style="display: inline;">
+            <form action="/assignCourseStaff/{{ course.course_code }}/{{ member.id }}" method="POST" style="display: inline;">
               <button type="submit" class="btn btn-primary">Assign</button>
             </form>
             {% endif %}
