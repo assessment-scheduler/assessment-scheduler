@@ -1,0 +1,115 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ course.course_code }} - Course Details{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/course_details.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <!-- Course Header Section -->
+  <div class="course-header">
+    <a href="/account" class="back-button">← Back to Account</a>
+    
+    <div class="course-title-container">
+      <div class="course-code-display">{{ course.course_code }}</div>
+      <div class="course-title-display">{{ course.course_title }}</div>
+    </div>
+
+    <div class="course-details">
+      <div class="detail-item">
+        <span class="detail-label">Level:</span>
+        <span class="detail-value">{{ course.level }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Semester:</span>
+        <span class="detail-value">{{ course.semester }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Department:</span>
+        <span class="detail-value">{{ course.department }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Faculty:</span>
+        <span class="detail-value">{{ course.faculty }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Credits:</span>
+        <span class="detail-value">{{ course.credits if course.credits else 'N/A' }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Assessments:</span>
+        <span class="detail-value">{{ assessments|length }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assessments Section -->
+  <div class="assessments-container">
+    <h3 class="section-title">Course Assessments</h3>
+    
+    <!-- Stats Overview -->
+    <div class="stats-container">
+      <div class="stat-card">
+        <div class="stat-value">{{ assessments|length }}</div>
+        <div class="stat-label">Total Assessments</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ total_percentage }}%</div>
+        <div class="stat-label">Total Weight</div>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-bar" style="width: {{ total_percentage }}%;"></div>
+    </div>
+    <div style="text-align: right; font-size: 0.8rem; margin-top: 5px; color: var(--light-gray);">
+      {{ total_percentage }}% of 100%
+    </div>
+
+    <!-- Assessment Grid -->
+    <div class="assessment-grid">
+      {% if assessments and assessments|length > 0 %}
+        {% for assessment in assessments %}
+          <div class="assessment-card">
+            <div class="assessment-name">{{ assessment.name }}</div>
+            <div class="assessment-type">{{ assessment.type }}</div>
+            
+            <div class="assessment-details">
+              <div class="assessment-detail">
+                Due: {{ assessment.due_date.strftime('%d %b %Y') if assessment.due_date else 'Not set' }}
+              </div>
+              <div class="assessment-detail">
+                Status: {{ 'Active' if assessment.active else 'Inactive' }}
+              </div>
+            </div>
+            
+            <div class="assessment-percentage">{{ assessment.percentage }}%</div>
+            
+            {% if assessment.description %}
+              <div class="assessment-description" style="margin-top: 10px; font-size: 0.9rem;">
+                {{ assessment.description }}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="no-assessments">
+          <p>No assessments have been added to this course yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Course details page loaded');
+    console.log('Course:', {{ course|tojson|safe }});
+    console.log('Assessments:', {{ assessments|tojson|safe }});
+  });
+</script>
+{% endblock %} 

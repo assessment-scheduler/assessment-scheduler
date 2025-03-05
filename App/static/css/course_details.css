@@ -1,0 +1,245 @@
+:root {
+  --primary-color: rgb(92, 70, 180);
+  --secondary-color: rgb(92, 70, 180);
+  --accent-color: #e74c3c;
+  --dark-bg: #2c3e50;
+  --darker-bg: #1a252f;
+  --light-text: #ecf0f1;
+  --medium-gray: #34495e;
+  --light-gray: #7f8c8d;
+  --border-radius: 8px;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+body {
+  background-color: var(--darker-bg);
+  color: var(--light-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#content {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--darker-bg);
+}
+
+footer {
+  margin-top: auto;
+  background-color: var(--darker-bg);
+}
+
+.dashboard-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex: 1;
+}
+
+@media (min-width: 768px) {
+  .dashboard-container {
+    grid-template-columns: 300px 1fr;
+  }
+}
+
+.course-header {
+  background-color: var(--dark-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.course-title-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.course-code-display {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--light-text);
+  text-align: center;
+}
+
+.course-title-display {
+  font-size: 1.2rem;
+  color: var(--light-gray);
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.course-details {
+  margin-top: 20px;
+}
+
+.detail-item {
+  display: flex;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.detail-label {
+  font-weight: 600;
+  width: 120px;
+  color: var(--light-gray);
+}
+
+.detail-value {
+  flex: 1;
+  color: var(--light-text);
+}
+
+.assessments-container {
+  background-color: var(--dark-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 20px;
+}
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--light-text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.assessment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.assessment-card {
+  background-color: var(--medium-gray);
+  border-radius: var(--border-radius);
+  padding: 15px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.assessment-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  background-color: #3a546e;
+}
+
+.assessment-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+  color: var(--light-text);
+}
+
+.assessment-type {
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  color: var(--light-text);
+}
+
+.assessment-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 0.8rem;
+}
+
+.assessment-detail {
+  background-color: var(--dark-bg);
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.assessment-percentage {
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-top: 10px;
+}
+
+.assessment-date {
+  color: var(--light-gray);
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background-color: var(--medium-gray);
+  border-radius: var(--border-radius);
+  padding: 15px;
+  box-shadow: var(--box-shadow);
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--light-gray);
+}
+
+.progress-container {
+  margin-top: 15px;
+  background-color: var(--dark-bg);
+  border-radius: 10px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--primary-color);
+  border-radius: 10px;
+}
+
+.no-assessments {
+  text-align: center;
+  padding: 20px;
+  color: var(--light-gray);
+}
+
+.back-button {
+  display: inline-block;
+  margin-bottom: 20px;
+  padding: 8px 15px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: var(--secondary-color);
+  text-decoration: none;
+} 

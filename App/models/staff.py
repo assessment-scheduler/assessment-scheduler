@@ -81,7 +81,7 @@ class Staff(User, UserMixin):
             return True
         
         # Assignment through CourseStaff
-        if self.course_staff.filter_by(courseCode=course_code).first():
+        if self.course_staff.filter_by(course_code=course_code).first():
             return True
         
         return False

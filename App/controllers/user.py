@@ -24,14 +24,27 @@ def get_user(email, password):
     return None
 
 def get_user_id(email): 
-    return Staff.query.filter_by(email=email).first().id
-
-def get_uid(id):
     """
-    Returns the user ID for a given ID
+    Returns the user ID for a given email
+    """
+    staff = Staff.query.filter_by(email=email).first()
+    if staff:
+        return staff.id
+    return None
+
+def get_uid(id_or_email):
+    """
+    Returns the user ID for a given ID or email
     """
     from App.models.user import User
-    user = User.query.filter_by(id=id).first()
+    
+    # Check if input is an email
+    if isinstance(id_or_email, str) and '@' in id_or_email:
+        # If it's an email, get the ID first
+        return get_user_id(id_or_email)
+    
+    # Otherwise, treat it as an ID
+    user = User.query.filter_by(id=id_or_email).first()
     if user:
         return user.id
     return None

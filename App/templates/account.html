@@ -4,50 +4,435 @@
 
 {% block head %}
 <link rel="stylesheet" href="../static/css/main.css">
-<link rel="stylesheet" href="../static/css/account.css">
+<style>
+  :root {
+    --primary-color: rgb(92, 70, 180);
+    --secondary-color: rgb(92, 70, 180);
+    --accent-color: #e74c3c;
+    --dark-bg: #2c2f33;
+    --darker-bg: #23272a;
+    --light-text: #ecf0f1;
+    --medium-gray: #36393f;
+    --light-gray: #7f8c8d;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
 
+  body {
+    background-color: var(--darker-bg);
+    color: var(--light-text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dashboard-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    flex: 1;
+  }
+
+  @media (min-width: 768px) {
+    .dashboard-container {
+      grid-template-columns: 300px 1fr;
+    }
+  }
+
+  .profile-card {
+    background-color: var(--dark-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    color: white;
+    font-size: 2.5rem;
+    font-weight: bold;
+  }
+
+  .profile-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    text-align: center;
+    color: var(--light-text);
+  }
+
+  .profile-email {
+    color: var(--light-gray);
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  .profile-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+  }
+
+  .status-hod { background-color: #e74c3c; color: white; }
+  .status-lecturer { background-color: rgb(92, 70, 180); color: white; }
+  .status-instructor { background-color: #2ecc71; color: white; }
+  .status-ptinstructor { background-color: #27ae60; color: white; }
+  .status-ta { background-color: #f39c12; color: white; }
+  .status-tutor { background-color: var(--primary-color); color: white; }
+  .status-pttutor { background-color: var(--secondary-color); color: white; }
+
+  .profile-details {
+    margin-top: 20px;
+  }
+
+  .detail-item {
+    display: flex;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+
+  .detail-label {
+    font-weight: 600;
+    width: 100px;
+    color: var(--light-gray);
+  }
+
+  .detail-value {
+    flex: 1;
+    color: var(--light-text);
+  }
+
+  .courses-container {
+    background-color: var(--dark-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 20px;
+  }
+
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--light-text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .course-card {
+    background-color: var(--medium-gray);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    background-color: #3a546e;
+  }
+
+  .course-code {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    color: var(--light-text);
+  }
+
+  .course-title {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    color: var(--light-text);
+  }
+
+  .course-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+    font-size: 0.8rem;
+  }
+
+  .course-detail {
+    background-color: var(--dark-bg);
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+  }
+
+  .course-detail i {
+    margin-right: 5px;
+    color: var(--secondary-color);
+  }
+
+  .course-actions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .course-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background-color 0.2s;
+  }
+
+  .course-btn:hover {
+    background-color: var(--secondary-color);
+  }
+
+  .no-courses {
+    text-align: center;
+    padding: 20px;
+    color: var(--light-gray);
+  }
+
+  .assessment-list {
+    margin-top: 15px;
+  }
+
+  .assessment-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--medium-gray);
+  }
+
+  .assessment-name {
+    font-weight: 500;
+    color: var(--light-text);
+  }
+
+  .assessment-percentage {
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+
+  .stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background-color: var(--medium-gray);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    box-shadow: var(--box-shadow);
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--light-gray);
+  }
+
+  a {
+    color: var(--primary-color);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  /* Fix for the bottom gap */
+  #content {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--darker-bg);
+  }
+
+  footer {
+    margin-top: auto;
+    background-color: var(--darker-bg);
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-<div id="main_container">
-    <h1>My Account</h1>
-    <div class="course_selection">
-        <div class="search-container">
-          <form action="">
-            <input type="search" id="search_box" name="q" placeholder="Search Courses" autocomplete="off">
-          </form>
-          <div id="search-dropdown">
-            <div id="table_container">
-              <table id="courseTable">
-                <tbody id="courseTableBody">
-                  {% for course in courses %}
-                  <tr class="course-row" data="{{ course.courseCode }}" >
-                    <td>{{course.courseCode }}</td> 
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div> 
-          </div>
-        </div>
-
-      <h3>My Courses</h3>     
-      <div id="selected_courses">
+<div class="dashboard-container">
+  <!-- Profile Section -->
+  <div class="profile-card">
+    {% if staff %}
+    <div class="profile-header">
+      <div class="profile-avatar">
+        {{ staff.f_name[0] }}{{ staff.l_name[0] }}
       </div>
-    </div> 
+      <h2 class="profile-name">{{ staff.f_name }} {{ staff.l_name }}</h2>
+      <p class="profile-email">{{ staff.email }}</p>
+      <span class="profile-status 
+        {% if staff.status == 'Head of Department' %}status-hod
+        {% elif staff.status == 'Lecturer' %}status-lecturer
+        {% elif staff.status == 'Instructor' %}status-instructor
+        {% elif staff.status == 'Part-Time Instructor' %}status-ptinstructor
+        {% elif staff.status == 'Teaching Assistant' %}status-ta
+        {% elif staff.status == 'Teaching Assisstant' %}status-ta
+        {% elif staff.status == 'Tutor' %}status-tutor
+        {% elif staff.status == 'Part-Time Tutor' %}status-pttutor
+        {% endif %}">
+        {{ staff.status }}
+      </span>
+    </div>
 
-        
-      
-    <form id="save-course-form" method="POST" action="/account">
-      <input type="hidden" id="courseCodesInput" name="courseCodes">
-      <button type="submit" id="save_btn">Save</button>
-    </form>
+    <div class="profile-details">
+      <div class="detail-item">
+        <span class="detail-label">Staff ID:</span>
+        <span class="detail-value">{{ staff.id }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Department:</span>
+        <span class="detail-value">{{ staff.department }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Faculty:</span>
+        <span class="detail-value">{{ staff.faculty }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Courses:</span>
+        <span class="detail-value">{{ staff_courses|length if staff_courses else 0 }}</span>
+      </div>
+    </div>
+    {% else %}
+    <div class="profile-header">
+      <div class="profile-avatar">
+        ?
+      </div>
+      <h2 class="profile-name">Not Logged In</h2>
+      <p class="profile-email">Please log in to view your account</p>
+    </div>
+    {% endif %}
+  </div>
 
+  <!-- Courses Section -->
+  <div class="courses-container">
+    <h3 class="section-title">My Courses</h3>
+    
+    <!-- Stats Overview -->
+    <div class="stats-container">
+      <div class="stat-card">
+        <div class="stat-value">{{ staff_courses|length if staff_courses else 0 }}</div>
+        <div class="stat-label">Total Courses</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">
+          {% if staff_courses %}
+            {% set total_assessments = 0 %}
+            {% for course in staff_courses %}
+              {% if course.assessments %}
+                {% set total_assessments = total_assessments + course.assessments|length %}
+              {% endif %}
+            {% endfor %}
+            {{ total_assessments }}
+          {% else %}
+            0
+          {% endif %}
+        </div>
+        <div class="stat-label">Assessments</div>
+      </div>
+    </div>
+
+    <!-- Course Grid -->
+    <div class="course-grid">
+      {% if staff_courses and staff_courses|length > 0 %}
+        {% for course in staff_courses %}
+          <div class="course-card">
+            <div class="course-code">{{ course.course_code }}</div>
+            <div class="course-title">{{ course.course_title }}</div>
+            
+            <div class="course-details">
+              <div class="course-detail">
+                Level {{ course.level }}
+              </div>
+              <div class="course-detail">
+                Semester {{ course.semester }}
+              </div>
+            </div>
+            
+            <div class="assessment-list">
+              {% if course.assessments %}
+                {% for assessment in course.assessments[:3] %}
+                  <div class="assessment-item">
+                    <span class="assessment-name">{{ assessment.name }}</span>
+                    <span class="assessment-percentage">{{ assessment.percentage }}%</span>
+                  </div>
+                {% endfor %}
+                {% if course.assessments|length > 3 %}
+                  <div class="assessment-item">
+                    <span>+ {{ course.assessments|length - 3 }} more</span>
+                  </div>
+                {% endif %}
+              {% else %}
+                <div class="assessment-item">
+                  <span>No assessments</span>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="no-courses">
+          <p>You don't have any courses assigned yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
 </div>
-<script>
-  const myCourses = {{ registered|tojson }};
-  console.log(myCourses);
-</script>
-<script src="../static/js/account.js"></script>
 
-{% endblock %}
+<script>
+  // Initialize selected courses from the server data
+  const myCourses = JSON.parse('{{ registered|tojson|safe if registered else "[]" }}');
+  const allCourses = JSON.parse('{{ courses|tojson|safe if courses else "[]" }}');
+  
+  // Log data for debugging
+  console.log('My courses:', myCourses);
+  console.log('All courses:', allCourses);
+</script>
+{% endblock %} 

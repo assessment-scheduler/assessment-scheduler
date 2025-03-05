@@ -91,12 +91,12 @@ def add_CourseStaff(staff_id, course_code):
         The newly created CourseStaff object or the existing one
     """
     # Check if assignment already exists
-    existing_course_staff = CourseStaff.query.filter_by(u_ID=staff_id, course_code=course_code).first()
+    existing_course_staff = CourseStaff.query.filter_by(staff_id=staff_id, course_code=course_code).first()
     if existing_course_staff:
         return existing_course_staff
     
     # Create new assignment
-    new_course_staff = CourseStaff(u_ID=staff_id, course_code=course_code)
+    new_course_staff = CourseStaff(staff_id=staff_id, course_code=course_code)
     db.session.add(new_course_staff)
     db.session.commit()
     
@@ -237,3 +237,47 @@ def get_accessible_courses(staff_id):
         List of courses
     """
     return get_staff_courses(staff_id)
+
+def setup_default_course_assignments():
+    default_assignments = [
+        ("COMP1601", "Permanand", "Mohan"),
+        ("COMP1600", "Diana", "Ragbir"),
+        ("COMP1603", "Michael", "Hosein"),
+        ("COMP1602", "Shareeda", "Mohammed"),
+        ("INFO1600", "Phaedra", "Mohammed"),
+        ("INFO1601", "Phaedra", "Mohammed"),
+        ("FOUN1105", "Phaedra", "Mohammed"),
+    ]
+    
+    results = []
+    
+    for course_code, first_name, last_name in default_assignments:
+        # Find the staff member by name
+        staff = Staff.query.filter_by(f_name=first_name, l_name=last_name).first()
+        if not staff:
+            results.append((course_code, f"{first_name} {last_name}", False))
+            continue
+            
+        # Find the course
+        course = Course.query.filter_by(course_code=course_code).first()
+        if not course:
+            results.append((course_code, f"{first_name} {last_name}", False))
+            continue
+            
+        # Check if assignment already exists
+        existing = CourseStaff.query.filter_by(staff_id=staff.id, course_code=course_code).first()
+        if existing:
+            results.append((course_code, f"{first_name} {last_name}", True))
+            continue
+            
+        # Create new assignment
+        try:
+            new_assignment = CourseStaff(staff_id=staff.id, course_code=course_code)
+            db.session.add(new_assignment)
+            db.session.commit()
+            results.append((course_code, f"{first_name} {last_name}", True))
+        except Exception as e:
+            db.session.rollback()
+            results.append((course_code, f"{first_name} {last_name}", False))
+    
+    return results

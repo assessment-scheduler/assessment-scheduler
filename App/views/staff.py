@@ -70,20 +70,51 @@ def register_staff_action():
 @staff_views.route('/account', methods=['GET'])
 @jwt_required()
 def get_account_page():
-    email = get_jwt_identity()
-    u_id = get_uid(email)
-    
-    all_courses = list_Courses()
-    staff_courses = get_accessible_courses(u_id)
-    staff_course_codes = [course.course_code for course in staff_courses]
-    
-    return render_template(
-        'account.html', 
-        courses=all_courses, 
-        staff_courses=staff_courses,
-        staff_course_codes=staff_course_codes,
-        registered=staff_course_codes
-    )
+    try:
+        email = get_jwt_identity()
+        if not email:
+            flash('User identity not found. Please log in again.', 'error')
+            return render_template('account.html')
+            
+        u_id = get_uid(email)
+        if not u_id:
+            flash(f'User ID not found for email: {email}. Please log in again.', 'error')
+            return render_template('account.html')
+        
+        # Get staff information
+        staff = get_staff_by_id(u_id)
+        if not staff:
+            flash(f'Staff record not found for ID: {u_id}. Please contact an administrator.', 'error')
+            return render_template('account.html')
+        
+        all_courses = list_Courses()
+        staff_courses = get_accessible_courses(u_id)
+        
+        # Convert course objects to JSON serializable dictionaries
+        all_courses_json = [course.to_json() for course in all_courses]
+        
+        # For staff_courses, we need to include assessments
+        staff_courses_json = []
+        for course in staff_courses:
+            course_json = course.to_json()
+            # Add assessments to each course
+            if hasattr(course, 'assessments'):
+                course_json['assessments'] = [assessment.to_json() for assessment in course.assessments]
+            staff_courses_json.append(course_json)
+        
+        staff_course_codes = [course.course_code for course in staff_courses]
+        
+        return render_template(
+            'account.html', 
+            courses=all_courses_json, 
+            staff_courses=staff_courses_json,
+            staff_course_codes=staff_course_codes,
+            registered=staff_course_codes,
+            staff=staff  # Pass staff information to the template
+        )
+    except Exception as e:
+        flash(f'Error loading account page: {str(e)}', 'error')
+        return render_template('account.html')
 
 @staff_views.route('/account', methods=['POST'])
 @jwt_required()
@@ -142,8 +173,8 @@ def get_assessments_page():
         if assessments:
             total_percentage = calculate_total_percentage_for_course(course.course_code)
             course_assessments.append({
-                'course': course,
-                'assessments': assessments,
+                'course': course.to_json(),
+                'assessments': [assessment.to_json() for assessment in assessments],
                 'total_percentage': total_percentage
             })
     
@@ -252,5 +283,60 @@ def get_settings_page():
 def update_settings():
     flash('Settings updated successfully', 'success')
     return redirect(url_for('staff_views.get_settings_page'))
+
+# Course Routes
+@staff_views.route('/course/<course_code>', methods=['GET'])
+@jwt_required()
+def get_course_details(course_code):
+    try:
+        email = get_jwt_identity()
+        u_id = get_uid(email)
+        
+        # Check if staff has access to this course
+        if not has_access_to_course(u_id, course_code):
+            flash('You do not have access to this course', 'error')
+            return redirect(url_for('staff_views.get_account_page'))
+        
+        # Get course information
+        course = get_course(course_code)
+        if not course:
+            flash('Course not found', 'error')
+            return redirect(url_for('staff_views.get_account_page'))
+        
+        # Get assessments for this course
+        assessments = get_assessments_by_course(course.course_code)
+        
+        # Get staff information
+        staff = get_staff_by_id(u_id)
+        
+        # Calculate total percentage
+        total_percentage = calculate_total_percentage_for_course(course.course_code)
+        
+        # Convert course and assessments to JSON serializable format
+        course_json = course.to_json()
+        assessments_json = [assessment.to_json() for assessment in assessments]
+        
+        # Add additional fields needed for the template
+        for assessment in assessments_json:
+            # Add type field based on category
+            if 'category' in assessment:
+                assessment['type'] = assessment['category']
+            
+            # Add due_date field (placeholder since we don't have actual dates)
+            assessment['due_date'] = None
+            
+            # Add active field
+            assessment['active'] = True
+        
+        return render_template(
+            'course_details.html',
+            course=course_json,
+            assessments=assessments_json,
+            staff=staff,
+            total_percentage=total_percentage
+        )
+    except Exception as e:
+        flash(f'Error loading course details: {str(e)}', 'error')
+        return redirect(url_for('staff_views.get_account_page'))
 
 
