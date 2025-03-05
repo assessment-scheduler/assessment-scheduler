@@ -75,10 +75,36 @@ def initialize():
         db.session.commit()
         print(f"Created default config: K={config.semester_days}, d={config.min_spacing}, M={config.large_m}")
         
+        # Load staff data from CSV
+        staff_count = 0
+        staff_csv_path = "App/data/staff.csv"
+        if os.path.exists(staff_csv_path):
+            with open(staff_csv_path, 'r') as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    # Check if staff already exists
+                    existing_staff = Staff.query.filter_by(u_id=int(row['ID'])).first()
+                    if not existing_staff:
+                        # Register new staff
+                        Staff.register(
+                            f_name=row['First Name'],
+                            l_name=row['Last Name'],
+                            u_id=int(row['ID']),
+                            status=row['Status'],
+                            email=row['Email'],
+                            password=row['Password'],
+                            department=row['Department'],
+                            faculty=row['Faculty']
+                        )
+                        staff_count += 1
+            print(f"Loaded {staff_count} staff members from CSV")
+        else:
+            print(f"Warning: Staff CSV file not found at {staff_csv_path}")
+        
         print("Schedule data loaded successfully")
     except Exception as e:
         db.session.rollback()
-        print(f"Error loading schedule data: {e}")
+        print(f"Error loading data: {e}")
 
 # This command retrieves all staff objects
 @app.cli.command('get-users')

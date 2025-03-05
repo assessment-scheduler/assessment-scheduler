@@ -10,7 +10,7 @@ from flask_jwt_extended import (
     JWTManager,
     create_access_token,
     get_jwt_identity,
-    jwt_required,
+    jwt_required as flask_jwt_required,
     set_access_cookies,
     unset_jwt_cookies,
 )
@@ -18,6 +18,7 @@ from flask_jwt_extended import (
 from App.controllers.auth import setup_flask_login, setup_jwt
 from App.database import init_db
 from App.config import config
+from App.middleware import jwt_required, course_access_required
 
 from App.views import views
 
@@ -60,4 +61,8 @@ def create_app(config_overrides={}):
     jwt = setup_jwt(app)
     setup_flask_login(app)
     app.app_context().push()
+    
+    # Initialize sample data - commented out to avoid errors during initialization
+    # init_sample_data()
+    
     return app

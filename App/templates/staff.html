@@ -1,0 +1,294 @@
+{% extends "adminLayout.html" %}
+
+{% block title %}Staff Management{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="../static/css/admin1.css">
+<style>
+  #staffList {
+    width: 100%;
+    max-width: none;
+    padding: 2rem;
+    margin: 0;
+    box-sizing: border-box;
+  }
+  
+  h2 {
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 10px;
+  }
+  
+  h2:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background-color: var(--tertiary-color);
+    border-radius: 2px;
+  }
+  
+  #table_container {
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+  }
+  
+  #staffTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+  }
+  
+  #staffTable thead th {
+    text-align: left;
+    padding: 12px 15px;
+    font-weight: 600;
+    color: #fff;
+    border-bottom: 2px solid var(--tertiary-color);
+    white-space: nowrap;
+  }
+  
+  .staff-row {
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background-color: var(--primary-color);
+  }
+  
+  .staff-row td {
+    padding: 15px;
+    border-radius: 0;
+  }
+  
+  .staff-row td:first-child {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    font-weight: 600;
+  }
+  
+  .staff-row td:last-child {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+  
+  .staff-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .selected {
+    background-color: #4a4f52 !important;
+    position: relative;
+  }
+  
+  .selected td:first-child {
+    border-left: 4px solid var(--tertiary-color);
+    padding-left: 11px; 
+  }
+  
+  .selected:before {
+    display: none;
+  }
+  
+  #buttons_container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 1.5rem;
+  }
+  
+  .formBtn {
+    min-width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+  }
+  
+  .formBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .delete-staff-link {
+    background-color: #e74c3c;
+  }
+  
+  .delete-staff-link:hover {
+    background-color: #c0392b;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 600;
+    text-align: center;
+    min-width: 80px;
+  }
+  
+  .status-hod {
+    background-color: #e74c3c;
+    color: white;
+  }
+  
+  .status-lecturer {
+    background-color: #3498db;
+    color: white;
+  }
+  
+  .status-instructor {
+    background-color: #2ecc71;
+    color: white;
+  }
+  
+  .status-ptinstructor {
+    background-color: #27ae60;
+    color: white;
+  }
+  
+  .status-ta {
+    background-color: #f39c12;
+    color: white;
+  }
+  
+  .status-tutor {
+    background-color: #9b59b6;
+    color: white;
+  }
+  
+  .status-pttutor {
+    background-color: #8e44ad;
+    color: white;
+  }
+  
+  .email-text {
+    font-style: italic;
+    color: #aaa;
+    font-size: 0.9em;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div id="staffList">
+  <h2>Staff Management</h2>
+  <div id="table_container">
+    <table id="staffTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Department</th>
+          <th>Faculty</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="staffTableBody">
+        {% for member in staff %}
+        <tr class="staff-row" data-id="{{ member.u_id }}">
+          <td>{{ member.u_id }}</td> 
+          <td>{{ member.f_name }} {{ member.l_name }}</td>
+          <td><span class="email-text">{{ member.email }}</span></td>
+          <td>{{ member.department }}</td>
+          <td>{{ member.faculty }}</td>
+          <td>
+            <span class="status-badge 
+              {% if member.status == 'Head of Department' %}status-hod
+              {% elif member.status == 'Lecturer' %}status-lecturer
+              {% elif member.status == 'Instructor' %}status-instructor
+              {% elif member.status == 'Part-Time Instructor' %}status-ptinstructor
+              {% elif member.status == 'Teaching Assisstant' %}status-ta
+              {% elif member.status == 'Tutor' %}status-tutor
+              {% elif member.status == 'Part-Time Tutor' %}status-pttutor
+              {% endif %}">
+              {{ member.status }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div id="buttons_container">
+      <a href="/newStaff" class="formBtn">Add Staff</a>
+      <a href="#" class="modify-staff-link formBtn">Update Staff</a>
+      <form action="/deleteStaff/0" method="POST" style="display: inline;">
+        <button type="submit" class="delete-staff-link formBtn">Delete Staff</button>
+      </form>
+      <a href="#" class="view-courses-link formBtn">View Courses</a>
+  </div>
+</div> 
+
+<script>
+  const staffRows = document.querySelectorAll('.staff-row');
+
+  staffRows.forEach(row => {
+    row.addEventListener('click', function handleClick() {
+      staffRows.forEach(row => row.classList.remove('selected'));
+
+      // Apply new styling to the clicked row
+      this.classList.add('selected');
+
+      // Access the staff ID from the data attribute:
+      const staffId = this.getAttribute('data-id');
+      console.log('Clicked staff ID:', staffId); 
+
+      const modifyStaffLink = document.querySelector('.modify-staff-link');
+      modifyStaffLink.href = `/modifyStaff/${staffId}`;
+
+      const deleteStaffForm = document.querySelector('form');
+      deleteStaffForm.action = `/deleteStaff/${staffId}`;
+      
+      const viewCoursesLink = document.querySelector('.view-courses-link');
+      viewCoursesLink.href = `/staffCourses/${staffId}`;
+      
+      // Add visual feedback for selection
+      const buttons = document.querySelectorAll('.formBtn');
+      buttons.forEach(btn => btn.classList.remove('disabled'));
+    });
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const modifyBtn = document.querySelector('.modify-staff-link');
+    const deleteBtn = document.querySelector('.delete-staff-link');
+    const viewCoursesBtn = document.querySelector('.view-courses-link');
+    
+    modifyBtn.classList.add('disabled');
+    modifyBtn.style.opacity = '0.6';
+    modifyBtn.style.pointerEvents = 'none';
+    
+    deleteBtn.classList.add('disabled');
+    deleteBtn.style.opacity = '0.6';
+    deleteBtn.style.pointerEvents = 'none';
+    
+    viewCoursesBtn.classList.add('disabled');
+    viewCoursesBtn.style.opacity = '0.6';
+    viewCoursesBtn.style.pointerEvents = 'none';
+    
+    staffRows.forEach(row => {
+      row.addEventListener('click', function() {
+        modifyBtn.classList.remove('disabled');
+        modifyBtn.style.opacity = '1';
+        modifyBtn.style.pointerEvents = 'auto';
+        
+        deleteBtn.classList.remove('disabled');
+        deleteBtn.style.opacity = '1';
+        deleteBtn.style.pointerEvents = 'auto';
+        
+        viewCoursesBtn.classList.remove('disabled');
+        viewCoursesBtn.style.opacity = '1';
+        viewCoursesBtn.style.pointerEvents = 'auto';
+      });
+    });
+  });
+</script>
+{% endblock %} 

@@ -1,0 +1,451 @@
+{% extends "adminLayout.html" %}
+
+{% block title %}Assign Staff to Course{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="../static/css/admin1.css">
+<style>
+  .container {
+    width: 100%;
+    max-width: none;
+    padding: 2rem;
+    margin: 0;
+    box-sizing: border-box;
+  }
+  
+  h2 {
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 10px;
+    text-align: center;
+  }
+  
+  h2:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background-color: var(--tertiary-color);
+    border-radius: 2px;
+  }
+  
+  .course-info {
+    background-color: var(--primary-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .course-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .course-code {
+    font-weight: 500;
+    color: var(--tertiary-color);
+    margin-bottom: 1rem;
+  }
+  
+  .course-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  
+  .course-detail {
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  .detail-label {
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-bottom: 0.25rem;
+  }
+  
+  .detail-value {
+    font-weight: 500;
+  }
+  
+  #table_container {
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+  }
+  
+  #staffTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+  }
+  
+  #staffTable thead th {
+    text-align: left;
+    padding: 12px 15px;
+    font-weight: 600;
+    color: #fff;
+    border-bottom: 2px solid var(--tertiary-color);
+    white-space: nowrap;
+  }
+  
+  .staff-row {
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background-color: var(--primary-color);
+  }
+  
+  .staff-row td {
+    padding: 15px;
+    border-radius: 0;
+  }
+  
+  .staff-row td:first-child {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    font-weight: 600;
+  }
+  
+  .staff-row td:last-child {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+  
+  .staff-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .selected {
+    background-color: #4a4f52 !important;
+    position: relative;
+  }
+  
+  .selected td:first-child {
+    border-left: 4px solid var(--tertiary-color);
+    padding-left: 11px;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 600;
+    text-align: center;
+    min-width: 80px;
+  }
+  
+  .status-hod {
+    background-color: #e74c3c;
+    color: white;
+  }
+  
+  .status-lecturer {
+    background-color: #3498db;
+    color: white;
+  }
+  
+  .status-instructor {
+    background-color: #2ecc71;
+    color: white;
+  }
+  
+  .status-ptinstructor {
+    background-color: #27ae60;
+    color: white;
+  }
+  
+  .status-ta {
+    background-color: #f39c12;
+    color: white;
+  }
+  
+  .status-tutor {
+    background-color: #9b59b6;
+    color: white;
+  }
+  
+  .status-pttutor {
+    background-color: #8e44ad;
+    color: white;
+  }
+  
+  .email-text {
+    font-style: italic;
+    color: #aaa;
+    font-size: 0.9em;
+  }
+  
+  .buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 1.5rem;
+  }
+  
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .btn-primary {
+    background-color: var(--tertiary-color);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #2980b9;
+  }
+  
+  .btn-danger {
+    background-color: #e74c3c;
+    color: white;
+  }
+  
+  .btn-danger:hover {
+    background-color: #c0392b;
+  }
+  
+  .btn-secondary {
+    background-color: #7f8c8d;
+    color: white;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #95a5a6;
+  }
+  
+  .assigned-badge {
+    background-color: #2ecc71;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 600;
+  }
+  
+  .not-assigned-badge {
+    background-color: #7f8c8d;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 600;
+  }
+  
+  .search-container {
+    margin-bottom: 1.5rem;
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  .search-input::placeholder {
+    color: #aaa;
+  }
+  
+  .filter-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .filter-select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: var(--primary-color);
+    color: white;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2>Assign Staff to Course</h2>
+  
+  <div class="course-info">
+    <div class="course-title">{{ course.course_title }}</div>
+    <div class="course-code">{{ course.course_code }}</div>
+    
+    <div class="course-details">
+      <div class="course-detail">
+        <span class="detail-label">Department</span>
+        <span class="detail-value">{{ course.department }}</span>
+      </div>
+      
+      <div class="course-detail">
+        <span class="detail-label">Faculty</span>
+        <span class="detail-value">{{ course.faculty }}</span>
+      </div>
+      
+      <div class="course-detail">
+        <span class="detail-label">Level</span>
+        <span class="detail-value">{{ course.level }}</span>
+      </div>
+      
+      <div class="course-detail">
+        <span class="detail-label">Semester</span>
+        <span class="detail-value">{{ course.semester }}</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="search-container">
+    <input type="text" id="staffSearch" class="search-input" placeholder="Search staff by name, ID, or department...">
+  </div>
+  
+  <div class="filter-container">
+    <select id="departmentFilter" class="filter-select">
+      <option value="">All Departments</option>
+      {% for department in departments %}
+      <option value="{{ department }}">{{ department }}</option>
+      {% endfor %}
+    </select>
+    
+    <select id="statusFilter" class="filter-select">
+      <option value="">All Statuses</option>
+      <option value="Head of Department">Head of Department</option>
+      <option value="Lecturer">Lecturer</option>
+      <option value="Instructor">Instructor</option>
+      <option value="Part-Time Instructor">Part-Time Instructor</option>
+      <option value="Teaching Assisstant">Teaching Assistant</option>
+      <option value="Tutor">Tutor</option>
+      <option value="Part-Time Tutor">Part-Time Tutor</option>
+    </select>
+  </div>
+  
+  <div id="table_container">
+    <table id="staffTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Department</th>
+          <th>Status</th>
+          <th>Assignment</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="staffTableBody">
+        {% for member in staff %}
+        <tr class="staff-row" data-id="{{ member.u_id }}">
+          <td>{{ member.u_id }}</td>
+          <td>{{ member.f_name }} {{ member.l_name }}</td>
+          <td><span class="email-text">{{ member.email }}</span></td>
+          <td>{{ member.department }}</td>
+          <td>
+            <span class="status-badge 
+              {% if member.status == 'Head of Department' %}status-hod
+              {% elif member.status == 'Lecturer' %}status-lecturer
+              {% elif member.status == 'Instructor' %}status-instructor
+              {% elif member.status == 'Part-Time Instructor' %}status-ptinstructor
+              {% elif member.status == 'Teaching Assisstant' %}status-ta
+              {% elif member.status == 'Tutor' %}status-tutor
+              {% elif member.status == 'Part-Time Tutor' %}status-pttutor
+              {% endif %}">
+              {{ member.status }}
+            </span>
+          </td>
+          <td>
+            {% if member.u_id in assigned_staff_ids %}
+            <span class="assigned-badge">Assigned</span>
+            {% else %}
+            <span class="not-assigned-badge">Not Assigned</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if member.u_id in assigned_staff_ids %}
+            <form action="/removeCourseStaff/{{ course.course_code }}/{{ member.u_id }}" method="POST" style="display: inline;">
+              <button type="submit" class="btn btn-danger">Remove</button>
+            </form>
+            {% else %}
+            <form action="/assignCourseStaff/{{ course.course_code }}/{{ member.u_id }}" method="POST" style="display: inline;">
+              <button type="submit" class="btn btn-primary">Assign</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="buttons-container">
+    <a href="/courses" class="btn btn-secondary">Back to Courses</a>
+  </div>
+</div>
+
+<script>
+  // Search functionality
+  document.getElementById('staffSearch').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    filterStaff();
+  });
+  
+  // Department filter
+  document.getElementById('departmentFilter').addEventListener('change', function() {
+    filterStaff();
+  });
+  
+  // Status filter
+  document.getElementById('statusFilter').addEventListener('change', function() {
+    filterStaff();
+  });
+  
+  function filterStaff() {
+    const searchTerm = document.getElementById('staffSearch').value.toLowerCase();
+    const departmentFilter = document.getElementById('departmentFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    
+    const rows = document.querySelectorAll('.staff-row');
+    
+    rows.forEach(row => {
+      const name = row.children[1].textContent.toLowerCase();
+      const id = row.children[0].textContent;
+      const email = row.children[2].textContent.toLowerCase();
+      const department = row.children[3].textContent;
+      const status = row.children[4].textContent.trim();
+      
+      const matchesSearch = name.includes(searchTerm) || id.includes(searchTerm) || email.includes(searchTerm);
+      const matchesDepartment = departmentFilter === '' || department === departmentFilter;
+      const matchesStatus = statusFilter === '' || status === statusFilter;
+      
+      if (matchesSearch && matchesDepartment && matchesStatus) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+</script>
+{% endblock %} 

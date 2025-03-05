@@ -1,0 +1,280 @@
+{% extends "adminLayout.html" %}
+
+{% block title %}Staff Courses{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="../static/css/admin1.css">
+<style>
+  .container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  h2 {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 10px;
+    text-align: center;
+  }
+  
+  h2:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background-color: var(--tertiary-color);
+    border-radius: 2px;
+  }
+  
+  .staff-info {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .staff-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .staff-email {
+    font-style: italic;
+    color: #aaa;
+    margin-bottom: 0.5rem;
+  }
+  
+  .staff-details {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .staff-detail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .detail-label {
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-bottom: 0.25rem;
+  }
+  
+  .detail-value {
+    font-weight: 500;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 600;
+    text-align: center;
+    min-width: 80px;
+    margin-top: 0.5rem;
+  }
+  
+  .status-hod {
+    background-color: #e74c3c;
+    color: white;
+  }
+  
+  .status-lecturer {
+    background-color: #3498db;
+    color: white;
+  }
+  
+  .status-instructor {
+    background-color: #2ecc71;
+    color: white;
+  }
+  
+  .status-ptinstructor {
+    background-color: #27ae60;
+    color: white;
+  }
+  
+  .status-ta {
+    background-color: #f39c12;
+    color: white;
+  }
+  
+  .status-tutor {
+    background-color: #9b59b6;
+    color: white;
+  }
+  
+  .status-pttutor {
+    background-color: #8e44ad;
+    color: white;
+  }
+  
+  .courses-section {
+    margin-top: 2rem;
+  }
+  
+  .courses-heading {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  
+  .no-courses {
+    text-align: center;
+    font-style: italic;
+    color: #aaa;
+    padding: 2rem;
+  }
+  
+  #table_container {
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+  }
+  
+  #coursesTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+  }
+  
+  #coursesTable thead th {
+    text-align: left;
+    padding: 12px 15px;
+    font-weight: 600;
+    color: #fff;
+    border-bottom: 2px solid var(--tertiary-color);
+    white-space: nowrap;
+  }
+  
+  .course-row {
+    background-color: var(--primary-color);
+  }
+  
+  .course-row td {
+    padding: 15px;
+    border-radius: 0;
+  }
+  
+  .course-row td:first-child {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    font-weight: 600;
+  }
+  
+  .course-row td:last-child {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+  
+  .buttons-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+  
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #7f8c8d;
+    color: white;
+  }
+  
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #95a5a6;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2>Staff Courses</h2>
+  
+  <div class="staff-info">
+    <div class="staff-name">{{ staff.f_name }} {{ staff.l_name }}</div>
+    <div class="staff-email">{{ staff.email }}</div>
+    
+    <div class="staff-details">
+      <div class="staff-detail">
+        <span class="detail-label">Department</span>
+        <span class="detail-value">{{ staff.department }}</span>
+      </div>
+      
+      <div class="staff-detail">
+        <span class="detail-label">Faculty</span>
+        <span class="detail-value">{{ staff.faculty }}</span>
+      </div>
+      
+      <div class="staff-detail">
+        <span class="detail-label">Status</span>
+        <span class="status-badge 
+          {% if staff.status == 'Head of Department' %}status-hod
+          {% elif staff.status == 'Lecturer' %}status-lecturer
+          {% elif staff.status == 'Instructor' %}status-instructor
+          {% elif staff.status == 'Part-Time Instructor' %}status-ptinstructor
+          {% elif staff.status == 'Teaching Assisstant' %}status-ta
+          {% elif staff.status == 'Tutor' %}status-tutor
+          {% elif staff.status == 'Part-Time Tutor' %}status-pttutor
+          {% endif %}">
+          {{ staff.status }}
+        </span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="courses-section">
+    <div class="courses-heading">Assigned Courses</div>
+    
+    {% if courses|length > 0 %}
+    <div id="table_container">
+      <table id="coursesTable">
+        <thead>
+          <tr>
+            <th>Course Code</th>
+            <th>Course Title</th>
+            <th>Department</th>
+            <th>Faculty</th>
+            <th>Level</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for course in courses %}
+          <tr class="course-row">
+            <td>{{ course.course_code }}</td>
+            <td>{{ course.course_title }}</td>
+            <td>{{ course.department }}</td>
+            <td>{{ course.faculty }}</td>
+            <td>{{ course.level }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="no-courses">
+      No courses assigned to this staff member.
+    </div>
+    {% endif %}
+  </div>
+  
+  <div class="buttons-container">
+    <a href="/staffList" class="btn">Back to Staff List</a>
+  </div>
+</div>
+{% endblock %} 
