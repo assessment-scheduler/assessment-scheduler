@@ -108,6 +108,7 @@ def get_calendar_page():
     u_id = get_uid(email)
     
     staff_courses = get_accessible_courses(u_id)
+    course_codes = [course.course_code for course in staff_courses]
     
     assessments = []
     for course in staff_courses:
@@ -115,7 +116,7 @@ def get_calendar_page():
         for assessment in course_assessments:
             assessments.append(format_assessment_for_calendar(assessment))
     
-    return render_template('calendar.html', assessments=assessments)
+    return render_template('calendar.html', assessments=assessments, courses=course_codes)
 
 @staff_views.route('/calendar', methods=['POST'])
 @jwt_required()
@@ -132,6 +133,9 @@ def get_assessments_page():
     
     staff_courses = get_accessible_courses(u_id)
     
+    # Extract course codes for the dropdown
+    courses = [course.course_code for course in staff_courses]
+    
     course_assessments = []
     for course in staff_courses:
         assessments = get_assessments_by_course(course.course_code)
@@ -143,7 +147,7 @@ def get_assessments_page():
                 'total_percentage': total_percentage
             })
     
-    return render_template('assessments.html', course_assessments=course_assessments)
+    return render_template('assessments.html', course_assessments=course_assessments, courses=courses)
 
 @staff_views.route('/addAssessment', methods=['GET'])
 @jwt_required()

@@ -1,0 +1,152 @@
+{% extends "layout.html" %}
+
+{% block title %}Assessment Calendar{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="../static/css/main.css">
+    <link rel="stylesheet" href="../static/css/calendar.css">
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <div class="mainContent">
+        <div class="mainTitle">
+            <h1>Assessment Calendar</h1>
+            <div class="filterContainer">
+                <select id="filterDropdownCalendar"> 
+                    <option value="all">All Courses</option>
+                    {% for course in courses %}
+                    <option value="{{course}}">{{course}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <!-- Legend for assessment categories -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #e74c3c;"></div>
+                <span>Exam</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #f39c12;"></div>
+                <span>Midterm</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #2ecc71;"></div>
+                <span>Assignment</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #9b59b6;"></div>
+                <span>Quiz</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #3498db;"></div>
+                <span>Other</span>
+            </div>
+        </div>
+        
+        <div id="calendar"></div>
+    </div>
+    
+    <!-- Modal for assessment details -->
+    <div id="assessmentModal" class="assessment-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="modalTitle"></h2>
+            <div id="modalDetails"></div>
+        </div>
+    </div>
+    
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the assessments data passed from the backend
+            var assessmentsData = JSON.parse('{{ assessments | tojson | safe }}');
+            var allEvents = [...assessmentsData]; // Keep a copy of all events
+            
+            // Initialize the calendar
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listMonth'
+                },
+                events: assessmentsData,
+                eventClick: function(info) {
+                    // Show assessment details in modal
+                    var modal = document.getElementById('assessmentModal');
+                    var modalTitle = document.getElementById('modalTitle');
+                    var modalDetails = document.getElementById('modalDetails');
+                    
+                    modalTitle.textContent = info.event.title;
+                    
+                    var courseId = info.event.extendedProps.course_id;
+                    var category = info.event.extendedProps.category;
+                    var percentage = info.event.extendedProps.percentage;
+                    var proctored = info.event.extendedProps.proctored ? 'Yes' : 'No';
+                    
+                    var details = '<div class="assessment-detail-item">' +
+                        '<span class="assessment-detail-label">Course:</span> ' +
+                        '<span>' + courseId + '</span>' +
+                        '</div>' +
+                        '<div class="assessment-detail-item">' +
+                        '<span class="assessment-detail-label">Category:</span> ' +
+                        '<span>' + category + '</span>' +
+                        '</div>' +
+                        '<div class="assessment-detail-item">' +
+                        '<span class="assessment-detail-label">Percentage:</span> ' +
+                        '<span>' + percentage + '%</span>' +
+                        '</div>' +
+                        '<div class="assessment-detail-item">' +
+                        '<span class="assessment-detail-label">Proctored:</span> ' +
+                        '<span>' + proctored + '</span>' +
+                        '</div>';
+                    
+                    modalDetails.innerHTML = details;
+                    modal.style.display = 'block';
+                }
+            });
+            
+            calendar.render();
+            
+            // Filter events by course
+            var filterDropdown = document.getElementById('filterDropdownCalendar');
+            filterDropdown.addEventListener('change', function() {
+                var selectedCourse = filterDropdown.value;
+                
+                if (selectedCourse === 'all') {
+                    // Show all events
+                    calendar.removeAllEvents();
+                    calendar.addEventSource(allEvents);
+                } else {
+                    // Filter events by course
+                    var filteredEvents = allEvents.filter(function(event) {
+                        return event.extendedProps.course_id === selectedCourse;
+                    });
+                    
+                    calendar.removeAllEvents();
+                    calendar.addEventSource(filteredEvents);
+                }
+            });
+            
+            // Close modal when clicking the close button
+            var closeBtn = document.getElementsByClassName('close-modal')[0];
+            closeBtn.onclick = function() {
+                document.getElementById('assessmentModal').style.display = 'none';
+            };
+            
+            // Close modal when clicking outside of it
+            window.onclick = function(event) {
+                var modal = document.getElementById('assessmentModal');
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            };
+        });
+    </script>
+{% endblock %} 
