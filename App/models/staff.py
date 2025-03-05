@@ -9,7 +9,7 @@ class Status(enum.Enum):
     INSTRUCTOR = "Instructor"
     HOD = "Head of Department"
     LECTURER = "Lecturer"
-    TA = "Teaching Assisstant"
+    TA = "Teaching Assistant"
     TUTOR = "Tutor"
     PTTUTOR = "Part-Time Tutor"
 

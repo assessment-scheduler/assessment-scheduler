@@ -337,7 +337,7 @@
       <option value="Lecturer">Lecturer</option>
       <option value="Instructor">Instructor</option>
       <option value="Part-Time Instructor">Part-Time Instructor</option>
-      <option value="Teaching Assisstant">Teaching Assistant</option>
+      <option value="Teaching Assistant">Teaching Assistant</option>
       <option value="Tutor">Tutor</option>
       <option value="Part-Time Tutor">Part-Time Tutor</option>
     </select>
@@ -369,7 +369,7 @@
               {% elif member.status == 'Lecturer' %}status-lecturer
               {% elif member.status == 'Instructor' %}status-instructor
               {% elif member.status == 'Part-Time Instructor' %}status-ptinstructor
-              {% elif member.status == 'Teaching Assisstant' %}status-ta
+              {% elif member.status == 'Teaching Assistant' or member.status == 'Teaching Assisstant' %}status-ta
               {% elif member.status == 'Tutor' %}status-tutor
               {% elif member.status == 'Part-Time Tutor' %}status-pttutor
               {% endif %}">
