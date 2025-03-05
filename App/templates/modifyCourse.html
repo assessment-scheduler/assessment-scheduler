@@ -1,6 +1,6 @@
 {% extends "adminLayout.html" %}
 
-{% block title %}Add Course{% endblock %}
+{% block title %}Modify Course{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="../static/css/addCourse.css">
@@ -47,45 +47,45 @@
 
 {% block content %}
 <div class="formContainer">
-    <form action="/addNewCourse" id="addCourseForm" method="POST" novalidate>
-        <h2>Add Course</h2>
+    <form action="/updateCourse" id="modifyCourseForm" method="POST" novalidate>
+        <h2>Modify Course</h2>
         <div class="formInputContainer normalLabel">
             <label class="mainLabel required-field" for="course_code">Course Code</label>
-            <input type="text" name="course_code" id="course_code" required>
+            <input type="text" name="course_code" id="course_code" value="{{ course.course_code }}" readonly required>
             <span class="error-message" id="course_code_error">Course code is required</span>
         </div>
 
         <div class="formInputContainer normalLabel">
             <label class="mainLabel required-field" for="title">Title</label>
-            <input type="text" name="title" id="title" required>
+            <input type="text" name="title" id="title" value="{{ course.course_title }}" required>
             <span class="error-message" id="title_error">Title is required</span>
         </div>
 
         <div class="formInputContainer normalLabel">
             <label class="mainLabel" for="description">Description</label>
-            <textarea name="description" id="description" cols="30" rows="10"></textarea>
+            <textarea name="description" id="description" cols="30" rows="10">{{ course.description }}</textarea>
         </div>
 
         <div class="formInputContainer normalLabel">
             <label class="mainLabel required-field" for="department">Department</label>
-            <input type="text" name="department" id="department" required value="DCIT">
+            <input type="text" name="department" id="department" value="{{ course.department }}" required>
             <span class="error-message" id="department_error">Department is required</span>
         </div>
 
         <div class="formInputContainer normalLabel">
             <label class="mainLabel required-field" for="faculty">Faculty</label>
-            <input type="text" name="faculty" id="faculty" required value="FST">
+            <input type="text" name="faculty" id="faculty" value="{{ course.faculty }}" required>
             <span class="error-message" id="faculty_error">Faculty is required</span>
         </div>
 
         <div class="formInputContainer levelContainer">
             <label class="mainLabel required-field" for="level">Level</label>
             <div id="level_options">
-                <input type="radio" id="level_1" name="level" value="1" required>
+                <input type="radio" id="level_1" name="level" value="1" {% if course.level == 1 %}checked{% endif %} required>
                 <label class="smallLabel" for="level_1">1</label>
-                <input type="radio" id="level_2" name="level" value="2">
+                <input type="radio" id="level_2" name="level" value="2" {% if course.level == 2 %}checked{% endif %}>
                 <label class="smallLabel" for="level_2">2</label>
-                <input type="radio" id="level_3" name="level" value="3">
+                <input type="radio" id="level_3" name="level" value="3" {% if course.level == 3 %}checked{% endif %}>
                 <label class="smallLabel" for="level_3">3</label>
             </div>
             <span class="error-message" id="level_error">Please select a level</span>
@@ -94,37 +94,25 @@
         <div class="formInputContainer semesterContainer">
             <label class="mainLabel required-field" for="semester">Semester</label>
             <div id="semester_options">
-                <input type="checkbox" id="semester_1" name="semester" value="1" class="semester-checkbox">
+                <input type="radio" id="semester_1" name="semester" value="1" {% if course.semester == 1 %}checked{% endif %} required>
                 <label class="smallLabel" for="semester_1">1</label>
-                <input type="checkbox" id="semester_2" name="semester" value="2" class="semester-checkbox">
+                <input type="radio" id="semester_2" name="semester" value="2" {% if course.semester == 2 %}checked{% endif %}>
                 <label class="smallLabel" for="semester_2">2</label>
-                <input type="checkbox" id="semester_3" name="semester" value="3" class="semester-checkbox">
+                <input type="radio" id="semester_3" name="semester" value="3" {% if course.semester == 3 %}checked{% endif %}>
                 <label class="smallLabel" for="semester_3">3</label>
             </div>
-            <span class="error-message" id="semester_error">Please select at least one semester</span>
+            <span class="error-message" id="semester_error">Please select a semester</span>
         </div>
 
         <div class="formInputContainer statusContainer">
             <label class="mainLabel required-field" for="status">Status</label>
             <div id="status_options">
-                <input type="radio" id="status_active" name="status" value="Active" checked required>
+                <input type="radio" id="status_active" name="status" value="Active" {% if status == 'Active' %}checked{% endif %} required>
                 <label class="smallLabel" for="status_active">Active</label>
-                <input type="radio" id="status_inactive" name="status" value="Inactive">
+                <input type="radio" id="status_inactive" name="status" value="Inactive" {% if status == 'Inactive' %}checked{% endif %}>
                 <label class="smallLabel" for="status_inactive">Inactive</label>
             </div>
             <span class="error-message" id="status_error">Please select a status</span>
-        </div>
-
-        <div class="formInputContainer normalLabel">
-            <label class="mainLabel required-field" for="numAssessments">Number of Assessments</label>
-            <input type="number" min="1" name="numAssessments" id="numAssessments" required>
-            <span class="error-message" id="numAssessments_error">Number of assessments is required</span>
-        </div>
-
-        <div class="formInputContainer normalLabel">
-            <label class="mainLabel required-field" for="programmes">Programmes</label>
-            <input type="text" name="programmes" id="programmes" required>
-            <span class="error-message" id="programmes_error">Programmes is required</span>
         </div>
 
         <div class="formInputContainer normalLabel">
@@ -132,18 +120,20 @@
             <select name="staff_id" id="staff_id">
                 <option value="">-- Select Staff Member --</option>
                 {% for staff in staff_list %}
-                <option value="{{ staff.u_id }}">{{ staff.f_name }} {{ staff.l_name }} ({{ staff.status }})</option>
+                <option value="{{ staff.u_id }}" {% if course.staff_id == staff.u_id %}selected{% endif %}>
+                    {{ staff.f_name }} {{ staff.l_name }} ({{ staff.status }})
+                </option>
                 {% endfor %}
             </select>
         </div>
 
-        <input type="submit" value="Add Course" id="submitBtn">
+        <input type="submit" value="Update Course" id="submitBtn">
     </form>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('addCourseForm');
+        const form = document.getElementById('modifyCourseForm');
         
         // Show error message and highlight field
         function showError(fieldId, show) {
@@ -170,29 +160,6 @@
                 showError(name, true);
             } else if (container) {
                 container.classList.remove('radio-error');
-                showError(name, false);
-            }
-            
-            return isChecked;
-        }
-        
-        // Validate checkboxes (semester)
-        function validateCheckboxGroup(name) {
-            const checkboxes = document.querySelectorAll(`.${name}-checkbox`);
-            let isChecked = false;
-            
-            checkboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    isChecked = true;
-                }
-            });
-            
-            const container = document.getElementById(`${name}_options`);
-            if (!isChecked && container) {
-                container.classList.add('checkbox-error');
-                showError(name, true);
-            } else if (container) {
-                container.classList.remove('checkbox-error');
                 showError(name, false);
             }
             
@@ -226,15 +193,13 @@
             });
         });
         
-        // Add change event listeners to checkboxes
-        const semesterCheckboxes = document.querySelectorAll('.semester-checkbox');
-        semesterCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                validateCheckboxGroup('semester');
+        const semesterRadios = document.querySelectorAll('input[name="semester"]');
+        semesterRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                validateRadioGroup('semester');
             });
         });
         
-        // Add change event listeners to status radio buttons
         const statusRadios = document.querySelectorAll('input[name="status"]');
         statusRadios.forEach(radio => {
             radio.addEventListener('change', function() {
@@ -258,8 +223,8 @@
                 isValid = false;
             }
             
-            // Validate checkboxes (semester)
-            if (!validateCheckboxGroup('semester')) {
+            // Validate radio buttons (semester)
+            if (!validateRadioGroup('semester')) {
                 isValid = false;
             }
             
@@ -274,4 +239,4 @@
         });
     });
 </script>
-{% endblock %}
+{% endblock %} 

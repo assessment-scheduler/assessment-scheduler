@@ -20,6 +20,7 @@ from App.controllers.course import (
 from App.models.schedule_solution import ScheduleSolution
 from App.models.scheduled_assessment import ScheduledAssessment
 import csv
+import os
 
 # Get migration instance
 
@@ -173,14 +174,25 @@ def assign_course(staff_ID):
 # Load course data from CSV file
 @app.cli.command("load-courses")
 def load_course_data():
-    with open('courses.csv') as file:  # CSV files are used for spreadsheets
-        reader = csv.DictReader(file)
-        for row in reader: 
-            new_course = Course(courseCode=row['courseCode'], courseTitle=row['courseTitle'], description=row['description'], 
-                                level=row['level'], semester=row['semester'], preReqs=row['preReqs'], p_ID=row['p_ID'])  # Create object
-            db.session.add(new_course) 
-        db.session.commit()  # Save all changes OUTSIDE the loop
-    print('Database initialized')
+    """Load course data from CSV files"""
+    from App.models.importer import load_courses
+    
+    # Check if courses.csv exists
+    if not os.path.exists("App/data/courses.csv"):
+        print("Error: courses.csv not found in App/data directory")
+        return
+    
+    # Load courses
+    courses = load_courses("App/data/courses.csv")
+    print(f"Loaded {len(courses)} courses")
+    
+    # Print course details
+    for course in courses:
+        status = "Active" if course.active else "Inactive"
+        print(f"Course: {course.course_code} - {course.course_title}")
+        print(f"  Level: {course.level}, Semester: {course.semester}")
+        print(f"  Department: {course.department}, Faculty: {course.faculty}")
+        print(f"  Status: {status}")
 
 @lp_cli.command("sample_problem", help="Create and solve a sample linear problem")
 def sample_problem_command():

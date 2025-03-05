@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_jwt_extended import jwt_required
 from App.controllers import Course, CourseAssessment
-from App.models import Admin
+from App.models import Admin, Staff, Config
 from App.database import db
 from werkzeug.utils import secure_filename
 import os, csv
@@ -11,7 +11,11 @@ from App.controllers.course import (
     add_Course,
     list_Courses,
     get_course,
-    delete_Course
+    edit_course,
+    delete_Course,
+    assign_course_to_staff,
+    get_course_staff,
+    get_course_status
 )
 
 from App.controllers.semester import(
@@ -40,7 +44,7 @@ def get_uploadFiles_page():
 @admin_views.route('/coursesList', methods=['GET'])
 @jwt_required(Admin)
 def index():
-    return render_template('courses.html')    
+    return redirect(url_for('admin_views.get_courses'))
 
 # Retrieves semester details and stores it in global variables 
 @admin_views.route('/newSemester', methods=['POST'])
@@ -90,13 +94,34 @@ def upload_course_file():
 @jwt_required(Admin)
 def get_courses():
     courses = list_Courses()
-    return render_template('courses.html', courses=courses)
+    
+    course_list = []
+    for course in courses:
+        staff = get_course_staff(course.course_code)
+        staff_name = f"{staff.f_name} {staff.l_name}" if staff else None
+        status = get_course_status(course)
+        
+        course_list.append({
+            'courseCode': course.course_code,
+            'courseTitle': course.course_title,
+            'description': course.description,
+            'level': course.level,
+            'semester': course.semester,
+            'department': course.department,
+            'faculty': course.faculty,
+            'staff_id': course.staff_id,
+            'staff_name': staff_name,
+            'status': status
+        })
+    
+    return render_template('courses.html', courses=course_list)
 
 # Gets Add Course Page
 @admin_views.route('/newCourse', methods=['GET'])
 @jwt_required(Admin)
 def get_new_course():
-    return render_template('addCourse.html')  
+    staff_list = Staff.query.all()
+    return render_template('addCourse.html', staff_list=staff_list)  
 
 # Retrieves course info and stores it in database ie. add new course
 @admin_views.route('/addNewCourse', methods=['POST'])
@@ -106,42 +131,118 @@ def add_course_action():
         courseCode = request.form.get('course_code')
         title = request.form.get('title')
         description = request.form.get('description')
-        data = request.form
         level = request.form.get('level')
-        semester = request.form.get('semester')
+        semester = request.form.getlist('semester')  # Get all selected semesters as a list
         numAssessments = request.form.get('numAssessments')
-         
-        course = add_Course(courseCode,title,description,level,semester,numAssessments)
-
-        # Redirect to view course listings!  
-        return redirect(url_for('admin_views.get_courses')) 
+        programmes = request.form.get('programmes')
+        department = request.form.get('department')
+        faculty = request.form.get('faculty')
+        status = request.form.get('status')
+        staff_id = request.form.get('staff_id')
+        
+        # Convert status to boolean
+        active = (status == 'Active')
+        
+        # Validate required fields
+        errors = []
+        if not courseCode:
+            errors.append("Course code is required")
+        if not title:
+            errors.append("Title is required")
+        if not level:
+            errors.append("Level is required")
+        if not semester:
+            errors.append("At least one semester is required")
+        if not numAssessments:
+            errors.append("Number of assessments is required")
+        if not programmes:
+            errors.append("Programmes is required")
+        if not department:
+            errors.append("Department is required")
+        if not faculty:
+            errors.append("Faculty is required")
+        if not status:
+            errors.append("Status is required")
+            
+        if errors:
+            for error in errors:
+                flash(error)
+            return redirect(url_for('admin_views.get_new_course'))
+        
+        # For simplicity, we'll just use the first selected semester
+        first_semester = int(semester[0])
+        
+        # Add course to database
+        course = add_Course(courseCode, title, description, int(level), first_semester, numAssessments, department, faculty, staff_id, active)
+        
+        if course:
+            flash("Course added successfully!")
+            return redirect(url_for('admin_views.get_courses'))
+        else:
+            flash("Failed to add course. Please try again.")
+            return redirect(url_for('admin_views.get_new_course'))
         
 # Gets Update Course Page
 @admin_views.route('/modifyCourse/<string:courseCode>', methods=['GET'])
 @jwt_required(Admin)
 def get_update_course(courseCode):
-    course = get_course(courseCode) # Gets selected course
-    return render_template('updateCourse.html', course=course)  
+    course = get_course(courseCode)
+    staff_list = Staff.query.all()
+    
+    # Get course status
+    status = get_course_status(course)
+    
+    return render_template('modifyCourse.html', course=course, staff_list=staff_list, status=status)
 
 # Selects new course details and updates existing course in database
 @admin_views.route('/updateCourse', methods=['POST'])
 @jwt_required(Admin)
 def update_course():
     if request.method == 'POST':
-        courseCode = request.form.get('code')
+        courseCode = request.form.get('course_code')
         title = request.form.get('title')
         description = request.form.get('description')
         level = request.form.get('level')
         semester = request.form.get('semester')
-        numAssessments = request.form.get('assessment')
-        # programme = request.form.get('programme')
-
-        delete_Course(get_course(courseCode))
-        add_Course(courseCode, title, description, level, semester, numAssessments)
-        flash("Course Updated Successfully!") 
-
-    # Redirect to view course listings! 
-    return redirect(url_for('admin_views.get_courses')) 
+        department = request.form.get('department')
+        faculty = request.form.get('faculty')
+        status = request.form.get('status')
+        staff_id = request.form.get('staff_id')
+        
+        # Convert status to boolean
+        active = (status == 'Active')
+        
+        # Validate required fields
+        errors = []
+        if not courseCode:
+            errors.append("Course code is required")
+        if not title:
+            errors.append("Title is required")
+        if not level:
+            errors.append("Level is required")
+        if not semester:
+            errors.append("Semester is required")
+        if not department:
+            errors.append("Department is required")
+        if not faculty:
+            errors.append("Faculty is required")
+        if not status:
+            errors.append("Status is required")
+            
+        if errors:
+            for error in errors:
+                flash(error)
+            return redirect(url_for('admin_views.get_update_course', courseCode=courseCode))
+        
+        # Update course in database
+        updated_course = edit_course(courseCode, title, description, int(level), int(semester), department, faculty, active, staff_id)
+        
+        if updated_course:
+            flash("Course updated successfully!")
+            return redirect(url_for('admin_views.get_courses'))
+        else:
+            flash("Failed to update course. Please try again.")
+            return redirect(url_for('admin_views.get_update_course', courseCode=courseCode))
 
 # Selects course and removes it from database
 @admin_views.route("/deleteCourse/<string:courseCode>", methods=["POST"])

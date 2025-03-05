@@ -20,14 +20,15 @@ class Staff(User, UserMixin):
     f_name = db.Column(db.String(120), nullable=False)
     l_name = db.Column(db.String(120), nullable=False)
     status = db.Column(db.String(120), nullable=False)
-    courses_assigned = db.Column(db.String(120), nullable=True)
+    
+    # Relationship with courses - one staff can have many courses
+    courses = db.relationship('Course', back_populates='staff', lazy='dynamic')
 
     def __init__(self, f_name, l_name, u_id, status, email, password):
         super().__init__(u_id, password, email)
         self.f_name = f_name
         self.l_name = l_name
         self.status = status
-        self.courses_assigned = []
 
     def get_id(self):
         return self.u_id
@@ -39,7 +40,7 @@ class Staff(User, UserMixin):
             "lastName": self.l_name,
             "status": self.status,
             "email": self.email,
-            "coursesAssigned": self.courses_assigned
+            "courses": [course.course_code for course in self.courses]
         }
 
     def __repr__(self):
@@ -54,6 +55,16 @@ class Staff(User, UserMixin):
 
     def login(self):
         return flask_login.login_user(self)
+
+    def assign_course(self, course):
+        """Assign a course to this staff member"""
+        course.staff_id = self.u_id
+        db.session.commit()
+        return True
+        
+    def get_courses(self):
+        """Get all courses assigned to this staff member"""
+        return self.courses.all()
 
   #Lecturers must register before using system
 

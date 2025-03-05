@@ -11,3 +11,4 @@ from .semester import *
 from .class_size import *
 from .solver_config import SolverConfig
 from .problem import LinearProblem
+from .config import Config

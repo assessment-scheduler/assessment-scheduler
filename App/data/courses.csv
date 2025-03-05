@@ -1,4 +1,4 @@
-course_code,course_title,description,level,semester
-COMP1601,Introduction to Programming,Introduction to programming concepts,1,1
-COMP1602,Data Structures and Algorithms,Study of data structures and algorithms,1,2
-COMP1603,Object-Oriented Programming,Introduction to object-oriented programming,1,2
+course_code,course_title,description,level,semester,department,faculty,active
+COMP1601,Introduction to Programming,Introduction to programming concepts,1,1,DCIT,FST,true
+COMP1602,Data Structures and Algorithms,Study of data structures and algorithms,1,2,DCIT,FST,true
+COMP1603,Object-Oriented Programming,Introduction to object-oriented programming,1,2,DCIT,FST,true

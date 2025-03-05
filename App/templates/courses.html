@@ -4,6 +4,170 @@
 
 {% block head %}
 <link rel="stylesheet" href="../static/css/admin1.css">
+<style>
+  /* Additional styling to improve presentation while keeping color scheme */
+  #coursesList {
+    width: 90%;
+    max-width: 1200px;
+    padding: 2rem;
+  }
+  
+  h2 {
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 10px;
+  }
+  
+  h2:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background-color: var(--tertiary-color);
+    border-radius: 2px;
+  }
+  
+  #table_container {
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+    /* Removed the background-color and box-shadow to make it a child of the entire background */
+  }
+  
+  #courseTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+  }
+  
+  #courseTable thead th {
+    text-align: left;
+    padding: 12px 15px;
+    font-weight: 600;
+    color: #fff;
+    border-bottom: 2px solid var(--tertiary-color);
+    white-space: nowrap;
+  }
+  
+  .course-row {
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background-color: var(--primary-color);
+  }
+  
+  .course-row td {
+    padding: 15px;
+    border-radius: 0;
+  }
+  
+  .course-row td:first-child {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    font-weight: 600;
+  }
+  
+  .course-row td:last-child {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+  
+  .course-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .selected {
+    background-color: #4a4f52 !important;
+    position: relative;
+  }
+  
+  /* Fix for the row shifting issue - use a left border instead of a pseudo-element */
+  .selected td:first-child {
+    border-left: 4px solid var(--tertiary-color);
+    padding-left: 11px; /* 15px - 4px to compensate for the border */
+  }
+  
+  /* Remove the pseudo-element that was causing the shift */
+  .selected:before {
+    display: none;
+  }
+  
+  #buttons_container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 1.5rem;
+  }
+  
+  .formBtn {
+    min-width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+  }
+  
+  .formBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .delete-course-link {
+    background-color: #e74c3c;
+  }
+  
+  .delete-course-link:hover {
+    background-color: #c0392b;
+  }
+  
+  .staff-name {
+    font-style: italic;
+    color: #aaa;
+    font-size: 0.9em;
+  }
+  
+  .no-staff {
+    color: #888;
+    font-style: italic;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 600;
+    text-align: center;
+    min-width: 80px;
+  }
+  
+  .status-active {
+    background-color: #27ae60;
+    color: white;
+  }
+  
+  .status-inactive {
+    background-color: #7f8c8d;
+    color: white;
+  }
+  
+  .level-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: var(--tertiary-color);
+    color: white;
+    font-size: 0.8em;
+    font-weight: 600;
+    text-align: center;
+    min-width: 30px;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -12,11 +176,29 @@
   <h2>List of Courses</h2>
   <div id="table_container">
     <table id="courseTable">
+      <thead>
+        <tr>
+          <th>Course Code</th>
+          <th>Course Title</th>
+          <th>Department</th>
+          <th>Faculty</th>
+          <th>Level</th>
+          <th>Status</th>
+        </tr>
+      </thead>
       <tbody id="courseTableBody">
         {% for course in courses %}
         <tr class="course-row" data="{{ course.courseCode }}">
           <td>{{course.courseCode }}</td> 
-          <td>{{course.courseTitle }}</td> 
+          <td>{{course.courseTitle }}</td>
+          <td>{{course.department }}</td>
+          <td>{{course.faculty }}</td>
+          <td><span class="level-badge">{{course.level }}</span></td>
+          <td>
+            <span class="status-badge {% if course.status == 'Active' %}status-active{% else %}status-inactive{% endif %}">
+              {{ course.status }}
+            </span>
+          </td>
         </tr>
         {% endfor %}
       </tbody>
@@ -25,7 +207,7 @@
   <div id="buttons_container">
       <a href="/newCourse" class="formBtn">Add Course</a>
       <a href="#" class="modify-course-link formBtn">Update Course</a>
-      <form action="/deleteCourse/{{ courseCode }}" method="POST">
+      <form action="/deleteCourse/{{ courseCode }}" method="POST" style="display: inline;">
         <button type="submit" class="delete-course-link formBtn">Delete Course</button>
       </form>
   </div>
@@ -50,11 +232,39 @@
 
     const deleteCourseForm = document.querySelector('form'); // Assuming form exists
     deleteCourseForm.action = `/deleteCourse/${courseCode}`;
+    
+    // Add visual feedback for selection
+    const buttons = document.querySelectorAll('.formBtn');
+    buttons.forEach(btn => btn.classList.remove('disabled'));
   });
   });
 
- 
-
+  // Initially disable update and delete buttons until a course is selected
+  document.addEventListener('DOMContentLoaded', function() {
+    const modifyBtn = document.querySelector('.modify-course-link');
+    const deleteBtn = document.querySelector('.delete-course-link');
+    
+    modifyBtn.classList.add('disabled');
+    modifyBtn.style.opacity = '0.6';
+    modifyBtn.style.pointerEvents = 'none';
+    
+    deleteBtn.classList.add('disabled');
+    deleteBtn.style.opacity = '0.6';
+    deleteBtn.style.pointerEvents = 'none';
+    
+    // Enable buttons when a course is selected
+    courseRows.forEach(row => {
+      row.addEventListener('click', function() {
+        modifyBtn.classList.remove('disabled');
+        modifyBtn.style.opacity = '1';
+        modifyBtn.style.pointerEvents = 'auto';
+        
+        deleteBtn.classList.remove('disabled');
+        deleteBtn.style.opacity = '1';
+        deleteBtn.style.pointerEvents = 'auto';
+      });
+    });
+  });
 </script>
 {% endblock %}
 
