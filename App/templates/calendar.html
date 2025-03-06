@@ -1,20 +1,174 @@
 {% extends "layout.html" %}
 
-{% block title %}Assessment Calendar{% endblock %}
+{% block title %}Assessment Schedule{% endblock %}
 
 {% block head %}
     <link rel="stylesheet" href="../static/css/main.css">
-    <link rel="stylesheet" href="../static/css/calendar.css">
-    <!-- FullCalendar CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
+    <style>
+        .schedule-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .action-buttons {
+            margin-bottom: 20px;
+        }
+        
+        .solve-button {
+            background-color: #674ECC;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            font-size: 16px;
+        }
+        
+        .solve-button:hover {
+            background-color: #5a43b5;
+        }
+        
+        .solve-button:disabled {
+            background-color: #444;
+            cursor: not-allowed;
+        }
+        
+        .stats-container {
+            background-color: #1e1e1e;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+            color: #fff;
+            border: 1px solid #333;
+        }
+        
+        .stats-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
+            font-size: 18px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .stat-item {
+            background-color: #2c2c2c;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+        
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none;
+        }
+        
+        .loading-spinner {
+            border: 5px solid #333;
+            border-top: 5px solid #674ECC;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            display: none;
+            color: #fff;
+        }
+        
+        .schedule-table th, .schedule-table td {
+            border: 1px solid #333;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .schedule-table th {
+            background-color: #2c2c2c;
+            font-weight: bold;
+        }
+        
+        .schedule-table tr:nth-child(even) {
+            background-color: #1e1e1e;
+        }
+        
+        .schedule-table tr:nth-child(odd) {
+            background-color: #121212;
+        }
+        
+        .schedule-table tr:hover {
+            background-color: #333;
+        }
+        
+        .filter-container {
+            margin-bottom: 15px;
+        }
+        
+        .filter-container select {
+            padding: 8px 12px;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #444;
+            font-size: 14px;
+            min-width: 200px;
+        }
+        
+        .no-results {
+            padding: 20px;
+            text-align: center;
+            background-color: #1e1e1e;
+            border-radius: 4px;
+            margin-top: 20px;
+            display: none;
+            color: #fff;
+            border: 1px solid #333;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-    <div class="mainContent">
+    <div class="schedule-container">
         <div class="mainTitle">
-            <h1>Assessment Calendar</h1>
-            <div class="filterContainer">
-                <select id="filterDropdownCalendar"> 
+            <h1>Assessment Schedule</h1>
+            <div class="filter-container">
+                <select id="filterDropdown"> 
                     <option value="all">All Courses</option>
                     {% for course in courses %}
                     <option value="{{course}}">{{course}}</option>
@@ -23,130 +177,262 @@
             </div>
         </div>
         
-        <!-- Legend for assessment categories -->
-        <div class="legend">
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #e74c3c;"></div>
-                <span>Exam</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #f39c12;"></div>
-                <span>Midterm</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #2ecc71;"></div>
-                <span>Assignment</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #9b59b6;"></div>
-                <span>Quiz</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #3498db;"></div>
-                <span>Other</span>
+        <div class="action-buttons">
+            <button id="solveButton" class="solve-button">Generate Optimal Schedule</button>
+            <button id="resetButton" class="solve-button" style="background-color: #e74c3c; display: none; margin-left: 10px;">Reset Schedule</button>
+        </div>
+        
+        <div id="statsContainer" class="stats-container">
+            <div class="stats-title">Scheduling Solution Statistics</div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Objective Value (U*)</div>
+                    <div id="uStarValue" class="stat-value">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Probability</div>
+                    <div id="probabilityValue" class="stat-value">0%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Min Spacing (days)</div>
+                    <div id="minSpacingValue" class="stat-value">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Courses</div>
+                    <div id="totalCoursesValue" class="stat-value">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Assessments</div>
+                    <div id="totalAssessmentsValue" class="stat-value">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Y* Value</div>
+                    <div id="yStarValue" class="stat-value">0</div>
+                </div>
             </div>
         </div>
         
-        <div id="calendar"></div>
-    </div>
-    
-    <!-- Modal for assessment details -->
-    <div id="assessmentModal" class="assessment-modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2 id="modalTitle"></h2>
-            <div id="modalDetails"></div>
+        <table id="scheduleTable" class="schedule-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Week</th>
+                    <th>Day</th>
+                    <th>Course</th>
+                    <th>Assessment Type</th>
+                </tr>
+            </thead>
+            <tbody id="scheduleBody">
+                <!-- Schedule data will be inserted here -->
+            </tbody>
+        </table>
+        
+        <div id="noResults" class="no-results">
+            No schedule data available. Click "Generate Optimal Schedule" to create a schedule.
         </div>
     </div>
     
-    <!-- FullCalendar JS -->
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Get the assessments data passed from the backend
-            var assessmentsData = JSON.parse('{{ assessments | tojson | safe }}');
-            var allEvents = [...assessmentsData]; // Keep a copy of all events
+            var solveButton = document.getElementById('solveButton');
+            var resetButton = document.getElementById('resetButton');
+            var loadingOverlay = document.getElementById('loadingOverlay');
+            var statsContainer = document.getElementById('statsContainer');
+            var scheduleTable = document.getElementById('scheduleTable');
+            var scheduleBody = document.getElementById('scheduleBody');
+            var noResults = document.getElementById('noResults');
+            var filterDropdown = document.getElementById('filterDropdown');
             
-            // Initialize the calendar
-            var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,listMonth'
-                },
-                events: assessmentsData,
-                eventClick: function(info) {
-                    // Show assessment details in modal
-                    var modal = document.getElementById('assessmentModal');
-                    var modalTitle = document.getElementById('modalTitle');
-                    var modalDetails = document.getElementById('modalDetails');
+            // Show no results message initially
+            noResults.style.display = 'block';
+            
+            // Store the original and current schedule data
+            var originalSchedule = [];
+            var currentSchedule = [];
+            
+            solveButton.addEventListener('click', function() {
+                // Show loading overlay
+                loadingOverlay.style.display = 'flex';
+                solveButton.disabled = true;
+                
+                // Call the solve endpoint
+                fetch('/calendar/solve', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Store the schedule data
+                        currentSchedule = data.events;
+                        
+                        if (originalSchedule.length === 0) {
+                            originalSchedule = [...currentSchedule];
+                        }
+                        
+                        // Update the schedule table
+                        updateScheduleTable(currentSchedule);
+                        
+                        // Show reset button
+                        resetButton.style.display = 'inline-block';
+                        
+                        // Update stats
+                        document.getElementById('uStarValue').textContent = data.stats.u_star.toFixed(2);
+                        document.getElementById('probabilityValue').textContent = (data.stats.probability * 100).toFixed(2) + '%';
+                        document.getElementById('minSpacingValue').textContent = data.stats.min_spacing;
+                        document.getElementById('totalCoursesValue').textContent = data.stats.total_courses;
+                        document.getElementById('totalAssessmentsValue').textContent = data.stats.total_assessments;
+                        document.getElementById('yStarValue').textContent = data.stats.y_star.toFixed(2);
+                        
+                        // Show stats container
+                        statsContainer.style.display = 'block';
+                        
+                        // Hide no results message
+                        noResults.style.display = 'none';
+                        
+                        // Show schedule table
+                        scheduleTable.style.display = 'table';
+                    } else {
+                        // Show error
+                        alert('Error: ' + data.error);
+                        console.error(data.details);
+                        
+                        // Show no results message
+                        noResults.style.display = 'block';
+                        scheduleTable.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while solving the schedule.');
                     
-                    modalTitle.textContent = info.event.title;
-                    
-                    var courseId = info.event.extendedProps.course_id;
-                    var category = info.event.extendedProps.category;
-                    var percentage = info.event.extendedProps.percentage;
-                    var proctored = info.event.extendedProps.proctored ? 'Yes' : 'No';
-                    
-                    var details = '<div class="assessment-detail-item">' +
-                        '<span class="assessment-detail-label">Course:</span> ' +
-                        '<span>' + courseId + '</span>' +
-                        '</div>' +
-                        '<div class="assessment-detail-item">' +
-                        '<span class="assessment-detail-label">Category:</span> ' +
-                        '<span>' + category + '</span>' +
-                        '</div>' +
-                        '<div class="assessment-detail-item">' +
-                        '<span class="assessment-detail-label">Percentage:</span> ' +
-                        '<span>' + percentage + '%</span>' +
-                        '</div>' +
-                        '<div class="assessment-detail-item">' +
-                        '<span class="assessment-detail-label">Proctored:</span> ' +
-                        '<span>' + proctored + '</span>' +
-                        '</div>';
-                    
-                    modalDetails.innerHTML = details;
-                    modal.style.display = 'block';
+                    // Show no results message
+                    noResults.style.display = 'block';
+                    scheduleTable.style.display = 'none';
+                })
+                .finally(() => {
+                    // Hide loading overlay
+                    loadingOverlay.style.display = 'none';
+                    solveButton.disabled = false;
+                });
+            });
+            
+            resetButton.addEventListener('click', function() {
+                // Reset to original schedule
+                currentSchedule = [...originalSchedule];
+                
+                // Update the schedule table
+                updateScheduleTable(currentSchedule);
+                
+                // Hide reset button
+                resetButton.style.display = 'none';
+                
+                // Hide stats container
+                statsContainer.style.display = 'none';
+                
+                // If no schedule data, show no results message
+                if (currentSchedule.length === 0) {
+                    noResults.style.display = 'block';
+                    scheduleTable.style.display = 'none';
                 }
             });
             
-            calendar.render();
-            
-            // Filter events by course
-            var filterDropdown = document.getElementById('filterDropdownCalendar');
             filterDropdown.addEventListener('change', function() {
                 var selectedCourse = filterDropdown.value;
                 
                 if (selectedCourse === 'all') {
                     // Show all events
-                    calendar.removeAllEvents();
-                    calendar.addEventSource(allEvents);
+                    updateScheduleTable(currentSchedule);
                 } else {
                     // Filter events by course
-                    var filteredEvents = allEvents.filter(function(event) {
+                    var filteredEvents = currentSchedule.filter(function(event) {
                         return event.extendedProps.course_id === selectedCourse;
                     });
                     
-                    calendar.removeAllEvents();
-                    calendar.addEventSource(filteredEvents);
+                    updateScheduleTable(filteredEvents);
                 }
             });
             
-            // Close modal when clicking the close button
-            var closeBtn = document.getElementsByClassName('close-modal')[0];
-            closeBtn.onclick = function() {
-                document.getElementById('assessmentModal').style.display = 'none';
-            };
-            
-            // Close modal when clicking outside of it
-            window.onclick = function(event) {
-                var modal = document.getElementById('assessmentModal');
-                if (event.target == modal) {
-                    modal.style.display = 'none';
+            function updateScheduleTable(events) {
+                // Clear the table
+                scheduleBody.innerHTML = '';
+                
+                if (events.length === 0) {
+                    noResults.style.display = 'block';
+                    scheduleTable.style.display = 'none';
+                    return;
                 }
-            };
+                
+                // Sort events by date
+                events.sort(function(a, b) {
+                    return new Date(a.start) - new Date(b.start);
+                });
+                
+                // Add events to the table
+                events.forEach(function(event) {
+                    var row = document.createElement('tr');
+                    
+                    // Format date
+                    var date = new Date(event.start);
+                    var formattedDate = date.toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    
+                    // Get week and day
+                    var week = event.extendedProps.week !== undefined ? event.extendedProps.week + 1 : '-';
+                    
+                    var dayOfWeek = '-';
+                    if (event.extendedProps.day_of_week !== undefined) {
+                        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                        dayOfWeek = days[event.extendedProps.day_of_week];
+                    }
+                    
+                    // Get course and assessment type
+                    var course = event.extendedProps.course_id;
+                    var assessmentType = event.extendedProps.category;
+                    
+                    // Create cells
+                    var dateCell = document.createElement('td');
+                    dateCell.textContent = formattedDate;
+                    
+                    var weekCell = document.createElement('td');
+                    weekCell.textContent = week;
+                    
+                    var dayCell = document.createElement('td');
+                    dayCell.textContent = dayOfWeek;
+                    
+                    var courseCell = document.createElement('td');
+                    courseCell.textContent = course;
+                    
+                    var typeCell = document.createElement('td');
+                    typeCell.textContent = assessmentType || 'Other';
+                    
+                    // Add cells to row
+                    row.appendChild(dateCell);
+                    row.appendChild(weekCell);
+                    row.appendChild(dayCell);
+                    row.appendChild(courseCell);
+                    row.appendChild(typeCell);
+                    
+                    // Add row to table
+                    scheduleBody.appendChild(row);
+                });
+                
+                // Show the table
+                scheduleTable.style.display = 'table';
+                noResults.style.display = 'none';
+            }
         });
     </script>
 {% endblock %} 

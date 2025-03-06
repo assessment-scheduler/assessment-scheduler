@@ -1,6 +1,8 @@
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, session
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, session, get_flashed_messages
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from App.middleware.auth import course_access_required
+import datetime
+from App.database import db
 
 from App.controllers.staff import (
     register_staff,
@@ -154,6 +156,177 @@ def get_calendar_page():
 def update_calendar_page():
     data = request.get_json()
     return jsonify({'success': True})
+
+@staff_views.route('/calendar/solve', methods=['POST'])
+@jwt_required()
+def solve_calendar_schedule():
+    from App.controllers.semester import get_current_semester
+    from App.models.semester import Semester
+    from App.controllers.assessment import get_assessments_by_course
+    from App.models.kris import solve_stage1, solve_stage2
+    from App.models.solver_config import SolverConfig
+    from App.models.course import Course
+    from App.models.class_size import ClassSize
+    
+    # Get current semester
+    semester = get_current_semester()
+    
+    if not semester:
+        # Check if any semesters exist
+        semesters = Semester.query.all()
+        if not semesters:
+            return jsonify({'success': False, 'error': 'No semesters found in the database. Please create a semester first.'})
+        
+        # Use the first semester if no current semester is set
+        semester = semesters[0]
+    
+    # Get or create config and update with semester parameters
+    config = SolverConfig.query.first()
+    if not config:
+        config = SolverConfig(
+            semester_days=semester.K,
+            min_spacing=semester.d,
+            large_m=semester.M
+        )
+        db.session.add(config)
+    else:
+        # Always update config with current semester values
+        config.semester_days = semester.K
+        config.min_spacing = semester.d
+        config.large_m = semester.M
+    
+    db.session.commit()
+    
+    # Get all active courses
+    courses = Course.query.filter_by(active=True).all()
+    
+    if not courses:
+        return jsonify({'success': False, 'error': 'No active courses found in database'})
+    
+    # Get all assessments and format data for solver
+    formatted_courses = []
+    course_codes = []
+    
+    for course in courses:
+        # Use the controller method to get assessments for this course
+        course_assessments = get_assessments_by_course(course.course_code)
+        if not course_assessments:
+            continue
+            
+        course_codes.append(course.course_code)
+        
+        # Format assessments for this course
+        formatted_assessments = []
+        for assessment in course_assessments:
+            # Convert percentage to integer by multiplying by 100 if it's a decimal
+            percentage = assessment.percentage
+            if percentage < 100:  # If it's already stored as a percentage (e.g., 25 for 25%)
+                percentage_int = int(percentage)
+            else:  # If it's stored as a decimal (e.g., 0.25 for 25%)
+                percentage_int = int(percentage * 100)
+                
+            formatted_assessments.append({
+                'name': assessment.name,
+                'percentage': percentage_int,
+                'start_week': assessment.start_week,
+                'start_day': assessment.start_day,
+                'end_week': assessment.end_week,
+                'end_day': assessment.end_day,
+                'proctored': 1 if assessment.proctored else 0
+            })
+        
+        # Add course with its assessments to the formatted list
+        formatted_courses.append({
+            'code': course.course_code,
+            'assessments': formatted_assessments
+        })
+    
+    if not formatted_courses:
+        return jsonify({'success': False, 'error': 'No assessments found in database'})
+    
+    # Initialize class sizes matrix
+    n = len(formatted_courses)
+    c = [[0 for _ in range(n)] for _ in range(n)]
+    
+    # Get class sizes from database
+    class_sizes = ClassSize.query.all()
+    for class_size in class_sizes:
+        i = next((idx for idx, code in enumerate(course_codes) if code == class_size.course_code), None)
+        j = next((idx for idx, code in enumerate(course_codes) if code == class_size.other_course_code), None)
+        if i is not None and j is not None:
+            c[i][j] = class_size.size
+    
+    # Generate phi matrix
+    phi = [[1 if ci > 0 else 0 for ci in row] for row in c]
+    
+    try:
+        # Solve using semester parameters
+        U_star, solver, x = solve_stage1(formatted_courses, c, 
+                                       semester.K,
+                                       semester.M)
+        
+        schedule, Y_star, probability = solve_stage2(formatted_courses, c, phi, U_star,
+                                                   semester.K,
+                                                   semester.d,
+                                                   semester.M)
+        
+        # Format schedule for calendar display
+        calendar_events = []
+        
+        # Calculate the semester start date
+        semester_start = semester.start_date
+        
+        for day_offset, week, day_of_week, course_code, assessment_type in schedule:
+            # Calculate the actual date
+            assessment_date = semester_start + datetime.timedelta(days=day_offset)
+            
+            # Determine color based on assessment type
+            colors = {
+                'EXAM': '#e74c3c',      # Red
+                'MIDTERM': '#f39c12',   # Orange
+                'ASSIGNMENT': '#2ecc71', # Green
+                'QUIZ': '#9b59b6',      # Purple
+                'DEFAULT': '#3498db'    # Blue
+            }
+            color = colors.get(assessment_type, colors['DEFAULT'])
+            
+            # Create calendar event
+            calendar_events.append({
+                'title': f"{course_code} - {assessment_type}",
+                'start': assessment_date.strftime('%Y-%m-%d'),
+                'end': assessment_date.strftime('%Y-%m-%d'),
+                'color': color,
+                'textColor': '#ffffff',
+                'extendedProps': {
+                    'course_id': course_code,
+                    'category': assessment_type,
+                    'day_offset': day_offset,
+                    'week': week,
+                    'day_of_week': day_of_week
+                }
+            })
+        
+        return jsonify({
+            'success': True,
+            'events': calendar_events,
+            'stats': {
+                'u_star': U_star,
+                'y_star': Y_star,
+                'probability': probability,
+                'min_spacing': semester.d,
+                'total_courses': len(formatted_courses),
+                'total_assessments': len(calendar_events)
+            }
+        })
+        
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'details': error_details
+        })
 
 # Assessment Routes
 @staff_views.route('/assessments', methods=['GET'])

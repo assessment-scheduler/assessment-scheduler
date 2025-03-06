@@ -3,6 +3,10 @@ import pytest
 import sys
 from flask import Flask
 from flask.cli import AppGroup
+from App.controllers.semester import get_current_semester
+from App.models.semester import Semester
+from App.controllers.assessment import get_assessments_by_course
+from App.models.kris import print_schedule
 from App.database import db, get_migrate
 from App.main import create_app
 from App.models import User, Staff, Course, Assessment, Programme, Admin, ClassSize, SolverConfig, Semester
@@ -23,20 +27,15 @@ from App.models.scheduled_assessment import ScheduledAssessment
 import csv
 import os
 
-# Get migration instance
-
-# This commands file allows you to create convenient CLI commands for testing controllers!
 app = create_app()
 migrate = get_migrate(app)
 
-# Add this after the app is created but before the lp_cli commands
 lp_cli = AppGroup('lp', help='Linear programming commands')
 schedule_cli = AppGroup('schedule', help='Scheduling commands')
 
 app.cli.add_command(lp_cli)
 app.cli.add_command(schedule_cli)
 
-# This command creates and initializes the database
 @app.cli.command("init", help="Creates and initializes the database")
 def initialize():
     db.drop_all()
@@ -49,7 +48,6 @@ def initialize():
     print(bob)
     print('Database initialized')
     
-    # Load all data from CSV files
     try:
         # Clear existing data
         ClassSize.query.delete()
@@ -323,21 +321,17 @@ def solve_problem_command():
 def solve_schedule():
     """Solve the scheduling problem using database data"""
     # Get current semester
-    from App.controllers.semester import get_current_semester
-    from App.models.semester import Semester
-    from App.controllers.assessment import get_assessments_by_course
-    from App.models.kris import print_schedule
     
     semester = get_current_semester()
     
     if not semester:
-        # Check if any semesters exist
+        # if semester exists use it 
         semesters = Semester.query.all()
         if not semesters:
             print("No semesters found in the database. Please create a semester first.")
             return
         
-        # Use the first semester if no current semester is set
+        # else use the first semester
         semester = semesters[0]
         print(f"No current semester set. Using semester {semester.sem_num} as fallback.")
         
