@@ -8,7 +8,6 @@ from App.main import create_app
 from App.models import User, Staff, Course, Assessment, Programme, Admin, ClassSize, SolverConfig, Semester
 from App.controllers import create_user, get_all_users_json, get_all_users, initialize, Course
 from App.controllers.assessment import get_assessments_by_course
-from App.controllers.staff import setup_default_course_assignments
 from App.models.solver import LPSolver
 from App.controllers.lp import create_sample_problem, solve_lp_problem
 from App.models.importer import load_courses, load_assessments, load_class_sizes, load_semester
@@ -139,12 +138,6 @@ def initialize():
             print(f"Loaded {staff_count} staff members from CSV")
         else:
             print(f"Warning: Staff CSV file not found at {staff_csv_path}")
-        
-        # Set up default course assignments
-        default_assignments = setup_default_course_assignments()
-        for course_code, staff_name, success in default_assignments:
-            status = "Success" if success else "Failed"
-            print(f"Default assignment: {course_code} -> {staff_name}: {status}")
         
         print("Schedule data loaded successfully")
     except Exception as e:
@@ -715,35 +708,13 @@ def create_semester_command(start_date, end_date, sem_num, max_assessments, k, d
 @app.cli.command("list-semesters", help="List all semesters in the database")
 def list_semesters_command():
     """List all semesters in the database"""
-    from App.models.semester import Semester
-    from App.controllers.semester import get_current_semester
-    
     semesters = Semester.query.all()
-    current_semester = get_current_semester()
-    
     if not semesters:
         print("No semesters found in the database")
         return
     
-    print(f"Found {len(semesters)} semester(s):")
     for semester in semesters:
-        current_marker = " (current)" if current_semester and semester.id == current_semester.id else ""
-        print(f"Semester {semester.sem_num}{current_marker}:")
-        print(f"  - ID: {semester.id}")
-        print(f"  - Start date: {semester.start_date}")
-        print(f"  - End date: {semester.end_date}")
-        print(f"  - Max assessments: {semester.max_assessments}")
-        print(f"  - K (total days): {semester.K}")
-        print(f"  - d (min spacing): {semester.d}")
-        print(f"  - M (constraint constant): {semester.M}")
-        print()
-
-# This command assigns default courses to specific lecturers
-@app.cli.command("setup-default-assignments", help="Set up default course assignments for specific lecturers")
-def setup_default_assignments_command():
-    """Set up default course assignments for specific lecturers"""
-    default_assignments = setup_default_course_assignments()
-    for course_code, staff_name, success in default_assignments:
-        status = "Success" if success else "Failed"
-        print(f"Default assignment: {course_code} -> {staff_name}: {status}")
-    print("Default course assignments completed")
+        print(f"Semester {semester.sem_num}: {semester.start_date} to {semester.end_date}, Max Assessments: {semester.max_assessments}")
+        print(f"  K={semester.K}, d={semester.d}, M={semester.M}")
+    
+    print(f"Total: {len(semesters)} semesters")

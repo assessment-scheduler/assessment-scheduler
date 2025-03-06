@@ -122,15 +122,8 @@
   }
   
   .delete-course-link:hover {
-    background-color: #c0392b;
-  }
-  
-  .default-assignments-btn {
-    background-color: #9b59b6;
-  }
-  
-  .default-assignments-btn:hover {
-    background-color: #8e44ad;
+    background-color: #c82333;
+    border-color: #bd2130;
   }
   
   .staff-name {
@@ -217,9 +210,6 @@
       <a href="#" class="modify-course-link formBtn">Update Course</a>
       <form action="/deleteCourse/{{ courseCode }}" method="POST" style="display: inline;">
         <button type="submit" class="delete-course-link formBtn">Delete Course</button>
-      </form>
-      <form action="/setupDefaultAssignments" method="POST" style="display: inline;">
-        <button type="submit" class="default-assignments-btn formBtn">Set Default Assignments</button>
       </form>
   </div>
 </div> 

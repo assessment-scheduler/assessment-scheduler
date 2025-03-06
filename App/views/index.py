@@ -46,6 +46,51 @@ def init():
     db.session.add(cs1)
     db.session.add(cs2)
     db.session.add(cs3)
+    
+    # Add default course assignments
+    default_staff = [
+        ("COMP1601", "Permanand", "Mohan"),
+        ("COMP1600", "Diana", "Ragbir"),
+        ("COMP1603", "Michael", "Hosein"),
+        ("COMP1602", "Shareeda", "Mohammed"),
+        ("INFO1600", "Phaedra", "Mohammed"),
+        ("INFO1601", "Phaedra", "Mohammed"),
+        ("FOUN1105", "Phaedra", "Mohammed"),
+    ]
+    
+    # Create the staff members and assign them to courses
+    for course_code, first_name, last_name in default_staff:
+        # Create the staff if they don't exist
+        staff_exists = Staff.query.filter_by(f_name=first_name, l_name=last_name).first()
+        if not staff_exists:
+            new_staff = Staff.register(
+                firstName=first_name, 
+                lastName=last_name, 
+                u_ID=int(f"22{len(first_name)}{len(last_name)}"), # Generate a unique ID
+                status='Lecturer',
+                email=f"{first_name.lower()}.{last_name.lower()}@mail.com",
+                password="password"
+            )
+        
+        # Create the course if it doesn't exist
+        course_exists = Course.query.filter_by(courseCode=course_code).first()
+        if not course_exists:
+            new_course = Course(
+                courseCode=course_code,
+                courseTitle=f"{course_code} Course",
+                description=f"Description for {course_code}",
+                level=int(course_code[4]),
+                semester=1,
+                aNum=3
+            )
+            db.session.add(new_course)
+        
+        # Assign staff to course if not already assigned
+        staff_id = Staff.query.filter_by(f_name=first_name, l_name=last_name).first().id
+        existing_assignment = CourseStaff.query.filter_by(staff_id=staff_id, course_code=course_code).first()
+        if not existing_assignment:
+            new_assignment = CourseStaff(staff_id=staff_id, course_code=course_code)
+            db.session.add(new_assignment)
 
     #create assessments
     asm1 = Assessment(category='EXAM')

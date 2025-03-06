@@ -593,25 +593,3 @@ def remove_course_staff(course_code, staff_id):
         flash('Failed to remove staff from course', 'error')
     
     return redirect(url_for('admin_views.assign_staff_to_course_page', course_code=course_code))
-
-@admin_views.route('/setupDefaultAssignments', methods=['POST'])
-@jwt_required(Admin)
-def setup_default_assignments():
-    """Set up default course assignments for specific lecturers"""
-    try:
-        # Run the default assignments function
-        default_assignments = setup_default_course_assignments()
-        
-        # Count successes and failures
-        successes = sum(1 for _, _, success in default_assignments if success)
-        failures = len(default_assignments) - successes
-        
-        if failures > 0:
-            flash(f"Default assignments completed: {successes} successful, {failures} failed", "warning")
-        else:
-            flash(f"All {successes} default course assignments completed successfully!", "success")
-            
-        return redirect(url_for('admin_views.get_courses'))
-    except Exception as e:
-        flash(f"Error setting up default assignments: {str(e)}", "error")
-        return redirect(url_for('admin_views.get_courses'))
