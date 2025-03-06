@@ -97,11 +97,20 @@ def get_account_page():
         
         # For staff_courses, we need to include assessments
         staff_courses_json = []
+        total_assessments = 0  # Track total assessments across all courses
+        
         for course in staff_courses:
             course_json = course.to_json()
+            # Get assessments for this course directly from the database
+            course_assessments = get_assessments_by_course(course.course_code)
+            
             # Add assessments to each course
-            if hasattr(course, 'assessments'):
-                course_json['assessments'] = [assessment.to_json() for assessment in course.assessments]
+            course_assessments_json = [assessment.to_json() for assessment in course_assessments]
+            course_json['assessments'] = course_assessments_json
+            
+            # Update total assessment count
+            total_assessments += len(course_assessments)
+            
             staff_courses_json.append(course_json)
         
         staff_course_codes = [course.course_code for course in staff_courses]
@@ -112,7 +121,8 @@ def get_account_page():
             staff_courses=staff_courses_json,
             staff_course_codes=staff_course_codes,
             registered=staff_course_codes,
-            staff=staff  # Pass staff information to the template
+            staff=staff,  # Pass staff information to the template
+            total_assessments=total_assessments  # Pass the total assessment count
         )
     except Exception as e:
         flash(f'Error loading account page: {str(e)}', 'error')

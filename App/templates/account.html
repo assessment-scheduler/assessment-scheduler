@@ -363,16 +363,20 @@
       </div>
       <div class="stat-card">
         <div class="stat-value">
-          {% if staff_courses %}
-            {% set total_assessments = 0 %}
-            {% for course in staff_courses %}
-              {% if course.assessments %}
-                {% set total_assessments = total_assessments + course.assessments|length %}
-              {% endif %}
-            {% endfor %}
+          {% if total_assessments is defined %}
             {{ total_assessments }}
           {% else %}
-            0
+            {% if staff_courses %}
+              {% set total_assessments = 0 %}
+              {% for course in staff_courses %}
+                {% if course.assessments %}
+                  {% set total_assessments = total_assessments + course.assessments|length %}
+                {% endif %}
+              {% endfor %}
+              {{ total_assessments }}
+            {% else %}
+              0
+            {% endif %}
           {% endif %}
         </div>
         <div class="stat-label">Assessments</div>
