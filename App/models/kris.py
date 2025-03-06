@@ -190,7 +190,6 @@ def main():
     # Data
     courses = [
         {  # C1601 (index 0)
-            'code': 'C1601',
             'assessments': [
                 {'name': 'A1', 'percentage': 5, 'start_week': 3, 'start_day': 1,
                  'end_week': 4, 'end_day': 7, 'proctored': 0},
@@ -205,7 +204,6 @@ def main():
             ]
         },
         {  # C1602 (index 1)
-            'code': 'C1602',
             'assessments': [
                 {'name': 'A1', 'percentage': 5, 'start_week': 3, 'start_day': 1,
                  'end_week': 4, 'end_day': 7, 'proctored': 0},
@@ -220,7 +218,6 @@ def main():
             ]
         },
         {  # C1603 (index 2)
-            'code': 'C1603',
             'assessments': [
                 {'name': 'A1', 'percentage': 6, 'start_week': 3, 'start_day': 1,
                  'end_week': 4, 'end_day': 7, 'proctored': 0},
