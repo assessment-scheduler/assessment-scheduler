@@ -5,7 +5,7 @@ class Admin(User):
     id: MappedColumn[int] = mapped_column(db.ForeignKey("user.id"), primary_key=True)
 
     def __init__(self, id, email, password):
-        super().__init__(id, email, password)
+        super().__init__(id = id, email=email, password=password)
 
     def get_id(self):
         return self.id
