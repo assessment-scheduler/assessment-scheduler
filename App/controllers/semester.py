@@ -1,69 +1,55 @@
-from App.models.semester import Semester
-from App.models.config import Config
+from typing import List, Optional
 from App.database import db
+from ..models.semester import Semester
+from datetime import date, datetime
 
-def add_sem(start_date, end_date, sem_num, max_assessments, K=84, d=3, M=1000):
-    """
-    Add a new semester (legacy function)
-    
-    Args:
-        start_date: Start date of the semester
-        end_date: End date of the semester
-        sem_num: Semester number
-        max_assessments: Maximum number of assessments allowed per day
-        K: Total days in a semester
-        d: Number of days between assessments for overlapping courses
-        M: Constraint constant
-        
-    Returns:
-        Semester object
-    """
-    new_sem = Semester(start_date=start_date, end_date=end_date, sem_num=sem_num, max_assessments=max_assessments, K=K, d=d, M=M)
-    db.session.add(new_sem)
-    db.session.commit()
-    return new_sem
+def parse_date(date) -> date | str:
+    if isinstance(date, str):
+        return datetime.fromisoformat(date).date()
+    return date
 
-def get_current_semester():
-    """
-    Get the current semester
-    
-    Returns:
-        Current semester number
-    """
-    config = Config.query.first()
-    if not config:
-        return None
-    
-    semester_num = config.semester
-    return Semester.query.filter_by(sem_num=semester_num).first()
+def get_semester(semester_id:int) -> Semester | None:
+    return Semester.query.filter_by(id = semester_id).first()
 
-def create_semester(start_date, end_date, sem_num, max_assessments, K=84, d=3, M=1000):
-    """
-    Create a new semester
-    
-    Args:
-        start_date: Start date of the semester
-        end_date: End date of the semester
-        sem_num: Semester number
-        max_assessments: Maximum number of assessments allowed per day
-        K: Total days in a semester
-        d: Number of days between assessments for overlapping courses
-        M: Constraint constant
-        
-    Returns:
-        Semester object
-    """
-    semester = Semester(start_date, end_date, sem_num, max_assessments, K, d, M)
+def get_all_semesters() -> list[Semester]:
+    return Semester.query.all()
+
+def create_semester(start_date, end_date, sem_num:int, max_assessments:int, constraint_value:int = 1000, active:bool = False) -> bool:
+    start_date: date | str = parse_date(start_date)
+    end_date: date | str = parse_date(end_date)
+
+    overlapping_semesters: Optional[Semester] = Semester.query.filter(
+        (Semester.start_date < end_date) & (Semester.end_date > start_date)).first()
+    if overlapping_semesters:
+        print(f"Semester {start_date} - {end_date} not created. Overlaps with existing semester(s)")
+        return False
+    semester = Semester(start_date, end_date, sem_num, max_assessments, constraint_value, active)
     db.session.add(semester)
     db.session.commit()
-    
-    # Update current semester in config
-    config = Config.query.first()
-    if not config:
-        config = Config(semester=sem_num)
-        db.session.add(config)
-    else:
-        config.semester = sem_num
+    return True
+
+def get_active_semester() -> Semester | None:
+    return Semester.query.filter_by(active = True).first()
+
+def get_semester_duration(semester_id:int) -> int:
+    semester: Semester | None = get_semester(semester_id)
+    if semester is None:
+        print(f"Semester with id {semester_id} not found.")
+        return -1
+    return (semester.end_date - semester.start_date).days
+
+def deactivate_all() -> None:
+    semesters: List[Semester] = Semester.query.filter_by(active = True)
+    for semester in semesters:
+        semester.active = False
     db.session.commit()
-    
-    return semester
+
+def set_active(semester_id: int) -> bool:
+    semester: Semester | None = get_semester(semester_id)
+    if semester is None:
+        print(f"Could not activate semester: {semester_id} does not exist")
+        return False 
+    else:
+        deactivate_all()
+        semester.active  = True
+        db.session.commit()
