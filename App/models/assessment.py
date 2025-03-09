@@ -1,31 +1,19 @@
 from App.database import db
-from enum import Enum
-
-class Category(Enum):
-    EXAM = "EXAM"
-    QUIZ = "QUIZ"
-    PROJECT = "PROJECT"
-    ASSIGNMENT = "ASSIGNMENT"
-
 class Assessment(db.Model):
-    __tablename__ = 'assessment'
-    
-    a_id = db.Column(db.Integer, primary_key=True)
-    course_id = db.Column(db.String(9), db.ForeignKey('course.course_code'), nullable=False)
-    name = db.Column(db.String(120), nullable=False)
-    percentage = db.Column(db.Float, nullable=False)
-    start_week = db.Column(db.Integer, nullable=False)
-    start_day = db.Column(db.Integer, nullable=False)
-    end_week = db.Column(db.Integer, nullable=False)
-    end_day = db.Column(db.Integer, nullable=False)
-    proctored = db.Column(db.Boolean, nullable=False, default=False)
-    category = db.Column(db.Enum(Category), nullable=False)
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    course_code = db.Column(db.String(8), db.ForeignKey('course.code'), nullable=False)
+    name = db.Column(db.String(20), nullable=False)
+    percentage = db.Column(db.Integer, nullable = False, default = 0)
+    proctored = db.Column(db.Integer, nullable = False, default = 0)
+    start_week = db.Column(db.Integer, nullable = True)
+    start_day = db.Column(db.Integer, nullable = True)
+    end_week = db.Column(db.Integer, nullable = True)
+    end_day = db.Column(db.Integer, nullable = True)
+    scheduled = db.Column(db.Date, nullable = True)
 
-    # Relationship
-    course = db.relationship('Course', back_populates='assessments')
 
-    def __init__(self, course_id, name, percentage, start_week, start_day, end_week, end_day, proctored, category):
-        self.course_id = course_id
+    def __init__(self, course_code, name, percentage, start_week, start_day, end_week, end_day, proctored):
+        self.course_code = course_code
         self.name = name
         self.percentage = percentage
         self.start_week = start_week
@@ -33,18 +21,19 @@ class Assessment(db.Model):
         self.end_week = end_week
         self.end_day = end_day
         self.proctored = proctored
-        self.category = category
-
+    
     def to_json(self):
         return {
-            "a_id": self.a_id,
-            "course_id": self.course_id,
-            "name": self.name,
-            "percentage": self.percentage,
-            "start_week": self.start_week,
-            "start_day": self.start_day,
-            "end_week": self.end_week,
-            "end_day": self.end_day,
-            "proctored": self.proctored,
-            "category": self.category.value
+            'name': self.name,
+            'percentage': self.percentage,
+            'start_week': self.start_week,
+            'start_day': self.start_day,
+            'end_week': self.end_week,
+            'end_day': self.end_day,
+            'proctored': self.proctored,
+            'scheduled' : self.scheduled
         }
+    
+    def __repr__(self):
+        return f'{self.course_code} {self.name}: {self.percentage}% Scheduled for { "N/A" if self.scheduled is None else self.scheduled}'
+    
