@@ -3,8 +3,11 @@ from typing import Any, List, Optional
 from App.models.assessment import Assessment
 from App.database import db
 
-def get_assessment(course_code, name)-> Assessment | None:
+def get_assessment(course_code, name)-> Optional[Assessment]:
     return Assessment.query.filter_by(course_code=course_code, name=name).first()
+
+def get_assessment_by_id(id) -> Optional[Assessment]:
+    return Assessment.query.get(id)
 
 def get_all_assessments() -> List[Assessment]:
     return Assessment.query.all()
@@ -43,7 +46,7 @@ def edit_assessment(course_code:str, name:str, percentage:int, start_week:int, s
 
 
 def schedule_assessment(semester,schedule_date:int,course_code:str,name:str)-> bool:
-    assessment: Assessment | None = get_assessment(course_code,name)
+    assessment: Optional[Assessment] = get_assessment(course_code,name)
     # if assessment is None:
     #     print('provided assessment does not exist')
     #     return False

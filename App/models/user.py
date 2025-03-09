@@ -6,13 +6,13 @@ class User(db.Model, UserMixin):
     __tablename__ = 'user'
 
     id = db.Column(db.Integer, unique=True, primary_key=True)
-    password = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(120), nullable=False)
 
-    def __init__(self, id, password, email):
+    def __init__(self, id, email, password):
         self.id = id
-        self.set_password(password)
         self.email = email
+        self.set_password(password)
 
     def set_password(self, password):
         """Create hashed password."""

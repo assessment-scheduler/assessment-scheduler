@@ -1,9 +1,11 @@
-from functools import wraps
-from flask import jsonify
+from App.controllers.staff import validate_staff
+from flask import Blueprint, flash, redirect, request, jsonify, render_template, url_for, make_response
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, verify_jwt_in_request, JWTManager
 import flask_login
-from flask_jwt_extended import create_access_token, jwt_required, JWTManager, get_jwt_identity, verify_jwt_in_request
-from App.models import User, Admin, Staff, user
-
+from flask_login import logout_user
+from App.models import User, Admin, Staff
+from App.controllers.admin import validate_admin
+from functools import wraps
 
 # def authenticate(email, password):
 #   user = User.query.filter_by(email=email).first()
@@ -40,12 +42,29 @@ def add_auth_context(app):
           current_user = None
       return dict(is_authenticated = is_authenticated, current_user = current_user)
 
-# Payload is a dictionary which is passed to the function by Flask JWT
-def identity(payload):
-  return User.query.get(payload['identity'])
+# # Payload is a dictionary which is passed to the function by Flask JWT
+# def identity(payload):
+#   return User.query.get(payload['identity'])
 
-def login(payload):
-  return flask_login.login_user(user)
+# def login(payload):
+#   return flask_login.login_user(user)
+
+def login_user(email, password):
+
+    if validate_admin(email, password):
+        response = make_response(redirect(url_for('admin_views.get_upload_page')))    
+        token = create_access_token(identity=email)
+        response.set_cookie('access_token', token)
+        return response
+    
+    if validate_staff(email, password):
+        response = make_response(redirect(url_for('staff_views.get_account_page')))
+        token = create_access_token(identity=email)
+        response.set_cookie('access_token', token)
+        return response
+    
+    return None
+
 
 def logout(user, remember):
   return flask_login.logout_user()
