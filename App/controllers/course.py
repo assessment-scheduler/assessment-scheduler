@@ -2,7 +2,7 @@ from typing import List, Optional
 from App.database import db
 from App.models import Course, Staff
 
-def get_course(course_code:str) -> Course | None:
+def get_course(course_code:str) -> Optional[Course]:
     return Course.query.filter_by(code=course_code).first()
 
 def get_all_courses() -> List[Course]: 
@@ -13,7 +13,7 @@ def get_all_course_codes() -> List[str]:
     return [course.code for course in courses]
 
 def get_course_name(course_code) -> str | None:
-    course: Course | None = get_course(course_code)
+    course: Optional[Course] = get_course(course_code)
     return None if course is None else course.name
 
 def create_course(course_code:str, course_name:str)-> bool:
@@ -25,7 +25,7 @@ def create_course(course_code:str, course_name:str)-> bool:
     return True
 
 def delete_course(course_code: str) -> bool:
-    course: Course | None = get_course(course_code)
+    course: Optional[Course] = get_course(course_code)
     if course is None:
         return False
     db.session.delete(get_course(course_code))
@@ -33,7 +33,7 @@ def delete_course(course_code: str) -> bool:
     return True
 
 def update_course(course_code: str, course_name: str, new_course_code:str, new_course_name:str) -> bool:
-    course: Course | None = get_course(course_code)
+    course: Optional[Course] = get_course(course_code)
     if course is None:
         return False
     course.code = new_course_code
@@ -43,7 +43,7 @@ def update_course(course_code: str, course_name: str, new_course_code:str, new_c
 
 def assign_lecturer(lecturer_id: str, course_code : str) -> bool:
         lecturer = Staff.query.filter_by(id = lecturer_id).first()
-        course: Course | None = get_course(course_code)
+        course: Optional[Course] = get_course(course_code)
         if lecturer is None or course is None:
             print(f"could not assign lecturer {lecturer_id} to course {course_code}")
             return False

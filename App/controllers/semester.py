@@ -8,7 +8,7 @@ def parse_date(date) -> date | str:
         return datetime.fromisoformat(date).date()
     return date
 
-def get_semester(semester_id:int) -> Semester | None:
+def get_semester(semester_id:int) -> Optional[Semester]:
     return Semester.query.filter_by(id = semester_id).first()
 
 def get_all_semesters() -> list[Semester]:
@@ -28,11 +28,11 @@ def create_semester(start_date, end_date, sem_num:int, max_assessments:int, cons
     db.session.commit()
     return True
 
-def get_active_semester() -> Semester | None:
+def get_active_semester() -> Optional[Semester]:
     return Semester.query.filter_by(active = True).first()
 
 def get_semester_duration(semester_id:int) -> int:
-    semester: Semester | None = get_semester(semester_id)
+    semester: Optional[Semester] = get_semester(semester_id)
     if semester is None:
         print(f"Semester with id {semester_id} not found.")
         return -1
@@ -45,7 +45,7 @@ def deactivate_all() -> None:
     db.session.commit()
 
 def set_active(semester_id: int) -> bool:
-    semester: Semester | None = get_semester(semester_id)
+    semester: Optional[Semester] = get_semester(semester_id)
     if semester is None:
         print(f"Could not activate semester: {semester_id} does not exist")
         return False 

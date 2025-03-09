@@ -1,8 +1,8 @@
-from typing import List
+from typing import List, Optional
 from App.database import db
 from ..models.courseoverlap import CourseOverlap
 
-def get_cell(code1:str, code2:str) -> CourseOverlap | None:
+def get_cell(code1:str, code2:str) -> Optional[CourseOverlap]:
     return CourseOverlap.query.filter_by(code1=code1, code2=code2).first()
 
 def get_overlap_value(code1:str,code2:str) -> int:

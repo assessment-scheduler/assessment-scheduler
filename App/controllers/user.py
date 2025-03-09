@@ -1,8 +1,9 @@
 from App.models import User, Admin, Staff
 from App.database import db
+from typing import Any, Optional
 from flask import jsonify
 
-def validate_staff(email, password):
+def validate_staff(email, password) -> Any | None:
     staff = Staff.query.filter_by(email=email).first()
     if staff and staff.check_password(password):
         return staff
@@ -14,74 +15,36 @@ def validate_admin(email, password):
         return admin
     return None
 
-def get_user(email, password):
-    """
-    Returns the user object if the email and password are correct
-    """
-    user = User.query.filter_by(email=email).first()
+def create_user(id, email, password) -> User:
+    newuser = User(id=id, email=email, password=password)
+    db.session.add(newuser)
+    db.session.commit()
+    return newuser
+
+def get_user_by_email(email):
+    return User.query.filter_by(email=email).first()
+ 
+
+def get_user_by_id(id):
+    return User.query.filter_by(id=id).first()
+
+def valdiate_user(email,password) -> Optional[User]:
+    user = get_user_by_email(email)
     if user and user.check_password(password):
         return user
     return None
 
-def get_user_id(email): 
-    """
-    Returns the user ID for a given email
-    """
-    staff = Staff.query.filter_by(email=email).first()
-    if staff:
-        return staff.id
-    return None
+# def get_user_id(email): 
+#     staff = Staff.query.filter_by(email=email).first()
+#     if staff:
+#         return staff.id
+#     return None
 
-def get_uid(id_or_email):
-    """
-    Returns the user ID for a given ID or email
-    """
-    from App.models.user import User
-    
-    # Check if input is an email
-    if isinstance(id_or_email, str) and '@' in id_or_email:
-        # If it's an email, get the ID first
-        return get_user_id(id_or_email)
-    
-    # Otherwise, treat it as an ID
-    user = User.query.filter_by(id=id_or_email).first()
-    if user:
-        return user.id
-    return None
-
-def create_user(username, password, id, role, email):
-    """
-    Creates a new user with the given parameters
-    """
-    # Check if user already exists
-    existing_user = User.query.filter_by(email=email).first()
-    if existing_user:
-        return None
-    
-    # Create new user based on role
-    if role == 'admin':
-        new_user = Admin(id=id, password=password, email=email)
-    elif role == 'staff':
-        new_user = Staff(f_name=username, l_name="", id=id, status="", email=email, password=password, department="", faculty="")
-    else:
-        return None
-    
-    # Add to database
-    db.session.add(new_user)
-    db.session.commit()
-    
-    return new_user
 
 def get_all_users():
-    """
-    Returns all users in the database
-    """
     return User.query.all()
 
 def get_all_users_json():
-    """
-    Returns all users in the database as a JSON response
-    """
     users = User.query.all()
     if not users:
         return jsonify([])

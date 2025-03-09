@@ -4,10 +4,6 @@ import click, pytest, sys
 from flask import Flask
 from flask.cli import with_appcontext, AppGroup
 from prettytable import PrettyTable
-
-from App.database import db, get_migrate
-from App.models import User
-from App.models import Admin
 from App.main import create_app
 from App.controllers import create_user, get_all_users_json, get_all_users, initialize
 from App.controllers.course import (
@@ -38,10 +34,9 @@ from App.controllers.courseoverlap import (
     get_course_matrix,
     get_phi_matrix,
 )
-from App.controllers.admin import create_admin, get_admin
+from App.controllers.admin import create_admin, get_admin_by_id
 
 app = create_app()
-migrate = get_migrate(app)
 
 
 @app.cli.command("init", help="Creates and initializes the database")
