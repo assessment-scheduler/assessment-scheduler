@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, session, get_flashed_messages
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from App.middleware.auth import course_access_required
 import datetime
 from App.database import db
 

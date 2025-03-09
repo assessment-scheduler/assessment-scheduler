@@ -1,14 +1,11 @@
 from App.database import db
 from .user import User
-from flask_login import UserMixin
+from sqlalchemy.orm import mapped_column, MappedColumn
+class Admin(User):
+    id: MappedColumn[int] = mapped_column(db.ForeignKey("user.id"), primary_key=True)
 
-class Admin(User, UserMixin):
-    __tablename__ = 'admin'
-
-    id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-
-    def __init__(self, id, password, email):
-        super().__init__(id, password, email)
+    def __init__(self, id, email, password):
+        super().__init__(id, email, password)
 
     def get_id(self):
         return self.id

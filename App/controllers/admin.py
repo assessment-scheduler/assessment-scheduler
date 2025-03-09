@@ -1,21 +1,17 @@
+from typing import Optional
 from App.models import Admin
 from App.database import db
 
 def get_admin_by_id(admin_id):
-    """
-    Get an admin by ID
-    
-    Args:
-        admin_id: ID of the admin
-        
-    Returns:
-        Admin object if found, None otherwise
-    """
-    return Admin.query.filter_by(u_ID=admin_id).first()
+    admin: Optional[Admin] = Admin.query.filter_by(id = admin_id).first()
+    return admin 
 
-def login_admin(email, password):
-    admin = db.session.query(Admin).filter(Admin.u_ID==email).first()
-    if admin != None:
-        if admin.check_password(password):
-            return admin.login()
-    return "Login failed"
+def get_admin_by_email(email:str) -> Admin | None:
+    admin : Optional[Admin] = Admin.query.filter_by(u_ID=email).first()
+    return admin
+
+def create_admin(admin_id,email,password) -> bool:
+    new_admin: Admin  = Admin(admin_id,email,password)
+    db.session.add(new_admin)
+    db.session.commit()
+    return True
