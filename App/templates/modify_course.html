@@ -1,6 +1,6 @@
 {% extends "adminLayout.html" %}
 
-{% block title %}Add Course{% endblock %}
+{% block title %}Modify Course{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="../static/css/addCourse.css">
@@ -20,6 +20,13 @@
     .required-field::after {
         content: " *";
         color: #e74c3c;
+    }
+    
+    .radio-error, .checkbox-error {
+        border-radius: 6px;
+        border: 1px solid #e74c3c;
+        padding: 10px;
+        margin-top: 5px;
     }
     
     select {
@@ -88,23 +95,31 @@
     .cancelBtn:hover {
         background-color: #5a6268;
     }
+    
+    small {
+        display: block;
+        margin-top: 5px;
+        color: #aaa;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="formContainer">
-    <form action="/addNewCourse" id="addCourseForm" method="POST" novalidate>
-        <h2>Add Course</h2>
+    <form action="/updateCourse" id="modifyCourseForm" method="POST" novalidate>
+        <h2>Modify Course</h2>
+        <input type="hidden" name="old_course_code" value="{{ course.code }}">
+        
         <div class="formInputContainer normalLabel">
-            <label class="mainLabel required-field" for="course_code">Course Code</label>
-            <input type="text" name="course_code" id="course_code" required>
-            <span class="error-message" id="course_code_error">Course code is required</span>
+            <label class="mainLabel" for="course_code">Course Code</label>
+            <input type="text" name="course_code" id="course_code" value="{{ course.code }}" placeholder="{{ course.code }}">
+            <small>Leave blank to keep current code: {{ course.code }}</small>
         </div>
 
         <div class="formInputContainer normalLabel">
-            <label class="mainLabel required-field" for="title">Course Name</label>
-            <input type="text" name="title" id="title" required>
-            <span class="error-message" id="title_error">Course name is required</span>
+            <label class="mainLabel" for="title">Course Name</label>
+            <input type="text" name="title" id="title" value="{{ course.name }}" placeholder="{{ course.name }}">
+            <small>Leave blank to keep current name: {{ course.name }}</small>
         </div>
 
         <div class="formInputContainer normalLabel">
@@ -112,7 +127,7 @@
             <select name="lecturer_id" id="lecturer_id">
                 <option value="">-- Select Lecturer --</option>
                 {% for staff in staff_list %}
-                <option value="{{ staff.id }}">
+                <option value="{{ staff.id }}" {% if course.lecturer_id == staff.id %}selected{% endif %}>
                     {{ staff.first_name }} {{ staff.last_name }}
                 </option>
                 {% endfor %}
@@ -120,39 +135,15 @@
         </div>
 
         <div class="formButtonContainer">
-            <button type="submit" class="formBtn">Add Course</button>
+            <button type="submit" class="formBtn">Update Course</button>
             <a href="{{ url_for('admin_views.get_courses') }}" class="formBtn cancelBtn">Cancel</a>
         </div>
     </form>
 </div>
 
 <script>
-    document.getElementById('addCourseForm').addEventListener('submit', function(event) {
-        let isValid = true;
-        
-        // Validate course code
-        const courseCode = document.getElementById('course_code');
-        const courseCodeError = document.getElementById('course_code_error');
-        if (!courseCode.value.trim()) {
-            courseCodeError.style.display = 'block';
-            isValid = false;
-        } else {
-            courseCodeError.style.display = 'none';
-        }
-        
-        // Validate title
-        const title = document.getElementById('title');
-        const titleError = document.getElementById('title_error');
-        if (!title.value.trim()) {
-            titleError.style.display = 'block';
-            isValid = false;
-        } else {
-            titleError.style.display = 'none';
-        }
-        
-        if (!isValid) {
-            event.preventDefault();
-        }
+    document.getElementById('modifyCourseForm').addEventListener('submit', function(event) {
+        // No validation needed as all fields are optional
     });
 </script>
-{% endblock %}
+{% endblock %} 

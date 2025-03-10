@@ -107,6 +107,30 @@
         const endWeekInput = document.getElementById('end_week');
         const endDayInput = document.getElementById('end_day');
         
+        // Add form submission handler for debugging
+        form.addEventListener('submit', function(event) {
+            // Prevent default form submission
+            event.preventDefault();
+            
+            // Ensure week and day values are updated before submission
+            updateWeekAndDay();
+            
+            // Log form values for debugging
+            console.log('Form submission values:');
+            console.log('Assessment Name:', document.getElementById('assessment_name').value);
+            console.log('Percentage:', document.getElementById('percentage').value);
+            console.log('Start Week:', startWeekInput.value);
+            console.log('Start Day:', startDayInput.value);
+            console.log('End Week:', endWeekInput.value);
+            console.log('End Day:', endDayInput.value);
+            console.log('Proctored:', document.getElementById('proctored').checked);
+            
+            // Submit the form after values are updated
+            setTimeout(() => {
+                form.submit();
+            }, 100);
+        });
+        
         // Calculate dates from week and day values
         {% if semester %}
         const semesterStart = new Date("{{semester.start_date.strftime('%Y-%m-%d')}}");
@@ -122,11 +146,11 @@
         
         // Calculate start date (week * 7 + day offset from semester start)
         const startDateObj = new Date(semesterStart);
-        startDateObj.setDate(semesterStart.getDate() + (startWeek - 1) * 7 + (startDay - semesterStart.getDay() + 7) % 7);
+        startDateObj.setDate(semesterStart.getDate() + (startWeek - 1) * 7 + startDay);
         
         // Calculate end date
         const endDateObj = new Date(semesterStart);
-        endDateObj.setDate(semesterStart.getDate() + (endWeek - 1) * 7 + (endDay - semesterStart.getDay() + 7) % 7);
+        endDateObj.setDate(semesterStart.getDate() + (endWeek - 1) * 7 + endDay);
         
         // Format dates for input fields (YYYY-MM-DD)
         startDateInput.value = startDateObj.toISOString().split('T')[0];
@@ -148,7 +172,15 @@
             const startDate = startDateInput.value;
             const endDate = endDateInput.value;
             
-            if (!startDate || !endDate) return;
+            if (!startDate || !endDate) {
+                console.error('Start date or end date is missing');
+                return;
+            }
+            
+            console.log('Updating week and day values:');
+            console.log('Start Date:', startDate);
+            console.log('End Date:', endDate);
+            console.log('Semester Start:', semesterStart);
             
             const startDateObj = new Date(startDate);
             const endDateObj = new Date(endDate);
@@ -157,12 +189,20 @@
             const startDaysSinceSemester = Math.floor((startDateObj - semesterStart) / (24 * 60 * 60 * 1000));
             const endDaysSinceSemester = Math.floor((endDateObj - semesterStart) / (24 * 60 * 60 * 1000));
             
-            // Calculate week (1-indexed) and day (0-6, where 0 is Sunday)
-            const startWeek = Math.floor(startDaysSinceSemester / 7) + 1;
-            const startDay = startDateObj.getDay();
+            console.log('Days since semester start:');
+            console.log('Start:', startDaysSinceSemester);
+            console.log('End:', endDaysSinceSemester);
             
-            const endWeek = Math.floor(endDaysSinceSemester / 7) + 1;
-            const endDay = endDateObj.getDay();
+            // Calculate week (1-indexed) and day (0-6, where 0 is Sunday)
+            const startWeek = Math.max(1, Math.floor(startDaysSinceSemester / 7) + 1);
+            const startDay = startDateObj.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            
+            const endWeek = Math.max(1, Math.floor(endDaysSinceSemester / 7) + 1);
+            const endDay = endDateObj.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            
+            console.log('Calculated week and day:');
+            console.log('Start Week:', startWeek, 'Start Day:', startDay);
+            console.log('End Week:', endWeek, 'End Day:', endDay);
             
             // Update hidden fields
             startWeekInput.value = startWeek;

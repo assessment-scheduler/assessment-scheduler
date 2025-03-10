@@ -1,0 +1,169 @@
+{% extends "adminLayout.html" %}
+
+{% block title %}{% if semester %}Edit Semester{% else %}Add Semester{% endif %}{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="../static/css/admin1.css">
+<style>
+  #semesterForm {
+    width: 90%;
+    max-width: 800px;
+    padding: 2rem;
+    margin: 0 auto;
+    background-color: var(--secondary-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  h2 {
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 10px;
+    text-align: center;
+  }
+  
+  h2:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background-color: var(--tertiary-color);
+    border-radius: 2px;
+  }
+  
+  .field_containers {
+    margin-bottom: 1.5rem;
+  }
+  
+  .input-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  
+  input[type="date"],
+  input[type="number"],
+  select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  .sem_container {
+    margin-bottom: 1.5rem;
+  }
+  
+  .radio-group {
+    display: flex;
+    gap: 20px;
+    margin-top: 0.5rem;
+  }
+  
+  .radio-option {
+    display: flex;
+    align-items: center;
+  }
+  
+  .radio-option input {
+    margin-right: 5px;
+  }
+  
+  .buttons_container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 2rem;
+  }
+  
+  .formBtn {
+    min-width: 120px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--tertiary-color);
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .formBtn:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+  }
+  
+  .cancelBtn {
+    background-color: #6c757d;
+  }
+  
+  .cancelBtn:hover {
+    background-color: #5a6268;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="semesterForm">
+  <h2>{% if semester %}Edit Semester{% else %}Add Semester{% endif %}</h2>
+  
+  <form action="{% if semester %}/updateSemester/{{ semester.id }}{% else %}/addNewSemester{% endif %}" method="POST">
+    {% if semester %}
+    <input type="hidden" name="semester_id" value="{{ semester.id }}">
+    {% endif %}
+    
+    <div class="field_containers">
+      <label for="start_date" class="input-label">Start Date</label>
+      <input type="date" id="start_date" name="start_date" value="{{ semester.start_date.strftime('%Y-%m-%d') if semester else '' }}" required>
+    </div>
+    
+    <div class="field_containers">
+      <label for="end_date" class="input-label">End Date</label>
+      <input type="date" id="end_date" name="end_date" value="{{ semester.end_date.strftime('%Y-%m-%d') if semester else '' }}" required>
+    </div>
+    
+    <div class="sem_container">
+      <label for="sem_num" class="input-label">Semester Number</label>
+      <div class="radio-group">
+        <div class="radio-option">
+          <input type="radio" id="sem1" name="sem_num" value="1" {% if semester and semester.sem_num == 1 %}checked{% elif not semester %}checked{% endif %}>
+          <label for="sem1">1</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="sem2" name="sem_num" value="2" {% if semester and semester.sem_num == 2 %}checked{% endif %}>
+          <label for="sem2">2</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="sem3" name="sem_num" value="3" {% if semester and semester.sem_num == 3 %}checked{% endif %}>
+          <label for="sem3">3</label>
+        </div>
+      </div>
+    </div>
+    
+    <div class="field_containers">
+      <label for="max_assessments" class="input-label">Maximum Weekly Assessments</label>
+      <input type="number" id="max_assessments" name="max_assessments" value="{{ semester.max_assessments if semester else '3' }}" min="1" required>
+    </div>
+    
+    <div class="field_containers">
+      <label for="constraint_value" class="input-label">Constraint Value (M)</label>
+      <input type="number" id="constraint_value" name="constraint_value" value="{{ semester.constraint_value if semester else '1000' }}" min="1" required>
+    </div>
+    
+    <div class="buttons_container">
+      <button type="submit" class="formBtn">{% if semester %}Update{% else %}Add{% endif %} Semester</button>
+      <a href="/semester" class="formBtn cancelBtn">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %} 

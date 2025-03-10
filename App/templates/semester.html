@@ -1,48 +1,248 @@
 {% extends "adminLayout.html" %}
 
-{% block title %}Semester Details{% endblock %}
+{% block title %}Semester Management{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="../static/css/admin1.css">
+<style>
+  /* Additional styling to improve presentation while keeping color scheme */
+  #semestersList {
+    width: 90%;
+    max-width: 1200px;
+    padding: 2rem;
+    margin: 0 auto;
+  }
+  
+  h2 {
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 10px;
+    text-align: center;
+  }
+  
+  h2:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background-color: var(--tertiary-color);
+    border-radius: 2px;
+  }
+  
+  #table_container {
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+    background-color: var(--secondary-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+  }
+  
+  #semesterTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+  }
+  
+  #semesterTable thead th {
+    text-align: left;
+    padding: 12px 15px;
+    font-weight: 600;
+    color: #fff;
+    border-bottom: 2px solid var(--tertiary-color);
+    white-space: nowrap;
+  }
+  
+  .semester-row {
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background-color: var(--primary-color);
+  }
+  
+  .semester-row td {
+    padding: 15px;
+    border-radius: 0;
+  }
+  
+  .semester-row td:first-child {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    font-weight: 600;
+  }
+  
+  .semester-row td:last-child {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+  
+  .semester-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .selected {
+    background-color: #4a4f52 !important;
+    position: relative;
+  }
+  
+  .selected td:first-child {
+    border-left: 4px solid var(--tertiary-color);
+    padding-left: 11px;
+  }
+  
+  #buttons_container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 1.5rem;
+  }
+  
+  .formBtn {
+    min-width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--tertiary-color);
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  .formBtn:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+  }
+  
+  .delete-semester-link {
+    background-color: #e74c3c;
+  }
+  
+  .delete-semester-link:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+  }
+  
+  .set-active-semester-link {
+    background-color: #27ae60;
+  }
+  
+  .set-active-semester-link:hover {
+    background-color: #218c53;
+  }
+  
+  .active-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 600;
+    text-align: center;
+    min-width: 80px;
+    background-color: #27ae60;
+    color: white;
+  }
+  
+  .inactive-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 600;
+    text-align: center;
+    min-width: 80px;
+    background-color: #7f8c8d;
+    color: white;
+  }
+  
+  .disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-<form id="semForm" action="/newSemester" method="POST">
-    <h2>Semester Details</h2>   
-    <div class="field_containers">
-        <label for="teachingBegins" class="input-label">Teaching Begins</label>
-        <input type="date" id="teachingBegins" name="teachingBegins">
-    </div>
-    <div class="field_containers">
-        <label for="teachingEnds" class="input-label">Teaching Ends</label>
-        <input type="date" id="teachingEnds" name="teachingEnds">
-    </div>
-    <div class="sem_container" >
-        <label for="semester" class="input-label">Semester</label><br>
-        <input type="radio" id="radio_btns" name="semester" value="1">
-        <label for="semester">1</label>
-        <input type="radio" id="radio_btns" name="semester" value="2">
-        <label for="semester">2</label>
-        <input type="radio" id="radio_btns" name="semester" value="3">
-        <label for="semester">3</label>
-    </div>
-    <div class="field_containers">
-        <label for="maxAssessments" class="input-label">Maximum Weekly Assessments Allowed per Level</label>
-        <input type="number" name="maxAssessments" id="maxAssessments">
-    </div>
-    <div class="field_containers">
-        <label for="K" class="input-label">Total Days in Semester (K)</label>
-        <input type="number" name="K" id="K" value="84">
-    </div>
-    <div class="field_containers">
-        <label for="d" class="input-label">Days Between Assessments for Overlapping Courses (d)</label>
-        <input type="number" name="d" id="d" value="3">
-    </div>
-    <div class="field_containers">
-        <label for="M" class="input-label">Constraint Constant (M)</label>
-        <input type="number" name="M" id="M" value="1000">
-    </div>
-    <button id="save_btn" class="formBtn saveSemesterBtn" type="submit">Save</button>
+<div id="semestersList">
+  <h2>Semester Management</h2>
+  <div id="table_container">
+    <table id="semesterTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Semester</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Max Assessments</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="semesterTableBody">
+        {% for semester in semesters %}
+        <tr class="semester-row" data="{{ semester.id }}">
+          <td>{{ semester.id }}</td>
+          <td>{{ semester.sem_num }}</td>
+          <td>{{ semester.start_date.strftime('%Y-%m-%d') }}</td>
+          <td>{{ semester.end_date.strftime('%Y-%m-%d') }}</td>
+          <td>{{ semester.max_assessments }}</td>
+          <td>
+            {% if semester.active %}
+            <span class="active-badge">Active</span>
+            {% else %}
+            <span class="inactive-badge">Inactive</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div id="buttons_container">
+      <a href="/newSemesterForm" class="formBtn">Add Semester</a>
+      <a href="#" class="modify-semester-link formBtn disabled">Update Semester</a>
+      <form action="#" method="POST" class="delete-semester-form" style="display: inline;">
+        <button type="submit" class="delete-semester-link formBtn disabled">Delete Semester</button>
+      </form>
+      <form action="#" method="POST" class="set-active-semester-form" style="display: inline;">
+        <button type="submit" class="set-active-semester-link formBtn disabled">Set Active</button>
+      </form>
+  </div>
+</div> 
 
-</form>
+<script>
+  const semesterRows = document.querySelectorAll('.semester-row');
+
+  semesterRows.forEach(row => {
+    row.addEventListener('click', function handleClick() {
+      semesterRows.forEach(row => row.classList.remove('selected'));
+      this.classList.add('selected');
+
+      const semesterId = this.getAttribute('data');
+      console.log('Clicked semester ID:', semesterId); 
+
+      const modifySemesterLink = document.querySelector('.modify-semester-link');
+      modifySemesterLink.href = `/modifySemester/${semesterId}`;
+      modifySemesterLink.classList.remove('disabled');
+
+      const deleteSemesterForm = document.querySelector('.delete-semester-form');
+      deleteSemesterForm.action = `/deleteSemester/${semesterId}`;
+      
+      const setActiveSemesterForm = document.querySelector('.set-active-semester-form');
+      setActiveSemesterForm.action = `/setActiveSemester/${semesterId}`;
+      
+      const buttons = document.querySelectorAll('.formBtn');
+      buttons.forEach(btn => btn.classList.remove('disabled'));
+    });
+  });
+</script>
 {% endblock %}
