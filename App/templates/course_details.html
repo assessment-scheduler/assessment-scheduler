@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}{{ course.course_code }} - Course Details{% endblock %}
+{% block title %}{{ course.code }} - Course Details{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
@@ -14,8 +14,8 @@
     <a href="/account" class="back-button">← Back to Account</a>
     
     <div class="course-title-container">
-      <div class="course-code-display">{{ course.course_code }}</div>
-      <div class="course-title-display">{{ course.course_title }}</div>
+      <div class="course-code-display">{{ course.code }}</div>
+      <div class="course-title-display">{{ course.name }}</div>
     </div>
 
     <div class="course-details">

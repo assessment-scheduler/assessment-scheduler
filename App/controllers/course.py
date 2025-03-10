@@ -9,7 +9,9 @@ def get_all_courses() -> List[Course]:
     return Course.query.all()
 
 def get_all_course_codes() -> List[str]:
-    courses: List[Course] = get_all_courses()
+    return get_course_codes(get_all_courses())
+
+def get_course_codes(courses :List[Course]) -> List[str]:
     return [course.code for course in courses]
 
 def get_course_name(course_code) -> str | None:
@@ -48,6 +50,7 @@ def assign_lecturer(lecturer_id: str, course_code : str) -> bool:
             print(f"could not assign lecturer {lecturer_id} to course {course_code}")
             return False
         else:
-            course.lecturer_id = lecturer_id
+            course.lecturer_id = lecturer.id
+            course.lecturer = lecturer
             db.session.commit()
             return True

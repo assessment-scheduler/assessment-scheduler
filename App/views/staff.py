@@ -1,23 +1,27 @@
+from typing import List
+from App.controllers.semester import get_active_semester
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, session, get_flashed_messages
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import datetime
 from App.database import db
 from functools import wraps
 
-from App.middleware.wrapper import course_access_required
-
 from App.controllers.staff import (
     create_staff,
     get_staff,
+    get_staff_by_email,
     get_staff_courses,
     delete_staff,
     get_staff_courses,
     is_course_lecturer,
+    assign_course_to_staff,
+    get_staff_by_id,
 )
 
 from App.controllers.course import (
     get_all_courses,
-    get_course
+    get_course,
+    get_course_codes
 )
 
 from App.controllers.user import(
@@ -26,11 +30,14 @@ from App.controllers.user import(
 
 from App.controllers.assessment import (
     create_assessment,
+    delete_assessment_by_id,
     edit_assessment,
     get_assessment_by_id,
-    get_assessments_by_course,
+    get_assessment_dictionary_by_course,
     delete_assessment,
     get_assessment,
+    get_assessments_by_course,
+    get_assessments_by_lecturer,
 )
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
 
@@ -59,81 +66,28 @@ def register_staff_action():
         flash(f'An error occurred: {str(e)}', 'error')
         return redirect(url_for('staff_views.get_signup_page'))
 
-# Account Routes
 @staff_views.route('/account', methods=['GET'])
 @jwt_required()
 def get_account_page():
-    try:
-        email = get_jwt_identity()
-        if not email:
-            flash('User identity not found. Please log in again.', 'error')
-            return render_template('account.html')
-            
-        user = get_user_by_email(email)
-        
-        if not user.id:
-            flash(f'User ID not found for email: {email}. Please log in again.', 'error')
-            return render_template('account.html')
-        
-        # Get staff information
-        staff = get_staff(user.id)
-        if not staff:
-            flash(f'Staff record not found for ID: {user.id}. Please contact an administrator.', 'error')
-            return render_template('account.html')
-        
-        all_courses = get_all_courses()
-        staff_courses = get_staff_courses(user.id)
-        
-        # Convert course objects to JSON serializable dictionaries
-        all_courses_json = [course.to_json() for course in all_courses]
-        
-        # For staff_courses, we need to include assessments
-        staff_courses_json = []
-        total_assessments = 0  # Track total assessments across all courses
-        
-        for course in staff_courses:
-            course_json = course.to_json()
-            # Get assessments for this course directly from the database
-            course_assessments = get_assessments_by_course(course.course_code)
-            
-            # Add assessments to each course
-            course_assessments_json = [assessment.to_json() for assessment in course_assessments]
-            course_json['assessments'] = course_assessments_json
-            
-            # Update total assessment count
-            total_assessments += len(course_assessments)
-            
-            staff_courses_json.append(course_json)
-        
-        staff_course_codes = [course.course_code for course in staff_courses]
-        
-        return render_template(
-            'account.html', 
-            courses=all_courses_json, 
-            staff_courses=staff_courses_json,
-            staff_course_codes=staff_course_codes,
-            registered=staff_course_codes,
-            staff=staff,  # Pass staff information to the template
-            total_assessments=total_assessments  # Pass the total assessment count
-        )
-    except Exception as e:
-        flash(f'Error loading account page: {str(e)}', 'error')
-        return render_template('account.html')
-
-@staff_views.route('/account', methods=['POST'])
-@jwt_required()
-def update_staff_courses():
     email = get_jwt_identity()
-    user = get_user_by_email(email)
+    staff = get_staff_by_email(email)
+    courses = get_staff_courses(email)
+    return render_template('account.html', staff=staff, courses=courses)
 
-    course_codes_json = request.form.get('courseCodes')
-    if course_codes_json:
-        import json
-        course_codes = json.loads(course_codes_json)
-        for code in course_codes:
-            add_CourseStaff(user.id, code)
+# @staff_views.route('/account', methods=['POST'])
+# @jwt_required()
+# def update_staff_courses():
+#     email = get_jwt_identity()
+#     user = get_user_by_email(email)
+
+#     course_codes_json = request.form.get('course_codes')
+#     if course_codes_json:
+#         import json
+#         course_codes = json.loads(course_codes_json)
+#         for code in course_codes:
+#             add_course_staff(user.id, code)
        
-    return redirect(url_for('staff_views.get_account_page'))
+#     return redirect(url_for('staff_views.get_account_page'))
 
 # Calendar Routes
 @staff_views.route('/calendar', methods=['GET'])
@@ -142,16 +96,8 @@ def get_calendar_page():
     email = get_jwt_identity()
     user = get_user_by_email(email)
     
-    staff_courses = get_staff_courses(user.id)
-    course_codes = [course.course_code for course in staff_courses]
-    
-    assessments = []
-    for course in staff_courses:
-        course_assessments = get_assessments_by_course(course.course_code)
-        for assessment in course_assessments:
-            assessments.append(assessment.to_json())
-    
-    return render_template('calendar.html', assessments=assessments, courses=course_codes)
+    all_assessments = get_assessments_by_lecturer(user.email)
+    return render_template('calendar.html', assessments=all_assessments)
 
 @staff_views.route('/calendar', methods=['POST'])
 @jwt_required()
@@ -165,61 +111,41 @@ def update_calendar_page():
 @jwt_required()
 def get_assessments_page():
     email = get_jwt_identity()
-    user = get_user_by_email(email)
-    
-    staff_courses = get_staff_courses(user.id)
-    
-    # Extract course codes for the dropdown
-    courses = [course.course_code for course in staff_courses]
-    
-    course_assessments = []
-    for course in staff_courses:
-        assessments = get_assessments_by_course(course.course_code)
-        if assessments:
-            total_percentage = calculate_total_percentage_for_course(course.course_code)
-            course_assessments.append({
-                'course': course.to_json(),
-                'assessments': [assessment.to_json() for assessment in assessments],
-                'total_percentage': total_percentage
-            })
-    
-    return render_template('assessments.html', course_assessments=course_assessments, courses=courses)
+    user = get_staff_by_email(email)
+    assessments = get_assessments_by_lecturer(user.email)
+    return render_template('assessments.html',course_assessments = assessments)
 
 @staff_views.route('/addAssessment', methods=['GET'])
 @jwt_required()
 def get_add_assessments_page():
     email = get_jwt_identity()
     user = get_user_by_email(email)
+    staff_courses = get_staff_courses(user.email)
+    semester = get_active_semester()
     
-    staff_courses = get_staff_courses(user.id)
-    
-    return render_template('addAssessment.html', courses=staff_courses)
+    return render_template('addAssessment.html', courses=staff_courses, semester=semester)
 
 @staff_views.route('/addAssessment', methods=['POST'])
 @jwt_required()
 def add_assessments_action():
     try:
-        course_id = request.form.get('course_id')
-        name = request.form.get('name')
-        percentage = float(request.form.get('percentage'))
+        course_code = request.form.get('course_code')
+        assessment_name = request.form.get('assessment_name')
+        percentage = float(request.form.get('percentage')) 
         start_week = int(request.form.get('start_week'))
         start_day = int(request.form.get('start_day'))
         end_week = int(request.form.get('end_week'))
         end_day = int(request.form.get('end_day'))
-        proctored = request.form.get('proctored') == 'on'
-        category = request.form.get('category')
-        
+        proctored = request.form.get('proctored')
+
+
         email = get_jwt_identity()
         user = get_user_by_email(email)
-        if not is_course_lecturer(user.id, course_id):
+        if not is_course_lecturer(user.id, course_code):
             flash('You do not have access to this course', 'error')
             return redirect(url_for('staff_views.get_account_page'))
         
-        assessment = create_assessment(
-            course_id, name, percentage, start_week, start_day, 
-            end_week, end_day, proctored, category
-        )
-        
+        assessment:bool =create_assessment(course_code,assessment_name,percentage,start_week,start_day,end_week,end_day,proctored)
         if assessment:
             flash('Assessment added successfully', 'success')
             return redirect(url_for('staff_views.get_assessments_page'))
@@ -228,35 +154,51 @@ def add_assessments_action():
             return redirect(url_for('staff_views.get_add_assessments_page'))
     except Exception as e:
         flash(f'An error occurred: {str(e)}', 'error')
-        return redirect(url_for('staff_views.get_add_assessments_page'))
+        return redirect(url_for('staff_views.get_assessments_page'))
 
 @staff_views.route('/modifyAssessment/<string:id>', methods=['GET'])
 @jwt_required()
-@course_access_required()
 def get_modify_assessments_page(id):
+    email = get_jwt_identity()
+    user = get_user_by_email(email)
     assessment = get_assessment_by_id(id)
+    
+    if not assessment:
+        flash('Assessment not found', 'error')
+        return redirect(url_for('staff_views.get_assessments_page'))
+    
+    if not is_course_lecturer(user.id, assessment.course_code):
+        flash('You do not have permission to modify assessments for this course', 'error')
+        return redirect(url_for('staff_views.get_assessments_page'))
+        
     return render_template('modifyAssessment.html', assessment=assessment)
 
 @staff_views.route('/modifyAssessment/<string:id>', methods=['POST'])
 @jwt_required()
-@course_access_required()
 def modify_assessment(id):
     try:
-        name = request.form.get('name')
-        percentage = float(request.form.get('percentage'))
+        email = get_jwt_identity()
+        user = get_user_by_email(email)
+        assessment = get_assessment_by_id(id)
+        
+        if not assessment:
+            flash('Assessment not found', 'error')
+            return redirect(url_for('staff_views.get_assessments_page'))
+        
+        if not is_course_lecturer(user.id, assessment.course_code):
+            flash('You do not have permission to modify assessments for this course', 'error')
+            return redirect(url_for('staff_views.get_assessments_page'))
+            
+        assessment_name = request.form.get('assessment_name')
+        percentage = float(request.form.get('percentage')) 
         start_week = int(request.form.get('start_week'))
         start_day = int(request.form.get('start_day'))
         end_week = int(request.form.get('end_week'))
         end_day = int(request.form.get('end_day'))
-        proctored = request.form.get('proctored') == 'on'
-        category = request.form.get('category')
+        proctored = request.form.get('proctored')
         
-        assessment = edit_assessment(
-            id, name, percentage, start_week, start_day, 
-            end_week, end_day, proctored, category
-        )
-        
-        if assessment:
+        assessment_result = edit_assessment(id, assessment_name, percentage, start_week, start_day, end_week, end_day, proctored)
+        if assessment_result:
             flash('Assessment updated successfully', 'success')
             return redirect(url_for('staff_views.get_assessments_page'))
         else:
@@ -264,18 +206,33 @@ def modify_assessment(id):
             return redirect(url_for('staff_views.get_modify_assessments_page', id=id))
     except Exception as e:
         flash(f'An error occurred: {str(e)}', 'error')
-        return redirect(url_for('staff_views.get_modify_assessments_page', id=id))
+        return redirect(url_for('staff_views.get_assessments_page'))
 
-@staff_views.route('/deleteAssessment/<string:caNum>', methods=['GET'])
+@staff_views.route('/deleteAssessment/<int:assessment_id>', methods=['POST', 'GET'])
 @jwt_required()
-@course_access_required()
-def delete_assessment_action(caNum):
-    result = delete_assessment(caNum)
-    if result:
-        flash('Assessment deleted successfully', 'success')
-    else:
-        flash('Failed to delete assessment', 'error')
-    return redirect(url_for('staff_views.get_assessments_page'))
+def delete_assessment_action(assessment_id):
+    try:
+        email = get_jwt_identity()
+        user = get_user_by_email(email)
+        assessment = get_assessment_by_id(assessment_id)
+        
+        if not assessment:
+            flash('Assessment not found', 'error')
+            return redirect(url_for('staff_views.get_assessments_page'))
+        
+        if not is_course_lecturer(user.id, assessment.course_code):
+            flash('You do not have permission to delete assessments for this course', 'error')
+            return redirect(url_for('staff_views.get_assessments_page'))
+            
+        result = delete_assessment_by_id(int(assessment_id))
+        if result:
+            flash('Assessment deleted successfully', 'success')
+        else:
+            flash('Failed to delete assessment', 'error')
+        return redirect(url_for('staff_views.get_assessments_page'))
+    except Exception as e:
+        flash(f'An error occurred: {str(e)}', 'error')
+        return redirect(url_for('staff_views.get_assessments_page'))
 
 # Settings Routes
 @staff_views.route('/settings', methods=['GET'])
@@ -286,7 +243,20 @@ def get_settings_page():
 @staff_views.route('/settings', methods=['POST'])
 @jwt_required()
 def update_settings():
-    flash('Settings updated successfully', 'success')
+    email = get_jwt_identity()
+    user = get_user_by_email(email)
+    
+    # Get the new password from the form
+    new_password = request.form.get('password')
+    
+    if new_password:
+        # Update the user's password
+        user.set_password(new_password)
+        db.session.commit()
+        flash('Password updated successfully', 'success')
+    else:
+        flash('No password provided', 'error')
+        
     return redirect(url_for('staff_views.get_settings_page'))
 
 # Course Routes
@@ -309,14 +279,14 @@ def get_course_details(course_code):
             return redirect(url_for('staff_views.get_account_page'))
         
         # Get assessments for this course
-        assessments = get_assessments_by_course(course.course_code)
+        assessments = get_assessment_dictionary_by_course(course.code)
         
         # Get staff information
-        staff = get_staff(user.id)
+        staff = get_staff_by_id(user.id)
         
         # Calculate total percentage
         
-        total_percentage = calculate_total_percentage_for_course(course.course_code)
+        # total_percentage = calculate_total_percentage_for_course(course.code)
         
         # Convert course and assessments to JSON serializable format
         course_json = course.to_json()
@@ -343,6 +313,60 @@ def get_course_details(course_code):
         )
     except Exception as e:
         flash(f'Error loading course details: {str(e)}', 'error')
+        return redirect(url_for('staff_views.get_account_page'))
+
+@staff_views.route('/assign_test_course/<course_code>', methods=['GET'])
+@jwt_required()
+def assign_test_course(course_code):
+    """Test route to assign a course to the current staff member"""
+    try:
+        email = get_jwt_identity()
+        if not email:
+            flash('User identity not found. Please log in again.', 'error')
+            return redirect(url_for('staff_views.get_account_page'))
+            
+        user = get_user_by_email(email)
+        
+        if not user:
+            flash(f'User ID not found for email: {email}. Please log in again.', 'error')
+            return redirect(url_for('staff_views.get_account_page'))
+        
+        # Assign the course to the staff member
+        result = assign_course_to_staff(user.id, course_code)
+        
+        if result:
+            flash(f'Course {course_code} assigned to you for testing', 'success')
+        else:
+            flash(f'Failed to assign course {course_code}', 'error')
+        
+        return redirect(url_for('staff_views.get_account_page'))
+    except Exception as e:
+        flash(f'Error assigning course: {str(e)}', 'error')
+        return redirect(url_for('staff_views.get_account_page'))
+
+@staff_views.route('/create_test_course/<course_code>/<course_name>', methods=['GET'])
+@jwt_required()
+def create_test_course(course_code, course_name):
+    """Test route to create a course and assign it to the current staff member"""
+    try:
+        from App.models.course import Course
+        from App.database import db
+        
+        # Check if the course already exists
+        existing_course = Course.query.filter_by(code=course_code).first()
+        if existing_course:
+            flash(f'Course {course_code} already exists', 'info')
+        else:
+            # Create the course
+            new_course = Course(code=course_code, name=course_name)
+            db.session.add(new_course)
+            db.session.commit()
+            flash(f'Course {course_code} created successfully', 'success')
+        
+        # Now assign it to the current staff member
+        return redirect(url_for('staff_views.assign_test_course', course_code=course_code))
+    except Exception as e:
+        flash(f'Error creating course: {str(e)}', 'error')
         return redirect(url_for('staff_views.get_account_page'))
 
 

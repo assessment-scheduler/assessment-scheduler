@@ -14,3 +14,11 @@ class Course(db.Model):
 
     def __repr__(self):
         return f"{self.code} : {self.name}"
+    
+    def to_json(self):
+        return {
+            'code': self.code,
+            'name': self.name
+        }
+    
+    

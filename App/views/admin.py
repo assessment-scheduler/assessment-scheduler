@@ -181,13 +181,13 @@
     
 #     course_list = []
 #     for course in courses:
-#         staff = get_course_staff(course.course_code)
+#         staff = get_course_staff(course.code)
 #         staff_name = f"{staff.f_name} {staff.l_name}" if staff else None
 #         status = get_course_status(course)
         
 #         course_list.append({
-#             'courseCode': course.course_code,
-#             'courseTitle': course.course_title,
+#             'courseCode': course.code,
+#             'courseTitle': course.name,
 #             'description': course.description,
 #             'level': course.level,
 #             'semester': course.semester,
@@ -522,7 +522,7 @@
 #         flash('Staff member not found', 'error')
 #         return redirect(url_for('admin_views.get_staff_list'))
     
-#     courses = get_staff_courses(staff_id)
+#     courses = get_staff_courses(staff_email) # change this whenever u uncomment
 #     return render_template('staffCourses.html', staff=staff, courses=courses)
 
 # @admin_views.route('/assignStaffToCourse/<course_code>', methods=['GET'])
@@ -567,7 +567,7 @@
 #     assignment = add_CourseStaff(staff_id, course_code)
     
 #     if assignment:
-#         flash(f'Staff {staff.f_name} {staff.l_name} assigned to {course.course_code}', 'success')
+#         flash(f'Staff {staff.f_name} {staff.l_name} assigned to {course.code}', 'success')
 #     else:
 #         flash('Failed to assign staff to course', 'error')
     
@@ -588,7 +588,7 @@
 #     result = remove_CourseStaff(staff_id, course_code)
     
 #     if result:
-#         flash(f'Staff {staff.f_name} {staff.l_name} removed from {course.course_code}', 'success')
+#         flash(f'Staff {staff.f_name} {staff.l_name} removed from {course.code}', 'success')
 #     else:
 #         flash('Failed to remove staff from course', 'error')
     

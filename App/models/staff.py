@@ -21,7 +21,7 @@ class Staff(User):
             "firstName": self.first_name,
             "lastName": self.last_name,
             "email": self.email,
-            "courses": [course.course_code for course in self.courses]
+            "courses": [course.code for course in self.courses]
         }
 
     def __repr__(self):
