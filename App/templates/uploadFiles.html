@@ -192,34 +192,35 @@
             
             <div class="format-info">
                 <h3>Required CSV Format:</h3>
-                <pre>course_code,course_name,level,semester,department,faculty
-COMP1600,Introduction to Computing,1,1,DCIT,FST
-COMP1601,Computer Programming I,1,1,DCIT,FST
-COMP1602,Computer Programming II,1,2,DCIT,FST</pre>
+                <pre>course_code,course_name
+COMP1600,Introduction to Computing Concepts
+COMP1601,Introduction to Computer Programming I
+COMP1602,Introduction to Computer Programming II</pre>
             </div>
         </div>
         
-        <!-- Class Sizes Upload Section -->
+        <!-- Course Overlap Upload Section -->
         <div class="upload-section">
-            <h2>Upload Class Sizes</h2>
-            <form enctype="multipart/form-data" action="/uploadclasssizes" method="POST">
+            <h2>Upload Course Overlaps</h2>
+            <form enctype="multipart/form-data" action="/uploadcourseoverlap" method="POST">
                 <div class="file-upload-container">
                     <div class="file-input-wrapper">
                         <span class="file-input-button">Choose CSV File</span>
-                        <input type="file" name="file" id="classSizesCsvInput" accept=".csv" onchange="updateFileName(this, 'classSizesFileName')">
-                        <span id="classSizesFileName" class="file-name">No file chosen</span>
+                        <input type="file" name="file" id="overlapCsvInput" accept=".csv" onchange="updateFileName(this, 'overlapFileName')">
+                        <span id="overlapFileName" class="file-name">No file chosen</span>
                     </div>
-                    <div id="classSizesFileTypeError" class="file-type-error">Please select a CSV file</div>
+                    <div id="overlapFileTypeError" class="file-type-error">Please select a CSV file</div>
                 </div>
-                <button class="submitButton" type="submit" onclick="return validateFileType('classSizesCsvInput', 'classSizesFileTypeError')">Upload Class Sizes</button>
+                <button class="submitButton" type="submit" onclick="return validateFileType('overlapCsvInput', 'overlapFileTypeError')">Upload Course Overlaps</button>
             </form>
             
             <div class="format-info">
                 <h3>Required CSV Format:</h3>
-                <pre>course_code,other_course_code,size
-COMP1600,COMP1601,45
-COMP1600,COMP1602,30
-COMP1601,COMP1602,50</pre>
+                <pre>course_code,course_code2,overlap
+COMP1600,COMP1600,300
+COMP1600,COMP1601,300
+COMP1600,COMP1602,100
+COMP1601,COMP1600,300</pre>
             </div>
         </div>
     </div>

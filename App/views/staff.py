@@ -39,6 +39,24 @@ from App.controllers.assessment import (
     get_assessments_by_course,
     get_assessments_by_lecturer,
 )
+
+from App.controllers import (
+    get_user_by_email, 
+    get_assessment_by_id, 
+    get_assessments_by_lecturer, 
+    get_assessment, 
+    get_assessment_dictionary_by_course,
+    get_assessments_by_course,
+    create_assessment,
+    edit_assessment,
+    delete_assessment_by_id,
+    get_course_codes,
+    is_course_lecturer,
+    get_all_courses,
+    create_course,
+    assign_lecturer
+)
+
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
 
 @staff_views.route('/signup', methods=['GET'])
@@ -90,6 +108,7 @@ def get_account_page():
 #     return redirect(url_for('staff_views.get_account_page'))
 
 # Calendar Routes
+
 @staff_views.route('/calendar', methods=['GET'])
 @jwt_required()
 def get_calendar_page():
@@ -170,8 +189,13 @@ def get_modify_assessments_page(id):
     if not is_course_lecturer(user.id, assessment.course_code):
         flash('You do not have permission to modify assessments for this course', 'error')
         return redirect(url_for('staff_views.get_assessments_page'))
+    
+    # Get the active semester for date calculations
+    semester = get_active_semester()
+    if not semester:
+        flash('No active semester found. Please contact an administrator.', 'warning')
         
-    return render_template('modifyAssessment.html', assessment=assessment)
+    return render_template('modifyAssessment.html', assessment=assessment, semester=semester)
 
 @staff_views.route('/modifyAssessment/<string:id>', methods=['POST'])
 @jwt_required()
@@ -190,12 +214,12 @@ def modify_assessment(id):
             return redirect(url_for('staff_views.get_assessments_page'))
             
         assessment_name = request.form.get('assessment_name')
-        percentage = float(request.form.get('percentage')) 
+        percentage = int(request.form.get('percentage')) 
         start_week = int(request.form.get('start_week'))
         start_day = int(request.form.get('start_day'))
         end_week = int(request.form.get('end_week'))
         end_day = int(request.form.get('end_day'))
-        proctored = request.form.get('proctored')
+        proctored = 1 if request.form.get('proctored') is not None else 0
         
         assessment_result = edit_assessment(id, assessment_name, percentage, start_week, start_day, end_week, end_day, proctored)
         if assessment_result:

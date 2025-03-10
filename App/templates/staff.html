@@ -35,6 +35,9 @@
   #table_container {
     margin-bottom: 1.5rem;
     overflow-x: auto;
+    height: 60vh;
+    min-height: 400px;
+    overflow-y: auto;
   }
   
   #staffTable {
@@ -50,6 +53,10 @@
     color: #fff;
     border-bottom: 2px solid var(--tertiary-color);
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    background-color: var(--background-color);
+    z-index: 10;
   }
   
   .staff-row {
@@ -267,34 +274,18 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Name</th>
+          <th>First Name</th>
+          <th>Last Name</th>
           <th>Email</th>
-          <th>Department</th>
-          <th>Faculty</th>
-          <th>Status</th>
         </tr>
       </thead>
       <tbody id="staffTableBody">
         {% for member in staff %}
         <tr class="staff-row" data-id="{{ member.id }}">
           <td>{{ member.id }}</td> 
-          <td>{{ member.f_name }} {{ member.l_name }}</td>
+          <td>{{ member.first_name }}</td>
+          <td>{{ member.last_name }}</td>
           <td><span class="email-text">{{ member.email }}</span></td>
-          <td>{{ member.department }}</td>
-          <td>{{ member.faculty }}</td>
-          <td>
-            <span class="status-badge 
-              {% if member.status == 'Head of Department' %}status-hod
-              {% elif member.status == 'Lecturer' %}status-lecturer
-              {% elif member.status == 'Instructor' %}status-instructor
-              {% elif member.status == 'Part-Time Instructor' %}status-ptinstructor
-              {% elif member.status == 'Teaching Assistant' or member.status == 'Teaching Assisstant' %}status-ta
-              {% elif member.status == 'Tutor' %}status-tutor
-              {% elif member.status == 'Part-Time Tutor' %}status-pttutor
-              {% endif %}">
-              {{ member.status }}
-            </span>
-          </td>
         </tr>
         {% endfor %}
       </tbody>
