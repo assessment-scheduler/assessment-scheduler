@@ -13,8 +13,8 @@ from App.controllers.course import (
     get_all_courses,
     get_course,
 )
-from App.controllers.assessment import get_all_assessments, get_assessments_by_course
-from App.controllers.staff import get_all_staff, get_staff, get_staff_courses
+from App.controllers.assessment import delete_assessment_by_id, get_all_assessments, get_assessment_dictionary_by_course
+from App.controllers.staff import get_all_staff, get_staff, get_staff_courses, get_staff_by_id
 from App.controllers.semester import (
     create_semester,
     get_all_semesters,
@@ -108,7 +108,7 @@ def assign_course(lecturer_id: str, course_code: str):
 @click.argument("course_code")
 def assign_course(lecturer_id: str, course_code: str):
     course = get_course(course_code)
-    lecturer = get_staff(lecturer_id)
+    lecturer = get_staff_by_id(lecturer_id)
     if course is None or lecturer is None:
         print(f"Could not assign course {course_code} to lecturer {lecturer_id}")
     else:
@@ -118,10 +118,10 @@ def assign_course(lecturer_id: str, course_code: str):
 
 @staff_cli.command("courses", help="lists the courses belonging to a lecturer")
 @click.argument("lecturer_id")
-def list_courses(lecturer_id: str):
-    courses = get_staff_courses(lecturer_id)
+def list_courses(staff_email: str):
+    courses = get_staff_courses(staff_email)
     if courses is None:
-        print(f"Could not list courses for lecturer {lecturer_id}")
+        print(f"Could not list courses for lecturer {staff_email}")
     else:
         table = PrettyTable()
         table.field_names = [
@@ -198,11 +198,21 @@ def print_assessment_jsons(course_code):
     if course is None:
         print("Course not found")
     else:
-        assessments = get_assessments_by_course(course_code)
+        assessments = get_assessment_dictionary_by_course(course_code)
         if assessments is None:
             print("No assessments found")
         else:
             print(assessments)
+
+@assessment_cli.command("delete", help="Deletes an assessment by course code and name")
+@click.argument("id")
+def delete_assessment_command(id):
+    result = delete_assessment_by_id(id)
+    if result:
+        print("Assessment deleted successfully")
+    else:
+        print("Failed to delete assessment")
+
 
 
 # @assessment_cli.command("compile", help = "creates a large structure containing all assessments for all courses")

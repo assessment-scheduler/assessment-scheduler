@@ -4,19 +4,15 @@ $(document).ready(function(){
 
 const cardContainer = document.getElementById('card_container');
 
-// Process each course and its assessments
 course_assessments.forEach(courseData => {
     const course = courseData.course;
     const assessments = courseData.assessments;
     
-    // Process each assessment in this course
     assessments.forEach(assessment => {
-        // Create the card element
         const card = document.createElement('div');
         card.classList.add('card');
-        card.setAttribute('data-course-code', course.course_code);
+        card.setAttribute('data-course-code', course.code);
         
-        // Create elements for course details, assessment info, and actions
         const courseDetails = document.createElement('div');
         courseDetails.classList.add('course-details');
         const assessmentInfo = document.createElement('div');
@@ -24,13 +20,12 @@ course_assessments.forEach(courseData => {
         const actions = document.createElement('div');
         actions.classList.add('actions');
 
-        // Create content for course details
         const courseCodeLabel = document.createElement('p');
         courseCodeLabel.classList.add('card-label');
         courseCodeLabel.textContent = 'Course Code';
         const courseCode = document.createElement('p');
         courseCode.classList.add('course-code');
-        courseCode.textContent = course.course_code;
+        courseCode.textContent = course.code;
 
         const courseAssessmentLabel = document.createElement('p');
         courseAssessmentLabel.classList.add('card-label');
@@ -90,12 +85,18 @@ course_assessments.forEach(courseData => {
         const deleteLink = document.createElement('button');
         deleteLink.textContent = 'Delete';
         deleteLink.classList.add('delete_btn')
-        deleteLink.addEventListener('click', function() {
-            window.location.href = `/deleteAssessment/${assessment.a_id}`;
+        deleteLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('Are you sure you want to delete this assessment?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/deleteAssessment/${assessment.a_id}`;
+                document.body.appendChild(form);
+                form.submit();
+            }
         });
     
 
-        // Append elements to their respective parents
         courseDetails.appendChild(courseCodeLabel);
         courseDetails.appendChild(courseCode);
         assessmentInfo.appendChild(courseAssessmentLabel);

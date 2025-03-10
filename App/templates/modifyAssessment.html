@@ -4,58 +4,173 @@
 
 {% block head %}
 <link rel="stylesheet" href="../static/css/modifyAssessment.css">
+<style>
+    .hint {
+        color: #888;
+        font-size: 0.8em;
+        font-style: italic;
+    }
+    
+    .proctored-container {
+        margin-top: 20px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .proctored-container input[type="checkbox"] {
+        margin-right: 8px;
+    }
+    
+    .formInputContainer {
+        margin-bottom: 15px;
+    }
+    
+    /* Updated semester info section with purple background */
+    .assessment-info {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #5d45bd; /* Purple background */
+        color: white; /* White text */
+        border-radius: 4px;
+        font-size: 0.9em;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="formContainer">
-    <form id="modifyAssessmentForm" action="/modifyAssessment/{{ca.id}}" method="POST">
+    <form id="modifyAssessmentForm" action="/modifyAssessment/{{assessment.id}}" method="POST">
         <div class="formTitle">
             <h2>Modify Assessment</h2>
         </div>
-        <div class="formSection1">
-            <div class="formInputContainer">
-                <!-- be a lil div to show the current course being altered -->
-                <label for="myCourses">Course</label>
-                <input type="text" value="{{ca.courseCode}}" readonly>
-            </div>
-            <div class="formInputContainer">
-                <label for="AssessmentType">Assessment Type</label>
-                <select id="dropdownAssessments" name="AssessmentType">
-                    {% for each in assessments %}
-                    <option value="{{each.a_ID}}"  {% if ca.a_ID == each.a_ID %}selected{% endif %}>{{each.category.value}}</option>
-                    {% endfor %}
-                </select>
-            </div>
+        
+        <div class="assessment-info">
+            <p>Course Code: {{assessment.course_code}}</p>
+            {% if semester %}
+            <p>Semester: {{semester.sem_num}}</p>
+            <p>Date Range: {{semester.start_date.strftime('%d %b %Y')}} - {{semester.end_date.strftime('%d %b %Y')}}</p>
+            {% endif %}
         </div>
-        <div class="bottomForm">
-            <div class="formSection2">
-                <div class="formInputContainer">
-                    <label for="startDate">Assessment Start Date</label>
-                    <input type="date" id="startDate" name="startDate" value="{{ca.startDate}}">
-                </div>
-                <div class="formInputContainer">
-                    <label for="startTime">Assessment Start Time</label>
-                    <input type="time" id="startTime" name="startTime" value="{{ca.startTime}}">
-                </div>
-                
-            </div>
-
-    
-            <div class="formSection3" id="sectionToHide">
-                <div class="formInputContainer">
-                    <label for="endDate">Assessment End Date</label>
-                    <input type="date" id="endDate" name="endDate" value="{{ca.endDate}}">
-                </div>
-                <div class="formInputContainer">
-                    <label for="endTime">Assessment End Time</label>
-                    <input type="time" id="endTime" name="endTime" value="{{ca.endTime}}">
-                </div>
-                
-
-            </div>
+        
+        <div class="formInputContainer">
+            <label for="assessment_name">Assessment Name</label>
+            <input type="text" id="assessment_name" name="assessment_name" value="{{assessment.name}}" required>
         </div>
-        <button id="modifyAssessmentBtn" type="submit">Save</button>
+        
+        <div class="formInputContainer">
+            <label for="percentage">Percentage (%)</label>
+            <input type="number" id="percentage" name="percentage" min="0" max="100" value="{{assessment.percentage}}" required>
+        </div>
+        
+        <div class="formInputContainer">
+            <label for="start_date">Start Date <span class="hint">(earliest the assessment can start)</span></label>
+            <input type="date" id="start_date" name="start_date" 
+                   {% if semester %}
+                   min="{{semester.start_date.strftime('%Y-%m-%d')}}" 
+                   max="{{semester.end_date.strftime('%Y-%m-%d')}}"
+                   {% endif %}
+                   required>
+        </div>
+        
+        <div class="formInputContainer">
+            <label for="end_date">End Date <span class="hint">(earliest the assessment can end)</span></label>
+            <input type="date" id="end_date" name="end_date" 
+                   {% if semester %}
+                   min="{{semester.start_date.strftime('%Y-%m-%d')}}" 
+                   max="{{semester.end_date.strftime('%Y-%m-%d')}}"
+                   {% endif %}
+                   required>
+        </div>
+        
+        <div class="proctored-container">
+            <input type="checkbox" id="proctored" name="proctored" value="1" {% if assessment.proctored %}checked{% endif %}>
+            <label for="proctored">Proctored <span class="hint">(whether the assessment is synchronous or not)</span></label>
+        </div>
+        
+        <input type="hidden" id="start_week" name="start_week" value="{{assessment.start_week}}">
+        <input type="hidden" id="start_day" name="start_day" value="{{assessment.start_day}}">
+        <input type="hidden" id="end_week" name="end_week" value="{{assessment.end_week}}">
+        <input type="hidden" id="end_day" name="end_day" value="{{assessment.end_day}}">
+        
+        <button id="modifyAssessmentBtn" type="submit">Update Assessment</button>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('modifyAssessmentForm');
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+        const startWeekInput = document.getElementById('start_week');
+        const startDayInput = document.getElementById('start_day');
+        const endWeekInput = document.getElementById('end_week');
+        const endDayInput = document.getElementById('end_day');
+        
+        // Calculate dates from week and day values
+        {% if semester %}
+        const semesterStart = new Date("{{semester.start_date.strftime('%Y-%m-%d')}}");
+        {% else %}
+        const semesterStart = new Date('2023-09-01'); // Fallback
+        {% endif %}
+        
+        // Set initial date values based on week/day
+        const startWeek = {{assessment.start_week}};
+        const startDay = {{assessment.start_day}};
+        const endWeek = {{assessment.end_week}};
+        const endDay = {{assessment.end_day}};
+        
+        // Calculate start date (week * 7 + day offset from semester start)
+        const startDateObj = new Date(semesterStart);
+        startDateObj.setDate(semesterStart.getDate() + (startWeek - 1) * 7 + (startDay - semesterStart.getDay() + 7) % 7);
+        
+        // Calculate end date
+        const endDateObj = new Date(semesterStart);
+        endDateObj.setDate(semesterStart.getDate() + (endWeek - 1) * 7 + (endDay - semesterStart.getDay() + 7) % 7);
+        
+        // Format dates for input fields (YYYY-MM-DD)
+        startDateInput.value = startDateObj.toISOString().split('T')[0];
+        endDateInput.value = endDateObj.toISOString().split('T')[0];
+        
+        // Ensure end date is not before start date
+        startDateInput.addEventListener('change', function() {
+            if (endDateInput.value < startDateInput.value) {
+                endDateInput.value = startDateInput.value;
+            }
+            updateWeekAndDay();
+        });
+        
+        endDateInput.addEventListener('change', function() {
+            updateWeekAndDay();
+        });
+        
+        function updateWeekAndDay() {
+            const startDate = startDateInput.value;
+            const endDate = endDateInput.value;
+            
+            if (!startDate || !endDate) return;
+            
+            const startDateObj = new Date(startDate);
+            const endDateObj = new Date(endDate);
+            
+            // Calculate days since semester start
+            const startDaysSinceSemester = Math.floor((startDateObj - semesterStart) / (24 * 60 * 60 * 1000));
+            const endDaysSinceSemester = Math.floor((endDateObj - semesterStart) / (24 * 60 * 60 * 1000));
+            
+            // Calculate week (1-indexed) and day (0-6, where 0 is Sunday)
+            const startWeek = Math.floor(startDaysSinceSemester / 7) + 1;
+            const startDay = startDateObj.getDay();
+            
+            const endWeek = Math.floor(endDaysSinceSemester / 7) + 1;
+            const endDay = endDateObj.getDay();
+            
+            // Update hidden fields
+            startWeekInput.value = startWeek;
+            startDayInput.value = startDay;
+            endWeekInput.value = endWeek;
+            endDayInput.value = endDay;
+        }
+    });
+</script>
 
 {% endblock %}

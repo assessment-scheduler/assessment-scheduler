@@ -293,8 +293,8 @@
   <h2>Assign Staff to Course</h2>
   
   <div class="course-info">
-    <div class="course-title">{{ course.course_title }}</div>
-    <div class="course-code">{{ course.course_code }}</div>
+    <div class="course-title">{{ course.name }}</div>
+    <div class="course-code">{{ course.code }}</div>
     
     <div class="course-details">
       <div class="course-detail">
@@ -385,11 +385,11 @@
           </td>
           <td>
             {% if member.id in assigned_staff_ids %}
-            <form action="/removeCourseStaff/{{ course.course_code }}/{{ member.id }}" method="POST" style="display: inline;">
+            <form action="/removeCourseStaff/{{ course.code }}/{{ member.id }}" method="POST" style="display: inline;">
               <button type="submit" class="btn btn-danger">Remove</button>
             </form>
             {% else %}
-            <form action="/assignCourseStaff/{{ course.course_code }}/{{ member.id }}" method="POST" style="display: inline;">
+            <form action="/assignCourseStaff/{{ course.code }}/{{ member.id }}" method="POST" style="display: inline;">
               <button type="submit" class="btn btn-primary">Assign</button>
             </form>
             {% endif %}

@@ -304,22 +304,10 @@
     {% if staff %}
     <div class="profile-header">
       <div class="profile-avatar">
-        {{ staff.f_name[0] }}{{ staff.l_name[0] }}
+        {{ staff.first_name[0] }}{{ staff.last_name[0] }}
       </div>
-      <h2 class="profile-name">{{ staff.f_name }} {{ staff.l_name }}</h2>
+      <h2 class="profile-name">{{ staff.first_name }} {{ staff.last_name }}</h2>
       <p class="profile-email">{{ staff.email }}</p>
-      <span class="profile-status 
-        {% if staff.status == 'Head of Department' %}status-hod
-        {% elif staff.status == 'Lecturer' %}status-lecturer
-        {% elif staff.status == 'Instructor' %}status-instructor
-        {% elif staff.status == 'Part-Time Instructor' %}status-ptinstructor
-        {% elif staff.status == 'Teaching Assistant' %}status-ta
-        {% elif staff.status == 'Teaching Assisstant' %}status-ta
-        {% elif staff.status == 'Tutor' %}status-tutor
-        {% elif staff.status == 'Part-Time Tutor' %}status-pttutor
-        {% endif %}">
-        {{ staff.status }}
-      </span>
     </div>
 
     <div class="profile-details">
@@ -328,16 +316,8 @@
         <span class="detail-value">{{ staff.id }}</span>
       </div>
       <div class="detail-item">
-        <span class="detail-label">Department:</span>
-        <span class="detail-value">{{ staff.department }}</span>
-      </div>
-      <div class="detail-item">
-        <span class="detail-label">Faculty:</span>
-        <span class="detail-value">{{ staff.faculty }}</span>
-      </div>
-      <div class="detail-item">
         <span class="detail-label">Courses:</span>
-        <span class="detail-value">{{ staff_courses|length if staff_courses else 0 }}</span>
+        <span class="detail-value">{{ courses|length if courses else 0 }}</span>
       </div>
     </div>
     {% else %}
@@ -351,32 +331,26 @@
     {% endif %}
   </div>
 
-  <!-- Courses Section -->
   <div class="courses-container">
     <h3 class="section-title">My Courses</h3>
     
-    <!-- Stats Overview -->
     <div class="stats-container">
       <div class="stat-card">
-        <div class="stat-value">{{ staff_courses|length if staff_courses else 0 }}</div>
+        <div class="stat-value">{{ courses|length if courses else 0 }}</div>
         <div class="stat-label">Total Courses</div>
       </div>
       <div class="stat-card">
         <div class="stat-value">
-          {% if total_assessments is defined %}
+          {% if courses %}
+            {% set total_assessments = 0 %}
+            {% for course in courses %}
+              {% if course.assessments %}
+                {% set total_assessments = total_assessments + course.assessments|length %}
+              {% endif %}
+            {% endfor %}
             {{ total_assessments }}
           {% else %}
-            {% if staff_courses %}
-              {% set total_assessments = 0 %}
-              {% for course in staff_courses %}
-                {% if course.assessments %}
-                  {% set total_assessments = total_assessments + course.assessments|length %}
-                {% endif %}
-              {% endfor %}
-              {{ total_assessments }}
-            {% else %}
-              0
-            {% endif %}
+            0
           {% endif %}
         </div>
         <div class="stat-label">Assessments</div>
@@ -385,20 +359,11 @@
 
     <!-- Course Grid -->
     <div class="course-grid">
-      {% if staff_courses and staff_courses|length > 0 %}
-        {% for course in staff_courses %}
+      {% if courses and courses|length > 0 %}
+        {% for course in courses %}
           <div class="course-card">
-            <div class="course-code">{{ course.course_code }}</div>
-            <div class="course-title">{{ course.course_title }}</div>
-            
-            <div class="course-details">
-              <div class="course-detail">
-                Level {{ course.level }}
-              </div>
-              <div class="course-detail">
-                Semester {{ course.semester }}
-              </div>
-            </div>
+            <div class="course-code">{{ course.code }}</div>
+            <div class="course-title">{{ course.name }}</div>
             
             <div class="assessment-list">
               {% if course.assessments %}
@@ -413,11 +378,11 @@
                     <span>+ {{ course.assessments|length - 3 }} more</span>
                   </div>
                 {% endif %}
-              {% else %}
-                <div class="assessment-item">
-                  <span>No assessments</span>
-                </div>
               {% endif %}
+            </div>
+            
+            <div class="course-actions">
+              <a href="/assessments/{{ course.code }}" class="course-btn">View Assessments</a>
             </div>
           </div>
         {% endfor %}
@@ -430,13 +395,13 @@
   </div>
 </div>
 
+<script src="../static/js/account.js"></script>
 <script>
   // Initialize selected courses from the server data
-  const myCourses = JSON.parse('{{ registered|tojson|safe if registered else "[]" }}');
-  const allCourses = JSON.parse('{{ courses|tojson|safe if courses else "[]" }}');
-  
-  // Log data for debugging
-  console.log('My courses:', myCourses);
-  console.log('All courses:', allCourses);
+  {% if courses %}
+  const myCourses = {{ courses|map(attribute='code')|list|tojson|safe }};
+  {% else %}
+  const myCourses = [];
+  {% endif %}
 </script>
 {% endblock %} 

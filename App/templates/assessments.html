@@ -8,7 +8,6 @@
 {% endblock %}
 
 {% block content %}
-<!--this dropdown will display the courses associated to this lecturer -->
     <div class="mainContent">
         <div class="mainTitle">
             <h1>My Assessments</h1>
@@ -17,24 +16,65 @@
                 <div class="filterContainer">
                     <select id="filterDropdownAssessments"> 
                         <option value="all">All</option>
-                        {% for course in courses %}
-                        <option value="{{course}}">{{course}}</option>
+                        {% set course_codes = [] %}
+                        {% for assessment in course_assessments %}
+                            {% if assessment.course_code not in course_codes %}
+                                {% set _ = course_codes.append(assessment.course_code) %}
+                                <option value="{{assessment.course_code}}">{{assessment.course_code}}</option>
+                            {% endif %}
                         {% endfor %}
                     </select>
                 </div>
             </div>
-
         </div>
-
-
         
-        <div id="card_container"></div>
+        <div id="card_container">
+            {% for assessment in course_assessments %}
+                <div class="card" data-course-code="{{ assessment.course_code }}">
+                    <div class="course-details">
+                        <p class="card-label">Course Code</p>
+                        <p class="course-code">{{ assessment.course_code }}</p>
+                    </div>
+                    <div class="assessment-info">
+                        <p class="card-label">Assessment Name</p>
+                        <p class="assessment-type">{{ assessment.name }}</p>
+                        
+                        <p class="card-label">Assessment ID</p>
+                        <p class="assessment-id">{{ assessment.id }}</p>
+                        
+                        <p class="card-label">Percentage</p>
+                        <p class="percentage">{{ assessment.percentage }}%</p>
+                        
+                        <p class="card-label">Start Week</p>
+                        <p class="start-week">Week {{ assessment.start_week }}, Day {{ assessment.start_day }}</p>
+                        
+                        <p class="card-label">End Week</p>
+                        <p class="end-week">Week {{ assessment.end_week }}, Day {{ assessment.end_day }}</p>
+                        
+                        <p class="card-label">Proctored</p>
+                        <p class="proctored">{{ 'Yes' if assessment.proctored else 'No' }}</p>
+                        
+                        {% if assessment.scheduled %}
+                            <p class="card-label">Scheduled Date</p>
+                            <p class="scheduled-date">{{ assessment.scheduled }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="actions">
+                        <button onclick="console.log('Redirecting to: /modifyAssessment/{{ assessment.id }}'); window.location.href='/modifyAssessment/{{ assessment.id }}';">Modify</button>
+                        <button class="delete_btn" data-assessment-id="{{ assessment.id }}">Delete</button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     </div>
+    
+    <form id="deleteForm" method="POST" style="display: none;">
+        {% if csrf_token %}
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% endif %}
+    </form>
+    
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script>
-      var course_assessments = {{ course_assessments | tojson() }};
-    </script>
-    <script src="../static/js/assessments.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const filterDropdown = document.getElementById('filterDropdownAssessments');
@@ -52,7 +92,52 @@
                 }
               });
             });
-          });
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteButtons = document.querySelectorAll('.delete_btn');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const assessmentId = this.getAttribute('data-assessment-id');
+                    if (confirm('Are you sure you want to delete this assessment?')) {
+                        // Create a form with the proper method and action
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/deleteAssessment/${assessmentId}`;
+                        
+                        // Add CSRF token if needed
+                        {% if csrf_token %}
+                        const csrfToken = document.createElement('input');
+                        csrfToken.type = 'hidden';
+                        csrfToken.name = 'csrf_token';
+                        csrfToken.value = '{{ csrf_token() }}';
+                        form.appendChild(csrfToken);
+                        {% endif %}
+                        
+                        // Add JWT token if available in cookies
+                        // This is the key part that was missing
+                        const jwtToken = getCookie('access_token');
+                        if (jwtToken) {
+                            const tokenInput = document.createElement('input');
+                            tokenInput.type = 'hidden';
+                            tokenInput.name = 'jwt_token';
+                            tokenInput.value = jwtToken;
+                            form.appendChild(tokenInput);
+                        }
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            });
+            
+            // Helper function to get cookie value by name
+            function getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+            }
+        });
     </script>
-
 {% endblock %}

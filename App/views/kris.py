@@ -5,7 +5,7 @@ from App.models.assessment import Assessment
 
 from ..controllers.courseoverlap import (get_course_matrix, get_phi_matrix)
 from ..controllers.kris import (print_schedule, solve_stage1,solve_stage2)
-from ..controllers.assessment import (get_assessments_by_course, schedule_assessment)
+from ..controllers.assessment import (get_assessment_dictionary_by_course, schedule_assessment)
 from ..controllers.course import (get_all_course_codes, get_all_courses)
 from ..controllers.semester import (get_active_semester, get_semester_duration)
 
@@ -13,7 +13,7 @@ def compile_course_data() -> List:
     course_assessment_list: list = []
     courses: list = get_all_courses()
     for course in courses:
-        assessments: List[Assessment] = get_assessments_by_course(course.code)
+        assessments: List[Assessment] = get_assessment_dictionary_by_course(course.code)
         course_assessment_list.append(assessments)
     return course_assessment_list
 
