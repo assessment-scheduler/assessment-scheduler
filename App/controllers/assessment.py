@@ -1,10 +1,9 @@
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
-from App.controllers.course import get_course_codes
-from App.controllers.staff import get_staff_courses
-from App.models.assessment import Assessment
-from App.database import db
-from App.models import Staff
+from ..controllers.course import get_course_codes
+from ..controllers.staff import get_staff_courses
+from ..models.assessment import Assessment
+from ..database import db
 
 def get_assessment(course_code, name)-> Optional[Assessment]:
     return Assessment.query.filter_by(course_code=course_code, name=name).first()
@@ -64,9 +63,6 @@ def edit_assessment(id:str, name:str, percentage:int, start_week:int, start_day:
 
 def schedule_assessment(semester,schedule_date:int,course_code:str,name:str)-> bool:
     assessment: Optional[Assessment] = get_assessment(course_code,name)
-    # if assessment is None:
-    #     print('provided assessment does not exist')
-    #     return False
     assessment.scheduled = schedule_date
     db.session.commit()
     return True

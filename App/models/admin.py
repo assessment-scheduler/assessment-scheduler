@@ -1,4 +1,4 @@
-from App.database import db
+from ..database import db
 from .user import User
 from sqlalchemy.orm import mapped_column, MappedColumn
 class Admin(User):

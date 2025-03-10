@@ -2,39 +2,41 @@ from datetime import date
 from typing import List
 import click, pytest, sys
 from flask import Flask
-from flask.cli import with_appcontext, AppGroup
+from flask.cli import AppGroup
 from prettytable import PrettyTable
 from App.main import create_app
-from App.controllers import create_user, get_all_users_json, get_all_users, initialize
-from App.controllers.course import (
+from App.controllers import (
+    create_user,
+    get_all_users_json,
+    get_all_users,
+    initialize,
     assign_lecturer,
     create_course,
     get_all_course_codes,
     get_all_courses,
     get_course,
-)
-from App.controllers.assessment import delete_assessment_by_id, get_all_assessments, get_assessment_dictionary_by_course
-from App.controllers.staff import get_all_staff, get_staff, get_staff_courses, get_staff_by_id
-from App.controllers.semester import (
+    get_all_staff, 
+    get_staff_courses,
+    get_staff_by_id,
+    delete_assessment_by_id,
+    get_all_assessments,
+    get_assessment_dictionary_by_course,
     create_semester,
     get_all_semesters,
     get_semester,
     get_semester_duration,
     set_active,
-)
-from App.views.kris import (
-    compile_course_data,
-    compute_schedule,
-    schedule_all_assessments,
-)
-from App.controllers.courseoverlap import (
     get_all_cells,
     get_cell,
     get_course_row,
     get_course_matrix,
     get_phi_matrix,
+    create_admin
 )
-from App.controllers.admin import create_admin, get_admin_by_id
+from App.views import (
+    compute_schedule,
+    schedule_all_assessments,
+)
 
 app = create_app()
 

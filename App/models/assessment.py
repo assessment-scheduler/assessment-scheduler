@@ -1,4 +1,4 @@
-from App.database import db
+from ..database import db
 class Assessment(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     course_code = db.Column(db.String(8), db.ForeignKey('course.code'), nullable=False)

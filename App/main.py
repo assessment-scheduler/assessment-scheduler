@@ -16,7 +16,7 @@ from flask_jwt_extended import (
 )
 
 from App.controllers.auth import setup_flask_login, setup_jwt
-from App.database import init_db
+from ..database import init_db
 from App.config import config
 
 from App.views import views
