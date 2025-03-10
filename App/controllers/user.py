@@ -1,5 +1,5 @@
-from App.models import User, Admin, Staff
-from App.database import db
+from ..models import User, Admin, Staff
+from ..database import db
 from typing import Any, Optional
 from flask import jsonify
 

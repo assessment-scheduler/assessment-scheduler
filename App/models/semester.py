@@ -1,5 +1,5 @@
-from App.database import db
-from datetime import datetime, date
+from ..database import db
+from datetime import date
 
 class Semester(db.Model):
     id: int = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -38,5 +38,3 @@ class Semester(db.Model):
                 f"Max Assessments: {self.max_assessments}, "
                 f"Active: {self.active}")
     
-# Active is set to False to default and controller logic is uesd to ensure only one semester can be active at a time
-# Semesters store dates as date objects, but conversion from Strings to Dates happens using the create_semester method in the controller.

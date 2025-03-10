@@ -1,5 +1,5 @@
-from App.database import db
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from ..database import db
+from sqlalchemy.orm import mapped_column, relationship
 
 class Course(db.Model):
     __tablename__ = 'course'

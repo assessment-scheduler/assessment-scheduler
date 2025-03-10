@@ -1,6 +1,6 @@
 from typing import List, Optional
-from App.database import db
-from App.models import Course, Staff
+from ..database import db
+from ..models import Course, Staff
 
 def get_course(course_code:str) -> Optional[Course]:
     return Course.query.filter_by(code=course_code).first()

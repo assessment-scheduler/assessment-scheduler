@@ -1,5 +1,5 @@
 from typing import List, Optional
-from App.database import db
+from ..database import db
 from ..models.semester import Semester
 from datetime import date, datetime
 

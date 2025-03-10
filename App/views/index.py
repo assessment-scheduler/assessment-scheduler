@@ -1,6 +1,6 @@
-from App.database import db
-from App.controllers import initialize
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint,render_template
+from ..database import db
+from ..controllers import initialize
 
 index_views = Blueprint('index_views', __name__, template_folder='../templates')
 

@@ -1,6 +1,6 @@
-from typing import Any, Optional
-from App.models import Admin
-from App.database import db
+from typing import Optional
+from ..models import Admin
+from ..database import db
 
 def get_admin_by_id(admin_id) -> Optional[Admin]:
     admin: Optional[Admin] = Admin.query.filter_by(id = admin_id).first()

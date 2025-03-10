@@ -1,6 +1,6 @@
 from typing import List, Optional
-from App.models import Staff, Course
-from App.database import db
+from ..models import Staff, Course
+from ..database import db
 
 def create_staff(id: str, email: str, password: str, first_name: str, last_name: str) -> bool:
     staff: Optional[Staff] = get_staff_by_email(email)

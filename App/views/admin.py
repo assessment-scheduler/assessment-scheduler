@@ -1,46 +1,29 @@
-from App.models.admin import Admin
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, session
+from flask import Blueprint, request, render_template, redirect, url_for, flash, session
 from flask_jwt_extended import jwt_required
-from App.database import db
 from werkzeug.utils import secure_filename
 import os, csv
-from datetime import datetime, date
-import uuid
-
-from App.controllers.course import (
+from ..database import db
+from ..models import Admin, Staff
+from ..controllers import (
     get_course,
     get_all_courses,
     create_course,
     update_course,
     delete_course,
-    assign_lecturer
-)
-
-from App.controllers.courseoverlap import (
-    get_cell,
-    get_overlap_value,
-    get_all_cells,
+    assign_lecturer,
     create_cell,
-    get_course_row,
-    fill_empty_cells,
-    get_course_matrix,
-    get_phi_matrix
-)
-
-from App.controllers.staff import (
     get_all_staff,
     get_staff_by_id,
     update_staff,
     delete_staff,
     get_staff_courses,
-    create_staff
+    create_staff,
+    get_all_semesters,
+    get_semester,
+    create_semester,
+    set_active,
+    parse_date
 )
-
-from App.controllers.admin import get_admin_by_id
-from App.controllers.semester import get_all_semesters, get_semester, create_semester, set_active, deactivate_all, parse_date
-from App.controllers.assessment import get_all_assessments
-from App.models.staff import Staff
-from App.models.semester import Semester
 
 admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
 

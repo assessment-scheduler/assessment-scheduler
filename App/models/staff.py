@@ -1,8 +1,5 @@
-import flask_login
-from App.database import db
+from ..database import db
 from .user import User
-import enum
-from flask_login import UserMixin
 from sqlalchemy.orm import Mapped,mapped_column
 class Staff(User):
     id: Mapped[int] = mapped_column(db.ForeignKey("user.id"), primary_key = True)
@@ -26,16 +23,3 @@ class Staff(User):
 
     def __repr__(self):
         return f"Staff(id={self.id}, email={self.email})"
-
-    # @staticmethod
-    # def register(f_name, l_name, id, status, email, password, department, faculty):
-    #     staff = Staff(f_name=f_name, l_name=l_name, id=id, status=status, email=email, password=password, department=department, faculty=faculty)
-    #     db.session.add(staff)
-    #     db.session.commit()
-    #     return staff
-
-    # def login(self):
-    #     return flask_login.login_user(self)
-
-  #Lecturers must register before using system
-

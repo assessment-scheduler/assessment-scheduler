@@ -1,5 +1,5 @@
 from typing import List, Optional
-from App.database import db
+from ..database import db
 from ..models.courseoverlap import CourseOverlap
 
 def get_cell(code1:str, code2:str) -> Optional[CourseOverlap]:

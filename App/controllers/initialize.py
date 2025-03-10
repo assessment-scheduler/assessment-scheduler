@@ -1,7 +1,7 @@
 import csv
 from datetime import date, timedelta
-from App.controllers.admin import create_admin
-from App.database import db
+from ..controllers.admin import create_admin
+from ..database import db
 from .user import create_user
 from .staff import create_staff
 from .course import create_course, assign_lecturer

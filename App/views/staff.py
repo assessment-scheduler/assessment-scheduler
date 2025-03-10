@@ -1,60 +1,24 @@
 from typing import List
 from App.controllers.semester import get_active_semester
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, session, get_flashed_messages
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_jwt_extended import jwt_required, get_jwt_identity
-import datetime
-from App.database import db
-from functools import wraps
+from ..database import db
 
-from App.controllers.staff import (
+from App.controllers import (
     create_staff,
-    get_staff,
     get_staff_by_email,
-    get_staff_courses,
-    delete_staff,
     get_staff_courses,
     is_course_lecturer,
     assign_course_to_staff,
     get_staff_by_id,
-)
-
-from App.controllers.course import (
-    get_all_courses,
     get_course,
-    get_course_codes
-)
-
-from App.controllers.user import(
-    get_user_by_email
-)
-
-from App.controllers.assessment import (
+    get_user_by_email,
     create_assessment,
     delete_assessment_by_id,
     edit_assessment,
     get_assessment_by_id,
     get_assessment_dictionary_by_course,
-    delete_assessment,
-    get_assessment,
-    get_assessments_by_course,
     get_assessments_by_lecturer,
-)
-
-from App.controllers import (
-    get_user_by_email, 
-    get_assessment_by_id, 
-    get_assessments_by_lecturer, 
-    get_assessment, 
-    get_assessment_dictionary_by_course,
-    get_assessments_by_course,
-    create_assessment,
-    edit_assessment,
-    delete_assessment_by_id,
-    get_course_codes,
-    is_course_lecturer,
-    get_all_courses,
-    create_course,
-    assign_lecturer
 )
 
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
@@ -92,23 +56,6 @@ def get_account_page():
     courses = get_staff_courses(email)
     return render_template('account.html', staff=staff, courses=courses)
 
-# @staff_views.route('/account', methods=['POST'])
-# @jwt_required()
-# def update_staff_courses():
-#     email = get_jwt_identity()
-#     user = get_user_by_email(email)
-
-#     course_codes_json = request.form.get('course_codes')
-#     if course_codes_json:
-#         import json
-#         course_codes = json.loads(course_codes_json)
-#         for code in course_codes:
-#             add_course_staff(user.id, code)
-       
-#     return redirect(url_for('staff_views.get_account_page'))
-
-# Calendar Routes
-
 @staff_views.route('/calendar', methods=['GET'])
 @jwt_required()
 def get_calendar_page():
@@ -124,8 +71,6 @@ def update_calendar_page():
     data = request.get_json()
     return jsonify({'success': True})
 
-
-# Assessment Routes
 @staff_views.route('/assessments', methods=['GET'])
 @jwt_required()
 def get_assessments_page():
@@ -374,7 +319,7 @@ def create_test_course(course_code, course_name):
     """Test route to create a course and assign it to the current staff member"""
     try:
         from App.models.course import Course
-        from App.database import db
+        from ..database import db
         
         # Check if the course already exists
         existing_course = Course.query.filter_by(code=course_code).first()

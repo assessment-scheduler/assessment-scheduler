@@ -1,13 +1,19 @@
 from datetime import timedelta
-from typing import List, Tuple
-
-from App.models.assessment import Assessment
-
-from ..controllers.courseoverlap import (get_course_matrix, get_phi_matrix)
-from ..controllers.kris import (print_schedule, solve_stage1,solve_stage2)
-from ..controllers.assessment import (get_assessment_dictionary_by_course, schedule_assessment)
-from ..controllers.course import (get_all_course_codes, get_all_courses)
-from ..controllers.semester import (get_active_semester, get_semester_duration)
+from typing import List
+from ..models.assessment import Assessment
+from ..controllers import (
+    get_course_matrix,
+    get_phi_matrix,
+    print_schedule,
+    solve_stage1,
+    solve_stage2,
+    get_assessment_dictionary_by_course,
+    schedule_assessment,
+    get_all_course_codes,
+    get_all_courses,
+    get_active_semester,
+    get_semester_duration
+)
 
 def compile_course_data() -> List:
     course_assessment_list: list = []
