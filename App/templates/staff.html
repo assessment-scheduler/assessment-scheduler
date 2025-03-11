@@ -1,11 +1,11 @@
-{% extends "adminLayout.html" %}
+{% extends "admin_layout.html" %}
 
 {% block title %}Staff Management{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="../static/css/admin1.css">
 <style>
-  #staffList {
+  #staff_list {
     width: 100%;
     max-width: none;
     padding: 2rem;
@@ -267,7 +267,7 @@
 
 {% block content %}
 
-<div id="staffList">
+<div id="staff_list">
   <h2>Staff Management</h2>
   <div id="table_container">
     <table id="staffTable">
@@ -329,10 +329,7 @@
     row.addEventListener('click', function handleClick() {
       staffRows.forEach(row => row.classList.remove('selected'));
 
-      // Apply new styling to the clicked row
       this.classList.add('selected');
-
-      // Access the staff ID from the data attribute:
       selectedStaffId = this.getAttribute('data-id');
       console.log('Clicked staff ID:', selectedStaffId); 
 
@@ -344,25 +341,21 @@
       const viewCoursesLink = document.querySelector('.view-courses-link');
       viewCoursesLink.href = `/staff_courses/${selectedStaffId}`;
       
-      // Add visual feedback for selection
       const buttons = document.querySelectorAll('.formBtn');
       buttons.forEach(btn => btn.classList.remove('disabled'));
     });
   });
 
-  // Show modal when delete button is clicked
   deleteBtn.addEventListener('click', function() {
     if (selectedStaffId) {
       modal.style.display = 'block';
     }
   });
 
-  // Hide modal when cancel button is clicked
   cancelBtn.addEventListener('click', function() {
     modal.style.display = 'none';
   });
 
-  // Close modal when clicking outside of it
   window.addEventListener('click', function(event) {
     if (event.target === modal) {
       modal.style.display = 'none';

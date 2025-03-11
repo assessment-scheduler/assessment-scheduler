@@ -80,7 +80,7 @@ course_assessments.forEach(courseData => {
         const modifyLink = document.createElement('button');
         modifyLink.textContent = 'Modify';
         modifyLink.addEventListener('click', function() {
-            window.location.href = `/modifyAssessment/${assessment.a_id}`;
+            window.location.href = `/update_assessment/${assessment.a_id}`;
         });
         const deleteLink = document.createElement('button');
         deleteLink.textContent = 'Delete';
@@ -90,7 +90,7 @@ course_assessments.forEach(courseData => {
             if (confirm('Are you sure you want to delete this assessment?')) {
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `/deleteAssessment/${assessment.a_id}`;
+                form.action = `/delete_assessment/${assessment.a_id}`;
                 document.body.appendChild(form);
                 form.submit();
             }

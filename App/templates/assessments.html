@@ -12,7 +12,7 @@
         <div class="mainTitle">
             <h1>My Assessments</h1>
             <div class="btnContainer">
-                <a href="/addAssessment" id="add_assessment_btn">Add Assessment</a>
+                <a href="/add_assessment" id="add_assessment_btn">Add Assessment</a>
                 <div class="filterContainer">
                     <select id="filterDropdownAssessments"> 
                         <option value="all">All</option>
@@ -60,7 +60,7 @@
                         {% endif %}
                     </div>
                     <div class="actions">
-                        <button onclick="console.log('Redirecting to: /modifyAssessment/{{ assessment.id }}'); window.location.href='/modifyAssessment/{{ assessment.id }}';">Modify</button>
+                        <button onclick="console.log('Redirecting to: /update_assessment/{{ assessment.id }}'); window.location.href='/update_assessment/{{ assessment.id }}';">Modify</button>
                         <button class="delete_btn" data-assessment-id="{{ assessment.id }}">Delete</button>
                     </div>
                 </div>
@@ -104,7 +104,7 @@
                         // Create a form with the proper method and action
                         const form = document.createElement('form');
                         form.method = 'POST';
-                        form.action = `/deleteAssessment/${assessmentId}`;
+                        form.action = `/delete_assessment/${assessmentId}`;
                         
                         // Add CSRF token if needed
                         {% if csrf_token %}

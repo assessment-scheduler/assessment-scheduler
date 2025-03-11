@@ -34,7 +34,7 @@ def delete_course(course_code: str) -> bool:
     db.session.commit()
     return True
 
-def update_course(course_code: str, course_name: str, new_course_code:str, new_course_name:str) -> bool:
+def update_course(course_code: str, new_course_code:str, new_course_name:str) -> bool:
     course: Optional[Course] = get_course(course_code)
     if course is None:
         return False
