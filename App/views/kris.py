@@ -28,10 +28,8 @@ def compile_class_matrix() -> List[List[int]]:
     matrix: List[List[int]] = get_course_matrix(course_list)
     return matrix
 
-
 def compute_schedule():
     semester = get_active_semester()
-    
     if semester is None:
         print("No active semester found")
         return None

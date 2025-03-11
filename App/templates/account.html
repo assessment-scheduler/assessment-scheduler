@@ -341,17 +341,7 @@
       </div>
       <div class="stat-card">
         <div class="stat-value">
-          {% if courses %}
-            {% set total_assessments = 0 %}
-            {% for course in courses %}
-              {% if course.assessments %}
-                {% set total_assessments = total_assessments + course.assessments|length %}
-              {% endif %}
-            {% endfor %}
-            {{ total_assessments }}
-          {% else %}
-            0
-          {% endif %}
+          {{  num_assessments }}
         </div>
         <div class="stat-label">Assessments</div>
       </div>
@@ -382,7 +372,9 @@
             </div>
             
             <div class="course-actions">
-              <a href="/assessments/{{ course.code }}" class="course-btn">View Assessments</a>
+              <form action="{{ url_for('staff_views.get_course_details', course_code=course.code) }}" method="GET">
+                <button type="submit" class="course-btn" style="width: 100%; cursor: pointer;">View Assessments</button>
+              </form>
             </div>
           </div>
         {% endfor %}

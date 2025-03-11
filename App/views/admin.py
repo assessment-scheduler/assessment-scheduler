@@ -32,8 +32,6 @@ admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
 @admin_views.route('/dashboard', methods=['GET'])
 def admin_dashboard():
     return render_template('admin_dashboard.html')
-## working
-
 
 @admin_views.route('/semester', methods=['GET'])
 @jwt_required(Admin)
@@ -42,18 +40,10 @@ def get_upload_page():
     return render_template('semester.html', semesters=semesters)
 ## working
 
-
 @admin_views.route('/upload_files', methods=['GET'])
 @jwt_required(Admin)
 def get_upload_files_page():
     return render_template('upload_files.html')
-## working
-
-@admin_views.route('/get_courses', methods=['GET'])
-@jwt_required(Admin)
-def get_courses():
-    courses = get_all_courses()
-    return render_template('courses.html', courses=courses)
 ## working
 
 @admin_views.route('/new_semester', methods=['GET'])
@@ -149,150 +139,8 @@ def new_semester_action():
         return render_template('upload_files.html')  
 ## working
 
-@admin_views.route('/upload_course', methods=['POST'])
-@jwt_required(Admin)
-def upload_course_file():
-    if request.method == 'POST': 
-        file = request.files['file'] 
 
-        if (file.filename == ''):
-            message = 'No file selected!' 
-            return render_template('upload_files.html', message = message) 
-        
-        if not file.filename.lower().endswith('.csv'):
-            message = 'Only CSV files are allowed!'
-            return render_template('upload_files.html', message = message)
-            
-        filename = secure_filename(file.filename)
-    
-        file.save(os.path.join('App/uploads', filename)) 
-        
-        try:
-            with open(os.path.join('App/uploads', filename), 'r') as csv_file:
-                reader = csv.reader(csv_file)
-                header = next(reader)
-                required_columns = ['course_code', 'course_name']
-                
-                if not all(col in header for col in required_columns):
-                    message = f'<strong>Error:</strong> CSV file must contain the following columns: {", ".join(required_columns)}'
-                    return render_template('upload_files.html', message=message)
-            
-            courses_added = 0
-            with open(os.path.join('App/uploads', filename)) as course_file:
-                reader = csv.DictReader(course_file)
-                for row in reader:
-                    if create_course(row['course_code'], row['course_name']):
-                        courses_added += 1
-            
-            message = f'<strong>Success!</strong> {courses_added} courses have been added to the database.'
-            return render_template('upload_files.html', message=message)
-        except Exception as e:
-            message = f'<strong>Error:</strong> {str(e)}'
-            return render_template('upload_files.html', message=message)
-## working
-
-@admin_views.route('/new_course', methods=['GET'])
-@jwt_required(Admin)
-def get_new_course():
-    staff_list = Staff.query.all()
-    return render_template('add_course.html', staff_list=staff_list)  
-## working
-
-@admin_views.route('/new_course', methods=['POST'])
-@jwt_required(Admin)
-def add_course_action():
-    if request.method == 'POST':
-        courseCode = request.form.get('course_code')
-        title = request.form.get('title')
-        lecturer_id = request.form.get('lecturer_id') or None
-        
-        errors = []
-        if not courseCode:
-            errors.append("Course code is required")
-        if not title:
-            errors.append("Title is required")
-            
-        if errors:
-            for error in errors:
-                flash(error)
-            return redirect(url_for('admin_views.get_new_course'))
-        
-        result = create_course(courseCode, title)
-        
-        if result:
-            if lecturer_id:
-                course = get_course(courseCode)
-                if course:
-                    course.lecturer_id = lecturer_id
-                    try:
-                        db.session.commit()
-                    except Exception as e:
-                        flash(f"Course added but failed to assign lecturer: {str(e)}")
-            
-            flash("Course added successfully!")
-            return redirect(url_for('admin_views.get_courses'))
-        else:
-            flash("Failed to add course. Course code may already exist.")
-            return redirect(url_for('admin_views.get_new_course'))
-## working
-
-@admin_views.route('/update_course/<string:courseCode>', methods=['GET'])
-@jwt_required(Admin)
-def get_update_course(courseCode):
-    course = get_course(courseCode)
-    if not course:
-        flash("Course not found", "error")
-        return redirect(url_for('admin_views.get_courses'))
-        
-    staff_list = Staff.query.all()
-    
-    return render_template('modify_course.html', course=course, staff_list=staff_list)
-## working
-
-
-@admin_views.route('/update_course', methods=['POST'])
-@jwt_required(Admin)
-def update_course_action():
-    if request.method == 'POST':
-        old_course_code = request.form.get('old_course_code')
-        new_course_code = request.form.get('course_code')
-        new_course_name = request.form.get('title')
-        lecturer_id = request.form.get('lecturer_id') or None
-        errors = []
-        if not old_course_code:
-            errors.append("Original course code is required")
-        if not new_course_code:
-            new_course_code = old_course_code
-        if not new_course_name:
-            errors.append("Course name is required")
-        if errors:
-            for error in errors:
-                flash(error)
-            return redirect(url_for('admin_views.get_update_course', courseCode=old_course_code))
-        
-        result = update_course(old_course_code, new_course_name, new_course_code, new_course_name)
-        if result:
-            if lecturer_id:
-                assign_lecturer(lecturer_id, new_course_code)
-            flash("Course updated successfully!")
-            return redirect(url_for('admin_views.get_courses'))
-        else:
-            flash("Failed to update course. Please try again.")
-            return redirect(url_for('admin_views.get_update_course', courseCode=old_course_code))
-## working
-
-@admin_views.route("/delete_course/<string:courseCode>", methods=["POST"])
-@jwt_required(Admin)
-def delete_course_action(courseCode):
-        result = delete_course(courseCode)
-        if result:
-            flash("Course Deleted Successfully!")
-        else:
-            flash("Failed to delete course.")
-        return redirect(url_for('admin_views.get_courses'))
-## working
-
-
+# Commenting out clash-related routes
 @admin_views.route('/staff', methods=['GET'])
 @jwt_required(Admin)
 def get_staff_list():
@@ -301,6 +149,7 @@ def get_staff_list():
 ## working
 
 
+@admin_views.route('/new_staff', methods=['GET'])
 @admin_views.route('/create_staff', methods=['GET'])
 @jwt_required(Admin)
 def get_new_staff_page():

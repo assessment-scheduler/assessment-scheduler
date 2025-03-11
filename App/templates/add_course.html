@@ -1,4 +1,4 @@
-{% extends "adminLayout.html" %}
+{% extends "admin_layout.html" %}
 
 {% block title %}Add Course{% endblock %}
 
@@ -121,7 +121,7 @@
 
         <div class="formButtonContainer">
             <button type="submit" class="formBtn">Add Course</button>
-            <a href="{{ url_for('admin_views.get_courses') }}" class="formBtn cancelBtn">Cancel</a>
+            <a href="{{ url_for('course_views.get_courses') }}" class="formBtn cancelBtn">Cancel</a>
         </div>
     </form>
 </div>

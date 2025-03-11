@@ -14,6 +14,10 @@ def get_assessment_by_id(id) -> Optional[Assessment]:
 def get_all_assessments() -> List[Assessment]:
     return Assessment.query.all()
 
+def get_num_assessments(course_code:str) -> int:
+    assessments = get_assessments_by_course(course_code)
+    return len(assessments)
+
 def get_assessment_dictionary_by_course(course_code) -> Dict[str,List[Assessment]]:
     course_assessments: List[Assessment] = Assessment.query.filter_by(course_code = course_code).all()
     if course_assessments == []:
@@ -22,7 +26,7 @@ def get_assessment_dictionary_by_course(course_code) -> Dict[str,List[Assessment
     course_dict: dict[str, Any] = {'code' : course_code, 'assessments': json_list}
     return course_dict
 
-def get_assessments_by_course(course_code) -> List[Assessment]:
+def get_assessments_by_course(course_code: str) -> List[Assessment]:
     return Assessment.query.filter_by(course_code = course_code).all()
 
 def get_assessments_by_lecturer(staff_email: str) -> List[Assessment]:
@@ -46,7 +50,7 @@ def create_assessment(course_code:str, name:str, percentage:int, start_week:int,
     db.session.commit()
     return True
 
-def edit_assessment(id:str, name:str, percentage:int, start_week:int, start_day:int, end_week:int, end_day:int, proctored:int)-> bool:
+def update_assessment(id:str, name:str, percentage:int, start_week:int, start_day:int, end_week:int, end_day:int, proctored:int)-> bool:
     assessment: Optional[Assessment] =  Assessment.query.get(id)
     if assessment is None:
         return False

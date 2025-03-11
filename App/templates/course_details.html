@@ -5,6 +5,78 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/course_details.css') }}">
+<style>
+  :root {
+    --primary-color: rgb(92, 70, 180);
+    --secondary-color: rgb(92, 70, 180);
+    --accent-color: #e74c3c;
+    --dark-bg: #2c2f33;
+    --darker-bg: #23272a;
+    --light-text: #ecf0f1;
+    --medium-gray: #36393f;
+    --light-gray: #7f8c8d;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+
+  body {
+    background-color: var(--darker-bg);
+    color: var(--light-text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dashboard-container {
+    background-color: var(--darker-bg);
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .course-header {
+    background-color: var(--dark-bg);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--box-shadow);
+  }
+
+  .assessments-container {
+    background-color: var(--dark-bg);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: var(--box-shadow);
+  }
+
+  .stat-card {
+    background-color: var(--medium-gray);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    box-shadow: var(--box-shadow);
+  }
+
+  .assessment-card {
+    background-color: var(--medium-gray);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .assessment-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    background-color: #3a546e;
+  }
+
+  .stat-value {
+    color: var(--primary-color);
+  }
+
+  .progress-bar {
+    background-color: var(--primary-color);
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -20,32 +92,12 @@
 
     <div class="course-details">
       <div class="detail-item">
-        <span class="detail-label">Level:</span>
-        <span class="detail-value">{{ course.level }}</span>
-      </div>
-      <div class="detail-item">
-        <span class="detail-label">Semester:</span>
-        <span class="detail-value">{{ course.semester }}</span>
-      </div>
-      <div class="detail-item">
-        <span class="detail-label">Department:</span>
-        <span class="detail-value">{{ course.department }}</span>
-      </div>
-      <div class="detail-item">
-        <span class="detail-label">Faculty:</span>
-        <span class="detail-value">{{ course.faculty }}</span>
-      </div>
-      <div class="detail-item">
-        <span class="detail-label">Credits:</span>
-        <span class="detail-value">{{ course.credits if course.credits else 'N/A' }}</span>
-      </div>
-      <div class="detail-item">
         <span class="detail-label">Assessments:</span>
         <span class="detail-value">{{ assessments|length }}</span>
       </div>
     </div>
   </div>
-
+  
   <!-- Assessments Section -->
   <div class="assessments-container">
     <h3 class="section-title">Course Assessments</h3>
@@ -56,18 +108,6 @@
         <div class="stat-value">{{ assessments|length }}</div>
         <div class="stat-label">Total Assessments</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value">{{ total_percentage }}%</div>
-        <div class="stat-label">Total Weight</div>
-      </div>
-    </div>
-
-    <!-- Progress Bar -->
-    <div class="progress-container">
-      <div class="progress-bar" style="width: {{ total_percentage }}%;"></div>
-    </div>
-    <div style="text-align: right; font-size: 0.8rem; margin-top: 5px; color: var(--light-gray);">
-      {{ total_percentage }}% of 100%
     </div>
 
     <!-- Assessment Grid -->
@@ -76,24 +116,25 @@
         {% for assessment in assessments %}
           <div class="assessment-card">
             <div class="assessment-name">{{ assessment.name }}</div>
-            <div class="assessment-type">{{ assessment.type }}</div>
             
             <div class="assessment-details">
               <div class="assessment-detail">
-                Due: {{ assessment.due_date.strftime('%d %b %Y') if assessment.due_date else 'Not set' }}
+                Start: Week {{ assessment.start_week }}, Day {{ assessment.start_day }}
               </div>
               <div class="assessment-detail">
-                Status: {{ 'Active' if assessment.active else 'Inactive' }}
+                End: Week {{ assessment.end_week }}, Day {{ assessment.end_day }}
               </div>
+              <div class="assessment-detail">
+                Proctored: {{ 'Yes' if assessment.proctored else 'No' }}
+              </div>
+              {% if assessment.scheduled %}
+              <div class="assessment-detail">
+                Scheduled: {{ assessment.scheduled.strftime('%d %b %Y') }}
+              </div>
+              {% endif %}
             </div>
             
             <div class="assessment-percentage">{{ assessment.percentage }}%</div>
-            
-            {% if assessment.description %}
-              <div class="assessment-description" style="margin-top: 10px; font-size: 0.9rem;">
-                {{ assessment.description }}
-              </div>
-            {% endif %}
           </div>
         {% endfor %}
       {% else %}
@@ -104,15 +145,4 @@
     </div>
   </div>
 </div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log('Course details page loaded');
-    var courseData = JSON.parse('{{ course|tojson|safe }}');
-    var assessmentsData = JSON.parse('{{ assessments|tojson|safe }}');
-    
-    console.log('Course:', courseData);
-    console.log('Assessments:', assessmentsData);
-  });
-</script>
-{% endblock %} 
+{% endblock content %} 
