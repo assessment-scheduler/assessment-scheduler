@@ -21,6 +21,17 @@ def create_user(id, email, password) -> User:
     db.session.commit()
     return newuser
 
+
+def change_password(email:str, password:str) -> bool:
+    user: Optional[User] = get_user_by_email(email)
+    if user is None:
+        print("user could not be found")
+        return True
+    else:
+        user.set_password(password)
+        db.session.commit()
+        return True
+
 def get_user_by_email(email):
     return User.query.filter_by(email=email).first()
  

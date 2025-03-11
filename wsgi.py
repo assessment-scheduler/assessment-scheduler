@@ -6,6 +6,7 @@ from flask.cli import AppGroup
 from prettytable import PrettyTable
 from App.main import create_app
 from App.controllers import (
+    clear,
     create_user,
     get_all_users_json,
     get_all_users,
@@ -32,6 +33,7 @@ from App.controllers import (
     get_course_matrix,
     get_phi_matrix,
     create_admin
+    
 )
 from App.views import (
     compute_schedule,
@@ -45,6 +47,11 @@ app = create_app()
 def init():
     initialize()
     print("database intialized")
+
+@app.cli.command("clear", help="Removes all data from the database")
+def drop():
+    clear()
+    print("database cleared")
 
 
 user_cli = AppGroup("user", help="User object commands")

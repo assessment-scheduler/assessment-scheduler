@@ -208,7 +208,7 @@
     </table>
   </div>
   <div id="buttons_container">
-      <a href="/newSemesterForm" class="formBtn">Add Semester</a>
+      <a href="/new_semester" class="formBtn">Add Semester</a>
       <a href="#" class="modify-semester-link formBtn disabled">Update Semester</a>
       <form action="#" method="POST" class="delete-semester-form" style="display: inline;">
         <button type="submit" class="delete-semester-link formBtn disabled">Delete Semester</button>
@@ -231,14 +231,14 @@
       console.log('Clicked semester ID:', semesterId); 
 
       const modifySemesterLink = document.querySelector('.modify-semester-link');
-      modifySemesterLink.href = `/modifySemester/${semesterId}`;
+      modifySemesterLink.href = `/update_semester/${semesterId}`;
       modifySemesterLink.classList.remove('disabled');
 
       const deleteSemesterForm = document.querySelector('.delete-semester-form');
-      deleteSemesterForm.action = `/deleteSemester/${semesterId}`;
+      deleteSemesterForm.action = `/delete_semester/${semesterId}`;
       
       const setActiveSemesterForm = document.querySelector('.set-active-semester-form');
-      setActiveSemesterForm.action = `/setActiveSemester/${semesterId}`;
+      setActiveSemesterForm.action = `/set_active_semester/${semesterId}`;
       
       const buttons = document.querySelectorAll('.formBtn');
       buttons.forEach(btn => btn.classList.remove('disabled'));

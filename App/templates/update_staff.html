@@ -123,65 +123,50 @@
 <div class="form-container">
   <h2>Update Staff Member</h2>
   
-  <form action="/updateStaff" method="POST">
+  <form action="/update_staff" method="POST">
     <input type="hidden" name="staffID" value="{{ staff.id }}">
     
     <div class="form-row">
       <div class="form-col">
         <div class="form-group">
           <label for="firstName">First Name</label>
-          <input type="text" id="firstName" name="firstName" value="{{ staff.f_name }}" required>
+          <input type="text" id="firstName" name="firstName" value="{{ staff.first_name }}">
         </div>
       </div>
       <div class="form-col">
         <div class="form-group">
           <label for="lastName">Last Name</label>
-          <input type="text" id="lastName" name="lastName" value="{{ staff.l_name }}" required>
+          <input type="text" id="lastName" name="lastName" value="{{ staff.last_name }}">
         </div>
       </div>
-    </div>
-    
-    <div class="form-group">
-      <label>Staff ID</label>
-      <div class="email-display">{{ staff.id }}</div>
-    </div>
-    
-    <div class="form-group">
-      <label>Email</label>
-      <div class="email-display">{{ staff.email }}</div>
     </div>
     
     <div class="form-row">
       <div class="form-col">
         <div class="form-group">
-          <label for="department">Department</label>
-          <input type="text" id="department" name="department" value="{{ staff.department }}" required>
+          <label for="id">Staff ID</label>
+          <input type="text" id="id" name="id" value="{{ staff.id }}">
+          <div class="hint-text">3000XXX</div>
         </div>
       </div>
       <div class="form-col">
         <div class="form-group">
-          <label for="faculty">Faculty</label>
-          <input type="text" id="faculty" name="faculty" value="{{ staff.faculty }}" required>
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" value="{{ staff.email }}">
+          <div class="hint-text">firstname.lastname@sta.uwi.edu</div>
         </div>
       </div>
     </div>
     
     <div class="form-group">
-      <label for="status">Status</label>
-      <select id="status" name="status" required>
-        <option value="Part-Time Instructor" {% if staff.status == 'Part-Time Instructor' %}selected{% endif %}>Part-Time Instructor</option>
-        <option value="Instructor" {% if staff.status == 'Instructor' %}selected{% endif %}>Instructor</option>
-        <option value="Head of Department" {% if staff.status == 'Head of Department' %}selected{% endif %}>Head of Department</option>
-        <option value="Lecturer" {% if staff.status == 'Lecturer' %}selected{% endif %}>Lecturer</option>
-        <option value="Teaching Assistant" {% if staff.status == 'Teaching Assistant' %}selected{% endif %}>Teaching Assistant</option>
-        <option value="Tutor" {% if staff.status == 'Tutor' %}selected{% endif %}>Tutor</option>
-        <option value="Part-Time Tutor" {% if staff.status == 'Part-Time Tutor' %}selected{% endif %}>Part-Time Tutor</option>
-      </select>
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Leave blank to keep current password">
+      <div class="hint-text">Only fill this if you want to change the password</div>
     </div>
     
     <div class="buttons-container">
       <button type="submit" class="btn btn-primary">Update Staff</button>
-      <a href="/staffList" class="btn btn-secondary">Cancel</a>
+      <a href="/staff" class="btn btn-secondary">Cancel</a>
     </div>
   </form>
 </div>

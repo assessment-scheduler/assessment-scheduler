@@ -27,7 +27,7 @@ def add_auth_context(app):
 def login_user(email, password):
 
     if validate_admin(email, password):
-        response = make_response(redirect(url_for('admin_views.get_upload_page')))    
+        response = make_response(redirect(url_for('admin_views.admin_dashboard')))    
         token = create_access_token(identity=email)
         response.set_cookie('access_token', token)
         return response

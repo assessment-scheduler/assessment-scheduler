@@ -3,7 +3,7 @@
 {% block title %}Add Course{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="../static/css/addCourse.css">
+<link rel="stylesheet" href="../static/css/add_course.css">
 <style>
     /* Validation styling */
     .error-message {
@@ -93,7 +93,7 @@
 
 {% block content %}
 <div class="formContainer">
-    <form action="/addNewCourse" id="addCourseForm" method="POST" novalidate>
+    <form action="/new_course" id="addCourseForm" method="POST" novalidate>
         <h2>Add Course</h2>
         <div class="formInputContainer normalLabel">
             <label class="mainLabel required-field" for="course_code">Course Code</label>
