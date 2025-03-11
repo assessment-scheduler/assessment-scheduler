@@ -46,7 +46,7 @@ def initialize() -> None:
         for row in reader:
              create_semester(row['start_date'], row['end_date'], row['sem_num'], row['max_assessments'], row['constraint_value'], bool(row['active']))
 
-    with open('App/uploads/users.csv') as user_file:
-        reader = csv.DictReader(user_file)
-        for row in reader:
-            create_user(row['id'],row['email'], row['password'])
+
+def clear() -> None:
+    db.drop_all()
+    db.create_all()

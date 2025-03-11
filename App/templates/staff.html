@@ -277,6 +277,7 @@
           <th>First Name</th>
           <th>Last Name</th>
           <th>Email</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody id="staffTableBody">
@@ -286,13 +287,16 @@
           <td>{{ member.first_name }}</td>
           <td>{{ member.last_name }}</td>
           <td><span class="email-text">{{ member.email }}</span></td>
+          <td>
+            <a href="/staff_courses/{{ member.id }}" class="formBtn" style="min-width: 70px; padding: 5px 10px; background-color: var(--tertiary-color);">Courses</a>
+          </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
   <div id="buttons_container">
-      <a href="/newStaff" class="formBtn">Add Staff</a>
+      <a href="/create_staff" class="formBtn">Add Staff</a>
       <a href="#" class="modify-staff-link formBtn">Update Staff</a>
       <button type="button" class="delete-staff-btn formBtn delete-staff-link">Delete Staff</button>
       <a href="#" class="view-courses-link formBtn">View Courses</a>
@@ -304,7 +308,7 @@
       <h3>Confirm Deletion</h3>
       <p>Are you sure you want to delete this staff member? This action cannot be undone.</p>
       <div class="modal-buttons">
-        <form id="deleteStaffForm" action="/deleteStaff/0" method="POST">
+        <form id="deleteStaffForm" action="/delete_staff/0" method="POST">
           <button type="submit" class="confirm-delete-btn">Yes, Delete</button>
         </form>
         <button type="button" class="cancel-delete-btn">Cancel</button>
@@ -333,12 +337,12 @@
       console.log('Clicked staff ID:', selectedStaffId); 
 
       const modifyStaffLink = document.querySelector('.modify-staff-link');
-      modifyStaffLink.href = `/modifyStaff/${selectedStaffId}`;
+      modifyStaffLink.href = `/edit_staff/${selectedStaffId}`;
 
-      deleteForm.action = `/deleteStaff/${selectedStaffId}`;
+      deleteForm.action = `/delete_staff/${selectedStaffId}`;
       
       const viewCoursesLink = document.querySelector('.view-courses-link');
-      viewCoursesLink.href = `/staffCourses/${selectedStaffId}`;
+      viewCoursesLink.href = `/staff_courses/${selectedStaffId}`;
       
       // Add visual feedback for selection
       const buttons = document.querySelectorAll('.formBtn');

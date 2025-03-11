@@ -11,7 +11,7 @@ if (searchInput && tableBody) {
     row.addEventListener("click", (event) => {
       event.stopPropagation(); // Stop event bubbling
       const courseCode = row.querySelector("td").textContent;
-      addCourse(courseCode);
+      add_course(courseCode);
     });
   });
 
@@ -30,7 +30,7 @@ if (searchInput && tableBody) {
     });
   }
 
-  function addCourse(course) {
+  function add_course(course) {
     if (!myCourses.includes(course)) {
       myCourses.push(course);
       const courseElement = document.createElement("p");

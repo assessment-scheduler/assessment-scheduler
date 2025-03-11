@@ -117,7 +117,7 @@
 <div id="semesterForm">
   <h2>{% if semester %}Edit Semester{% else %}Add Semester{% endif %}</h2>
   
-  <form action="{% if semester %}/updateSemester/{{ semester.id }}{% else %}/addNewSemester{% endif %}" method="POST">
+  <form action="{% if semester %}/updateSemester/{{ semester.id }}{% else %}/add_semester{% endif %}" method="POST">
     {% if semester %}
     <input type="hidden" name="semester_id" value="{{ semester.id }}">
     {% endif %}

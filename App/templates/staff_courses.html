@@ -248,9 +248,6 @@
           <tr>
             <th>Course Code</th>
             <th>Course Title</th>
-            <th>Department</th>
-            <th>Faculty</th>
-            <th>Level</th>
           </tr>
         </thead>
         <tbody>
@@ -258,9 +255,6 @@
           <tr class="course-row">
             <td>{{ course.code }}</td>
             <td>{{ course.name }}</td>
-            <td>{{ course.department }}</td>
-            <td>{{ course.faculty }}</td>
-            <td>{{ course.level }}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -274,7 +268,7 @@
   </div>
   
   <div class="buttons-container">
-    <a href="/staffList" class="btn">Back to Staff List</a>
+    <a href="/staff" class="btn">Back to Staff List</a>
   </div>
 </div>
 {% endblock %} 

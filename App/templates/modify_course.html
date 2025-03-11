@@ -3,7 +3,7 @@
 {% block title %}Modify Course{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="../static/css/addCourse.css">
+<link rel="stylesheet" href="../static/css/add_course.css">
 <style>
     /* Validation styling */
     .error-message {
@@ -106,7 +106,7 @@
 
 {% block content %}
 <div class="formContainer">
-    <form action="/updateCourse" id="modifyCourseForm" method="POST" novalidate>
+    <form action="/update_course" id="modifyCourseForm" method="POST" novalidate>
         <h2>Modify Course</h2>
         <input type="hidden" name="old_course_code" value="{{ course.code }}">
         

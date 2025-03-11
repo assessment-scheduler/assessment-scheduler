@@ -1,0 +1,408 @@
+{% extends "adminLayout.html" %}
+
+{% block title %}Upload Files{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="../static/css/upload_files.css">
+<style>
+    .formContainer {
+        max-width: 90%;
+        margin: 2rem auto;
+        padding: 1.5rem;
+        background-color: var(--primary-color);
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .upload-sections-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+        gap: 1.5rem;
+        width: 100%;
+        max-width: 1200px;
+    }
+    
+    .upload-section {
+        padding: 1rem;
+        border-radius: 8px;
+        background-color: var(--secondary-color);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .upload-section:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    h1 {
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        color: #fff;
+        text-align: center;
+        font-size: 1.5rem;
+        position: relative;
+        padding-bottom: 10px;
+    }
+    
+    h1:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 3px;
+        background-color: var(--tertiary-color);
+        border-radius: 2px;
+    }
+    
+    h2 {
+        margin: 0 0 0.8rem 0;
+        font-weight: 500;
+        color: #fff;
+        font-size: 1.1rem;
+        text-align: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 0.5rem;
+    }
+    
+    .file-upload-container {
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        align-items: center;
+        gap: 0.5rem;
+        max-width: 100%;
+    }
+    
+    .file-input-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        cursor: pointer;
+    }
+    
+    .file-input-wrapper input[type=file] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .file-input-button {
+        display: inline-block;
+        padding: 6px 10px;
+        background-color: #333;
+        color: #fff;
+        border: 1px solid #555;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+    
+    .file-input-wrapper:hover .file-input-button {
+        background-color: #444;
+    }
+    
+    .file-name {
+        font-style: italic;
+        color: #aaa;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding: 0 0.5rem;
+    }
+    
+    .submitButton {
+        padding: 6px 12px;
+        background-color: var(--tertiary-color);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+    
+    .submitButton:hover {
+        background-color: #5740b3;
+        transform: translateY(-2px);
+    }
+    
+    .format-toggle {
+        color: #3498db;
+        cursor: pointer;
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+    
+    .format-info {
+        display: none;
+        background-color: #2c3e50;
+        padding: 0.6rem;
+        border-radius: 4px;
+        margin-top: 0.5rem;
+        width: 100%;
+    }
+    
+    .format-info h3 {
+        margin-bottom: 0.3rem;
+        font-size: 0.85rem;
+        color: #fff;
+    }
+    
+    .format-info pre {
+        background-color: #1c2833;
+        padding: 0.4rem;
+        border-radius: 4px;
+        overflow-x: auto;
+        font-size: 0.75rem;
+        color: #ecf0f1;
+    }
+    
+    .message {
+        margin-top: 1.5rem;
+        padding: 0.8rem;
+        border-radius: 4px;
+        width: 100%;
+        max-width: 1200px;
+        text-align: center;
+    }
+    
+    .success {
+        background-color: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+    }
+    
+    .error {
+        background-color: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+    }
+    
+    .file-type-error {
+        color: #e74c3c;
+        font-size: 0.8rem;
+        margin-top: 0.3rem;
+        display: none;
+        width: 100%;
+    }
+
+    @media (max-width: 950px) {
+        .upload-sections-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .file-upload-container {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .file-name {
+            grid-column: span 2;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .file-upload-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .file-name, .submitButton, .format-toggle {
+            grid-column: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="formContainer">
+    <h1>Upload Data Files</h1>
+    
+    <div class="upload-sections-container">
+        <!-- Course Upload Section -->
+        <div class="upload-section">
+            <h2>Upload Courses</h2>
+            <form enctype="multipart/form-data" action="/upload_course" method="POST">
+                <div class="file-upload-container">
+                    <div class="file-input-wrapper">
+                        <span class="file-input-button">Choose CSV</span>
+                        <input type="file" name="file" id="courseCsvInput" accept=".csv" onchange="updateFileName(this, 'courseFileName')">
+                    </div>
+                    <span id="courseFileName" class="file-name">No file chosen</span>
+                    <button class="submitButton" type="submit" onclick="return validateFileType('courseCsvInput', 'courseFileTypeError')">Upload</button>
+                    <span class="format-toggle" onclick="toggleFormat('courseFormat')">Format</span>
+                </div>
+                <div id="courseFileTypeError" class="file-type-error">Please select a CSV file</div>
+                <div id="courseFormat" class="format-info">
+                    <h3>Required CSV Format:</h3>
+                    <pre>course_code,course_name
+COMP1600,Introduction to Computing Concepts
+COMP1601,Introduction to Computer Programming I</pre>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Assessments Upload Section -->
+        <div class="upload-section">
+            <h2>Upload Assessments</h2>
+            <form enctype="multipart/form-data" action="/uploadassessments" method="POST">
+                <div class="file-upload-container">
+                    <div class="file-input-wrapper">
+                        <span class="file-input-button">Choose CSV</span>
+                        <input type="file" name="file" id="assessmentsCsvInput" accept=".csv" onchange="updateFileName(this, 'assessmentsFileName')">
+                    </div>
+                    <span id="assessmentsFileName" class="file-name">No file chosen</span>
+                    <button class="submitButton" type="submit" onclick="return validateFileType('assessmentsCsvInput', 'assessmentsFileTypeError')">Upload</button>
+                    <span class="format-toggle" onclick="toggleFormat('assessmentsFormat')">Format</span>
+                </div>
+                <div id="assessmentsFileTypeError" class="file-type-error">Please select a CSV file</div>
+                <div id="assessmentsFormat" class="format-info">
+                    <h3>Required CSV Format:</h3>
+                    <pre>course_code,assessment_name,percentage,start_week,start_day,end_week,end_day,proctored
+COMP1600,Midterm,30,5,1,5,1,1
+COMP1600,Final Exam,40,12,5,12,5,1</pre>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Cells Upload Section -->
+        <div class="upload-section">
+            <h2>Upload Cells</h2>
+            <form enctype="multipart/form-data" action="/uploadcells" method="POST">
+                <div class="file-upload-container">
+                    <div class="file-input-wrapper">
+                        <span class="file-input-button">Choose CSV</span>
+                        <input type="file" name="file" id="cellsCsvInput" accept=".csv" onchange="updateFileName(this, 'cellsFileName')">
+                    </div>
+                    <span id="cellsFileName" class="file-name">No file chosen</span>
+                    <button class="submitButton" type="submit" onclick="return validateFileType('cellsCsvInput', 'cellsFileTypeError')">Upload</button>
+                    <span class="format-toggle" onclick="toggleFormat('cellsFormat')">Format</span>
+                </div>
+                <div id="cellsFileTypeError" class="file-type-error">Please select a CSV file</div>
+                <div id="cellsFormat" class="format-info">
+                    <h3>Required CSV Format:</h3>
+                    <pre>course_code,course_code2,overlap
+COMP1600,COMP1600,300
+COMP1600,COMP1601,300</pre>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Semesters Upload Section -->
+        <div class="upload-section">
+            <h2>Upload Semesters</h2>
+            <form enctype="multipart/form-data" action="/uploadsemesters" method="POST">
+                <div class="file-upload-container">
+                    <div class="file-input-wrapper">
+                        <span class="file-input-button">Choose CSV</span>
+                        <input type="file" name="file" id="semestersCsvInput" accept=".csv" onchange="updateFileName(this, 'semestersFileName')">
+                    </div>
+                    <span id="semestersFileName" class="file-name">No file chosen</span>
+                    <button class="submitButton" type="submit" onclick="return validateFileType('semestersCsvInput', 'semestersFileTypeError')">Upload</button>
+                    <span class="format-toggle" onclick="toggleFormat('semestersFormat')">Format</span>
+                </div>
+                <div id="semestersFileTypeError" class="file-type-error">Please select a CSV file</div>
+                <div id="semestersFormat" class="format-info">
+                    <h3>Required CSV Format:</h3>
+                    <pre>start_date,end_date,sem_num,max_assessments,constraint_value,active
+2025-01-15,2025-05-15,1,3,1000,1
+2025-09-01,2025-12-15,2,3,1000,0</pre>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Staff Upload Section -->
+        <div class="upload-section">
+            <h2>Upload Staff</h2>
+            <form enctype="multipart/form-data" action="/uploadstaff" method="POST">
+                <div class="file-upload-container">
+                    <div class="file-input-wrapper">
+                        <span class="file-input-button">Choose CSV</span>
+                        <input type="file" name="file" id="staffCsvInput" accept=".csv" onchange="updateFileName(this, 'staffFileName')">
+                    </div>
+                    <span id="staffFileName" class="file-name">No file chosen</span>
+                    <button class="submitButton" type="submit" onclick="return validateFileType('staffCsvInput', 'staffFileTypeError')">Upload</button>
+                    <span class="format-toggle" onclick="toggleFormat('staffFormat')">Format</span>
+                </div>
+                <div id="staffFileTypeError" class="file-type-error">Please select a CSV file</div>
+                <div id="staffFormat" class="format-info">
+                    <h3>Required CSV Format:</h3>
+                    <pre>id,email,password,first_name,last_name
+1,john.doe@example.com,password123,John,Doe
+2,jane.smith@example.com,password456,Jane,Smith</pre>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Lecturer Assignments Upload Section -->
+        <div class="upload-section">
+            <h2>Upload Lecturer Assignments</h2>
+            <form enctype="multipart/form-data" action="/uploadlecturerassignments" method="POST">
+                <div class="file-upload-container">
+                    <div class="file-input-wrapper">
+                        <span class="file-input-button">Choose CSV</span>
+                        <input type="file" name="file" id="lecturerAssignmentsCsvInput" accept=".csv" onchange="updateFileName(this, 'lecturerAssignmentsFileName')">
+                    </div>
+                    <span id="lecturerAssignmentsFileName" class="file-name">No file chosen</span>
+                    <button class="submitButton" type="submit" onclick="return validateFileType('lecturerAssignmentsCsvInput', 'lecturerAssignmentsFileTypeError')">Upload</button>
+                    <span class="format-toggle" onclick="toggleFormat('lecturerAssignmentsFormat')">Format</span>
+                </div>
+                <div id="lecturerAssignmentsFileTypeError" class="file-type-error">Please select a CSV file</div>
+                <div id="lecturerAssignmentsFormat" class="format-info">
+                    <h3>Required CSV Format:</h3>
+                    <pre>lecturer_id,course_code
+3000001,COMP3602
+3000002,COMP3606
+3000003,COMP2603</pre>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if message %}
+        <div class="message {% if 'success' in message %}success{% else %}error{% endif %}">
+            {{ message | safe }}
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    function updateFileName(input, outputId) {
+        const fileName = input.files.length > 0 ? input.files[0].name : "No file chosen";
+        document.getElementById(outputId).textContent = fileName;
+    }
+    
+    function validateFileType(inputId, errorId) {
+        const fileInput = document.getElementById(inputId);
+        const errorElement = document.getElementById(errorId);
+        
+        if (fileInput.files.length > 0) {
+            const fileName = fileInput.files[0].name;
+            if (!fileName.toLowerCase().endsWith('.csv')) {
+                errorElement.style.display = 'block';
+                return false;
+            } else {
+                errorElement.style.display = 'none';
+                return true;
+            }
+        }
+        return true;
+    }
+    
+    function toggleFormat(formatId) {
+        const formatElement = document.getElementById(formatId);
+        if (formatElement.style.display === 'block') {
+            formatElement.style.display = 'none';
+        } else {
+            formatElement.style.display = 'block';
+        }
+    }
+</script>
+{% endblock %}
