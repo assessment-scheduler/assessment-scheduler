@@ -32,13 +32,16 @@ def get_new_course():
 def add_course_action():
     course_code = request.form.get('course_code')
     title = request.form.get('title')
+    if (get_course(course_code)):
+        flash("Course already exists", "error")
+        return redirect(url_for('course_views.get_new_course')) 
     result = create_course(course_code, title)
     if result:
         flash("Course added successfully!")
         return redirect(url_for('course_views.get_courses'))
     else:
         flash("Failed to add course. Course code may already exist.")
-        return redirect(url_for('admin_views.get_new_course'))
+        return redirect(url_for('course_views.get_new_course'))
     
     
 @course_views.route('/update_course/<string:course_code>', methods=['GET'])

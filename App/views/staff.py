@@ -24,30 +24,6 @@ from ..controllers import (
 
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
 
-@staff_views.route('/signup', methods=['GET'])
-def get_signup_page():
-    return render_template('signup.html')
-
-@staff_views.route('/register', methods=['POST'])
-def register_staff_action():
-    try:
-        first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name')
-        id = request.form.get('id')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        
-        staff = create_staff(id, email, password, first_name, last_name)
-        if staff:
-            flash('Registration successful! Please log in.', 'success')
-            return redirect(url_for('auth_views.get_login_page'))
-        else:
-            flash('Registration failed. Email may already be in use.', 'error')
-            return redirect(url_for('staff_views.get_signup_page'))
-    except Exception as e:
-        flash(f'An error occurred: {str(e)}', 'error')
-        return redirect(url_for('staff_views.get_signup_page'))
-
 @staff_views.route('/account', methods=['GET'])
 @jwt_required(Staff)
 def get_account_page():
@@ -67,9 +43,52 @@ def get_calendar_page():
     email = get_jwt_identity()
     user = get_user_by_email(email)
     
-    all_assessments = get_assessments_by_lecturer(user.email)
-    return render_template('calendar.html', assessments=all_assessments)
-## needs to be refined 
+    staff_exams = get_assessments_by_lecturer(user.email) or []
+    staff_courses = [course.to_json() for course in get_staff_courses(email) or []]
+    semester = get_active_semester().to_json() if get_active_semester() else {}
+    other_exams = get_assessments_by_lecturer(user.email) or []
+    
+    return render_template('calendar.html', staff_exams=staff_exams, staff_courses=staff_courses, semester=semester, other_exams=other_exams)
+
+@staff_views.route('/update_assessment_schedule', methods=['POST'])
+@jwt_required()
+def update_assessment_schedule():
+    try:
+        assessment_id = request.form.get('id')
+        start_week = int(request.form.get('start_week', 0))
+        start_day = int(request.form.get('start_day', 0))
+        end_week = int(request.form.get('end_week', 0))
+        end_day = int(request.form.get('end_day', 0))
+        
+        email = get_jwt_identity()
+        user = get_user_by_email(email)
+        assessment = get_assessment_by_id(assessment_id)
+        
+        if not assessment:
+            return jsonify({'success': False, 'message': 'Assessment not found'}), 404
+            
+        if not is_course_lecturer(user.id, assessment.course_code):
+            return jsonify({'success': False, 'message': 'You do not have permission to update this assessment'}), 403
+            
+        # Update only the scheduling fields
+        result = update_assessment(
+            assessment_id,
+            assessment.name,
+            assessment.percentage,
+            start_week,
+            start_day,
+            end_week,
+            end_day,
+            assessment.proctored
+        )
+        
+        if result:
+            return jsonify({'success': True}), 200
+        else:
+            return jsonify({'success': False, 'message': 'Failed to update assessment'}), 500
+            
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 @staff_views.route('/assessments', methods=['GET'])
 @jwt_required()

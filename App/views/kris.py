@@ -1,3 +1,7 @@
+from App.models.staff import Staff
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from werkzeug.utils import secure_filename
 from datetime import timedelta
 from typing import List
 from ..models.assessment import Assessment
@@ -47,7 +51,6 @@ def compute_schedule():
     print_schedule(schedule, U_star, d, probability)
     return schedule
 
-
 def schedule_all_assessments(schedule):
     semester = get_active_semester()
     if not semester:
@@ -60,4 +63,11 @@ def schedule_all_assessments(schedule):
         schedule_assessment(semester, schedule_date,code,name)
 
 
+kris_views = Blueprint('kris', __name__, template_folder ='../templates')
 
+@kris_views.route('/schedule', methods=['POST'])
+@jwt_required(Staff)
+def get_schedule_action():
+    schedule = compute_schedule()
+    schedule_all_assessments(schedule)
+    return redirect(url_for())
