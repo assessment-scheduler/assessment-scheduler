@@ -15,7 +15,8 @@ from ..controllers import (
     get_active_semester,
     get_assessments_by_lecturer,
     get_assessment_by_id,
-    update_assessment
+    update_assessment,
+    get_assessments_by_course
 )
 
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
@@ -64,26 +65,3 @@ def update_settings():
         flash('No password provided', 'error')
         
     return redirect(url_for('staff_views.get_settings_page'))
-
-@staff_views.route('/assessments/<course_code>', methods=['GET'])
-@jwt_required()
-def get_course_details(course_code):
-        email = get_jwt_identity()
-        user = get_user_by_email(email)
-        
-        if not is_course_lecturer(user.id, course_code):
-            flash('You do not have access to this course', 'error')
-            return redirect(url_for('staff_views.get_account_page'))
-
-        course = get_course(course_code)
-        if not course:
-            flash('Course not found', 'error')
-            return redirect(url_for('staff_views.get_account_page'))
-        
-        assessments = get_assessments_by_course(course.code)
-        return render_template(
-            'course_details.html',
-            course=course,
-            assessments=assessments,
-            staff=user,
-        )

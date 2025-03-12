@@ -83,7 +83,7 @@
 <div class="dashboard-container">
   <!-- Course Header Section -->
   <div class="course-header">
-    <a href="/account" class="back-button">← Back to Account</a>
+    <a href="{{ url_for('staff_views.get_account_page') }}" class="back-button">← Back to Account</a>
     
     <div class="course-title-container">
       <div class="course-code-display">{{ course.code }}</div>
