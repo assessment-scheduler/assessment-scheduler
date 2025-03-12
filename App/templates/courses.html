@@ -5,20 +5,21 @@
 {% block head %}
 <link rel="stylesheet" href="../static/css/admin1.css">
 <style>
-  /* Additional styling to improve presentation while keeping color scheme */
-  #coursesList {
-    width: 90%;
-    max-width: 1200px;
+  #courses_list {
+    width: 100%;
+    max-width: none;
     padding: 2rem;
+    margin: 0;
+    box-sizing: border-box;
   }
-  
+
   h2 {
     margin-bottom: 1.5rem;
     font-weight: 600;
     position: relative;
     padding-bottom: 10px;
   }
-  
+
   h2:after {
     content: '';
     position: absolute;
@@ -30,18 +31,21 @@
     background-color: var(--tertiary-color);
     border-radius: 2px;
   }
-  
+
   #table_container {
     margin-bottom: 1.5rem;
     overflow-x: auto;
+    height: 60vh;
+    min-height: 400px;
+    overflow-y: auto;
   }
-  
+
   #courseTable {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 8px;
   }
-  
+
   #courseTable thead th {
     text-align: left;
     padding: 12px 15px;
@@ -49,91 +53,79 @@
     color: #fff;
     border-bottom: 2px solid var(--tertiary-color);
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    background-color: #1a1d20;  /* Darker than var(--background-color) */
+    z-index: 10;
   }
-  
+
   .course-row {
     transition: all 0.2s ease;
     cursor: pointer;
     background-color: var(--primary-color);
   }
-  
+
   .course-row td {
     padding: 15px;
     border-radius: 0;
   }
-  
+
   .course-row td:first-child {
     border-top-left-radius: 6px;
     border-bottom-left-radius: 6px;
     font-weight: 600;
   }
-  
+
   .course-row td:last-child {
     border-top-right-radius: 6px;
     border-bottom-right-radius: 6px;
   }
-  
+
   .course-row:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
-  
+
   .selected {
     background-color: #4a4f52 !important;
     position: relative;
   }
-  
+
   .selected td:first-child {
     border-left: 4px solid var(--tertiary-color);
     padding-left: 11px;
   }
-  
-  #buttons_container {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 1.5rem;
+
+  .selected:before {
+    display: none;
   }
-  
-  .formBtn {
-    min-width: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    transition: all 0.3s ease;
+
+  .action-btn {
+    min-width: 70px;
+    padding: 5px 10px;
+    margin-right: 5px;
+    text-align: center;
+    border-radius: 4px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-block;
   }
-  
-  .delete-course-link {
+
+  .update-btn {
+    background-color: var(--tertiary-color);
+  }
+
+  .delete-btn {
     background-color: #e74c3c;
   }
-  
-  .delete-course-link:hover {
-    background-color: #c82333;
-    border-color: #bd2130;
+
+  .action-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
   }
-  
-  .status-badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.8em;
-    font-weight: 600;
-    text-align: center;
-    min-width: 80px;
-  }
-  
-  .status-active {
-    background-color: #27ae60;
-    color: white;
-  }
-  
-  .status-inactive {
-    background-color: #7f8c8d;
-    color: white;
-  }
-  
+
+  /* Modal Styles */
   .modal {
     display: none;
     position: fixed;
@@ -145,12 +137,12 @@
     background-color: rgba(0, 0, 0, 0.7);
     animation: fadeIn 0.3s;
   }
-  
+
   @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
   }
-  
+
   .modal-content {
     background-color: var(--primary-color);
     margin: 15% auto;
@@ -160,32 +152,34 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     animation: slideIn 0.3s;
   }
-  
+
   @keyframes slideIn {
     from { transform: translateY(-50px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
   }
-  
+
   .modal-content h3 {
     margin-top: 0;
     color: #fff;
     font-size: 1.5rem;
     margin-bottom: 15px;
   }
-  
+
   .modal-content p {
     margin-bottom: 25px;
     color: #ddd;
     line-height: 1.5;
   }
-  
+
   .modal-buttons {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
   }
-  
-  .confirm-delete-btn, .cancel-delete-btn {
+
+  .confirm-delete-btn {
+    background-color: #e74c3c;
+    color: white;
     border: none;
     padding: 10px 15px;
     border-radius: 4px;
@@ -193,31 +187,39 @@
     font-weight: 500;
     transition: all 0.2s ease;
   }
-  
-  .confirm-delete-btn {
-    background-color: #e74c3c;
-    color: white;
-  }
-  
+
   .confirm-delete-btn:hover {
     background-color: #c0392b;
   }
-  
+
   .cancel-delete-btn {
     background-color: #7f8c8d;
     color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
   }
-  
+
   .cancel-delete-btn:hover {
     background-color: #95a5a6;
+  }
+
+  #buttons_container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 1.5rem;
   }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<div id="coursesList">
-  <h2>List of Courses</h2>
+<div id="courses_list">
+  <h2>Course Management</h2>
   <div id="table_container">
     <table id="courseTable">
       <thead>
@@ -225,26 +227,29 @@
           <th>Course Code</th>
           <th>Course Title</th>
           <th>Lecturer</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody id="courseTableBody">
         {% for course in courses %}
-        <tr class="course-row" data="{{ course.code }}">
+        <tr class="course-row" data-code="{{ course.code }}">
           <td>{{ course.code }}</td> 
           <td>{{ course.name }}</td>
           <td>{{ course.lecturer.email if course.lecturer else 'No Lecturer Assigned' }}</td>
+          <td>
+            <a href="/update_course/{{ course.code }}" class="action-btn update-btn">Update</a>
+            <a href="#" class="action-btn delete-btn" data-code="{{ course.code }}">Delete</a>
+          </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
   <div id="buttons_container">
-      <a href="/new_course" class="formBtn">Add Course</a>
-      <a href="#" class="modify-course-link formBtn">Update Course</a>
-      <button type="button" class="delete-course-btn formBtn delete-course-link">Delete Course</button>
+      <a href="/new_course" class="formBtn">Create Course</a>
   </div>
   
-  <!-- Add Confirmation Modal -->
+  <!-- Confirmation Modal -->
   <div id="deleteConfirmModal" class="modal">
     <div class="modal-content">
       <h3>Confirm Deletion</h3>
@@ -261,71 +266,27 @@
 
 <script>
   const courseRows = document.querySelectorAll('.course-row');
+  const modal = document.getElementById('deleteConfirmModal');
+  const cancelBtn = document.querySelector('.cancel-delete-btn');
+  const deleteForm = document.getElementById('deleteCourseForm');
+  
+  // Delete button click handlers
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const courseCode = this.getAttribute('data-code');
+      deleteForm.action = `/delete_course/${courseCode}`;
+      modal.style.display = 'block';
+    });
+  });
 
+  // Row click handler to highlight the selected row
   courseRows.forEach(row => {
     row.addEventListener('click', function handleClick() {
       courseRows.forEach(row => row.classList.remove('selected'));
       this.classList.add('selected');
-
-      const courseCode = this.querySelector('td').textContent.trim();
-      console.log('Clicked course code:', courseCode); 
-
-      const modifyCourseLink = document.querySelector('.modify-course-link');
-      modifyCourseLink.href = `/update_course/${courseCode}`;
-
-      const deleteCourseForm = document.querySelector('.delete-course-form');
-      deleteCourseForm.action = `/delete_course/${courseCode}`;
-      
-      const buttons = document.querySelectorAll('.formBtn');
-      buttons.forEach(btn => btn.classList.remove('disabled'));
     });
-  });
-
-  document.addEventListener('DOMContentLoaded', function() {
-    const modifyBtn = document.querySelector('.modify-course-link');
-    const deleteBtn = document.querySelector('.delete-course-btn');
-    
-    modifyBtn.classList.add('disabled');
-    modifyBtn.style.opacity = '0.6';
-    modifyBtn.style.pointerEvents = 'none';
-    
-    deleteBtn.classList.add('disabled');
-    deleteBtn.style.opacity = '0.6';
-    deleteBtn.style.pointerEvents = 'none';
-    
-    courseRows.forEach(row => {
-      row.addEventListener('click', function() {
-        modifyBtn.classList.remove('disabled');
-        modifyBtn.style.opacity = '1';
-        modifyBtn.style.pointerEvents = 'auto';
-        
-        deleteBtn.classList.remove('disabled');
-        deleteBtn.style.opacity = '1';
-        deleteBtn.style.pointerEvents = 'auto';
-      });
-    });
-  });
-
-  // Add Modal Functionality
-  const modal = document.getElementById('deleteConfirmModal');
-  const deleteBtn = document.querySelector('.delete-course-btn');
-  const cancelBtn = document.querySelector('.cancel-delete-btn');
-  const deleteForm = document.getElementById('deleteCourseForm');
-  let selectedCourseCode = null;
-
-  courseRows.forEach(row => {
-    row.addEventListener('click', function() {
-      // ... existing row click handling ...
-      selectedCourseCode = this.querySelector('td').textContent.trim();
-      deleteForm.action = `/delete_course/${selectedCourseCode}`;
-    });
-  });
-
-  // Show modal when delete button is clicked
-  deleteBtn.addEventListener('click', function() {
-    if (selectedCourseCode) {
-      modal.style.display = 'block';
-    }
   });
 
   // Hide modal when cancel button is clicked

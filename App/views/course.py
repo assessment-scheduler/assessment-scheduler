@@ -15,7 +15,7 @@ from ..controllers import (
 )
 
 course_views = Blueprint('course_views', __name__, template_folder ='../templates')
-@course_views.route('/get_courses', methods=['GET'])
+@course_views.route('/courses', methods=['GET'])
 @jwt_required(Admin)
 def get_courses():
     courses = get_all_courses()

@@ -55,7 +55,7 @@
     white-space: nowrap;
     position: sticky;
     top: 0;
-    background-color: var(--background-color);
+    background-color: #1a1d20;  /* Darker than var(--background-color) */
     z-index: 10;
   }
   
@@ -98,36 +98,6 @@
   
   .selected:before {
     display: none;
-  }
-  
-  #buttons_container {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 1.5rem;
-  }
-  
-  .formBtn {
-    min-width: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    transition: all 0.3s ease;
-  }
-  
-  .formBtn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .delete-staff-link {
-    background-color: #e74c3c;
-  }
-  
-  .delete-staff-link:hover {
-    background-color: #c0392b;
   }
   
   .status-badge {
@@ -262,6 +232,30 @@
   .cancel-delete-btn:hover {
     background-color: #95a5a6;
   }
+
+  .actions-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .action-btn {
+    min-width: 70px;
+    padding: 5px 10px;
+    text-align: center;
+    border-radius: 4px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-block;
+  }
+  
+  #buttons_container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 1.5rem;
+  }
 </style>
 {% endblock %}
 
@@ -288,7 +282,11 @@
           <td>{{ member.last_name }}</td>
           <td><span class="email-text">{{ member.email }}</span></td>
           <td>
-            <a href="/staff_courses/{{ member.id }}" class="formBtn" style="min-width: 70px; padding: 5px 10px; background-color: var(--tertiary-color);">Courses</a>
+            <div class="actions-container">
+              <a href="/staff_courses/{{ member.id }}" class="action-btn" style="background-color: var(--tertiary-color);">Courses</a>
+              <a href="/edit_staff/{{ member.id }}" class="action-btn" style="background-color: var(--tertiary-color);">Update</a>
+              <button type="button" class="action-btn delete-staff-link" style="background-color: #e74c3c;">Delete</button>
+            </div>
           </td>
         </tr>
         {% endfor %}
@@ -296,10 +294,7 @@
     </table>
   </div>
   <div id="buttons_container">
-      <a href="/create_staff" class="formBtn">Add Staff</a>
-      <a href="#" class="modify-staff-link formBtn">Update Staff</a>
-      <button type="button" class="delete-staff-btn formBtn delete-staff-link">Delete Staff</button>
-      <a href="#" class="view-courses-link formBtn">View Courses</a>
+      <a href="/create_staff" class="formBtn">Create Staff</a>
   </div>
   
   <!-- Confirmation Modal -->
@@ -320,36 +315,19 @@
 <script>
   const staffRows = document.querySelectorAll('.staff-row');
   const modal = document.getElementById('deleteConfirmModal');
-  const deleteBtn = document.querySelector('.delete-staff-btn');
+  const deleteButtons = document.querySelectorAll('.delete-staff-link');
   const cancelBtn = document.querySelector('.cancel-delete-btn');
   const deleteForm = document.getElementById('deleteStaffForm');
-  let selectedStaffId = null;
-
-  staffRows.forEach(row => {
-    row.addEventListener('click', function handleClick() {
-      staffRows.forEach(row => row.classList.remove('selected'));
-
-      this.classList.add('selected');
-      selectedStaffId = this.getAttribute('data-id');
-      console.log('Clicked staff ID:', selectedStaffId); 
-
-      const modifyStaffLink = document.querySelector('.modify-staff-link');
-      modifyStaffLink.href = `/edit_staff/${selectedStaffId}`;
-
-      deleteForm.action = `/delete_staff/${selectedStaffId}`;
-      
-      const viewCoursesLink = document.querySelector('.view-courses-link');
-      viewCoursesLink.href = `/staff_courses/${selectedStaffId}`;
-      
-      const buttons = document.querySelectorAll('.formBtn');
-      buttons.forEach(btn => btn.classList.remove('disabled'));
-    });
-  });
-
-  deleteBtn.addEventListener('click', function() {
-    if (selectedStaffId) {
+  
+  deleteButtons.forEach(deleteBtn => {
+    deleteBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const row = this.closest('.staff-row');
+      const staffId = row.getAttribute('data-id');
+      deleteForm.action = `/delete_staff/${staffId}`;
       modal.style.display = 'block';
-    }
+    });
   });
 
   cancelBtn.addEventListener('click', function() {
@@ -362,38 +340,12 @@
     }
   });
 
-  document.addEventListener('DOMContentLoaded', function() {
-    const modifyBtn = document.querySelector('.modify-staff-link');
-    const deleteBtn = document.querySelector('.delete-staff-btn');
-    const viewCoursesBtn = document.querySelector('.view-courses-link');
-    
-    modifyBtn.classList.add('disabled');
-    modifyBtn.style.opacity = '0.6';
-    modifyBtn.style.pointerEvents = 'none';
-    
-    deleteBtn.classList.add('disabled');
-    deleteBtn.style.opacity = '0.6';
-    deleteBtn.style.pointerEvents = 'none';
-    
-    viewCoursesBtn.classList.add('disabled');
-    viewCoursesBtn.style.opacity = '0.6';
-    viewCoursesBtn.style.pointerEvents = 'none';
-    
-    staffRows.forEach(row => {
-      row.addEventListener('click', function() {
-        modifyBtn.classList.remove('disabled');
-        modifyBtn.style.opacity = '1';
-        modifyBtn.style.pointerEvents = 'auto';
-        
-        deleteBtn.classList.remove('disabled');
-        deleteBtn.style.opacity = '1';
-        deleteBtn.style.pointerEvents = 'auto';
-        
-        viewCoursesBtn.classList.remove('disabled');
-        viewCoursesBtn.style.opacity = '1';
-        viewCoursesBtn.style.pointerEvents = 'auto';
-      });
+  // Row click handler
+  staffRows.forEach(row => {
+    row.addEventListener('click', function handleClick() {
+      staffRows.forEach(row => row.classList.remove('selected'));
+      this.classList.add('selected');
     });
   });
 </script>
-{% endblock %} 
+{% endblock %}

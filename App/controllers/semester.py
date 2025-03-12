@@ -53,3 +53,4 @@ def set_active(semester_id: int) -> bool:
         deactivate_all()
         semester.active  = True
         db.session.commit()
+        return True 
