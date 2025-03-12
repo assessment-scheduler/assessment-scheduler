@@ -3,7 +3,7 @@
 {% block title %}My Account{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="../static/css/main.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 <style>
   :root {
     --primary-color: rgb(92, 70, 180);
@@ -341,7 +341,7 @@
       </div>
       <div class="stat-card">
         <div class="stat-value">
-          {{  num_assessments }}
+          {{ num_assessments }}
         </div>
         <div class="stat-label">Assessments</div>
       </div>
@@ -372,7 +372,7 @@
             </div>
             
             <div class="course-actions">
-              <form action="{{ url_for('staff_views.get_course_details', course_code=course.code) }}" method="GET">
+              <form action="{{ url_for('assessment_views.get_course_details', course_code=course.code) }}" method="GET">
                 <button type="submit" class="course-btn" style="width: 100%; cursor: pointer;">View Assessments</button>
               </form>
             </div>
@@ -387,7 +387,7 @@
   </div>
 </div>
 
-<script src="../static/js/account.js"></script>
+<script src="{{ url_for('static', filename='js/account.js') }}"></script>
 <script>
   // Initialize selected courses from the server data
   {% if courses %}

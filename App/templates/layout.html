@@ -18,12 +18,12 @@
             <div class="links_container">
                 <ul id="layout_nav_links">
                     <!-- <li><a class="chat_nav_link nav_link" href="#">Chat</a></li> -->
-                    <li><a class="myAssessments_nav_link nav_link" href="/assessments">Assessments</a></li>
-                    <li><a class="calendar_nav_link nav_link" href="/calendar">Calendar</a></li>
-                    <li><a class="myAccount_nav_link nav_link" href="/account">Account</a></li>
-                    <li><a class="setting_nav_link nav_link" href="/settings">Settings</a></li>
+                    <li><a class="myAssessments_nav_link nav_link" href="{{ url_for('assessment_views.get_assessments_page') }}">Assessments</a></li>
+                    <li><a class="calendar_nav_link nav_link" href="{{ url_for('staff_views.get_calendar_page') }}">Calendar</a></li>
+                    <li><a class="myAccount_nav_link nav_link" href="{{ url_for('staff_views.get_account_page') }}">Account</a></li>
+                    <li><a class="setting_nav_link nav_link" href="{{ url_for('staff_views.get_settings_page') }}">Settings</a></li>
                     <!-- <li><a class="notification_nav_link nav_link" href="#">Notifications</a></li> -->
-                    <li><a class="logout_nav_link" href="/logout">Logout</a></li>
+                    <li><a class="logout_nav_link" href="{{ url_for('auth_views.logout') }}">Logout</a></li>
                 </ul>
             </div>
 
