@@ -192,10 +192,11 @@
     <p><strong>Course:</strong> {{ assessment.course_code }}</p>
     {% if semester %}
     <p><strong>Semester:</strong> {{ semester.name }}</p>
+    <p><strong>Date Range:</strong> {{ semester.start_date.strftime('%Y-%m-%d') }} to {{ semester.end_date.strftime('%Y-%m-%d') }}</p>
     {% endif %}
   </div>
   
-  <form action="{{ url_for('assessment_views.modify_assessment', id=assessment.id) }}" method="POST">
+  <form action="{{ url_for('assessment_views.modify_assessment', id=assessment.id) }}" method="POST" onsubmit="return validateForm()">
     <div class="form-group">
       <label for="name">Assessment Name</label>
       <input type="text" id="name" name="name" required value="{{ assessment.name }}">
@@ -253,33 +254,108 @@
 </div>
 
 <script>
+  var semesterStartDate = null;
+  var semesterEndDate = null;
+  
+  {% if semester %}
+  semesterStartDate = '{{ semester.start_date.strftime("%Y-%m-%d") }}';
+  semesterEndDate = '{{ semester.end_date.strftime("%Y-%m-%d") }}';
+  {% endif %}
+
+  function validateDates() {
+    if (!semesterStartDate || !semesterEndDate) {
+      return true;
+    }
+
+    const startWeek = parseInt(document.getElementById('start_week').value);
+    const startDay = parseInt(document.getElementById('start_day').value);
+    const endWeek = parseInt(document.getElementById('end_week').value);
+    const endDay = parseInt(document.getElementById('end_day').value);
+
+    // Calculate the date based on week and day
+    const semStart = new Date(semesterStartDate);
+    const semEnd = new Date(semesterEndDate);
+
+    // Calculate assessment dates
+    const assessmentStartDate = new Date(semStart);
+    assessmentStartDate.setDate(assessmentStartDate.getDate() + ((startWeek - 1) * 7) + (startDay - 1));
+
+    const assessmentEndDate = new Date(semStart);
+    assessmentEndDate.setDate(assessmentEndDate.getDate() + ((endWeek - 1) * 7) + (endDay - 1));
+
+    // Check if dates are within semester bounds
+    if (assessmentStartDate < semStart || assessmentStartDate > semEnd) {
+      alert('Assessment start date must be within the semester dates (' + semesterStartDate + ' to ' + semesterEndDate + ')');
+      return false;
+    }
+
+    if (assessmentEndDate < semStart || assessmentEndDate > semEnd) {
+      alert('Assessment end date must be within the semester dates (' + semesterStartDate + ' to ' + semesterEndDate + ')');
+      return false;
+    }
+
+    return true;
+  }
+
+  function validateForm() {
+    // Get form values
+    const name = document.getElementById('name').value;
+    const percentage = document.getElementById('percentage').value;
+    const startWeek = document.getElementById('start_week').value;
+    const startDay = document.getElementById('start_day').value;
+    const endWeek = document.getElementById('end_week').value;
+    const endDay = document.getElementById('end_day').value;
+    
+    if (!name || name.trim() === '') {
+      alert('Please enter an assessment name');
+      return false;
+    }
+    
+    // Validate numeric fields
+    if (!percentage || isNaN(percentage) || percentage < 0 || percentage > 100) {
+      alert('Please enter a valid percentage (0-100)');
+      return false;
+    }
+    
+    if (!startWeek || isNaN(startWeek) || startWeek < 1 || startWeek > 15) {
+      alert('Please enter a valid start week (1-15)');
+      return false;
+    }
+    
+    if (!startDay || isNaN(startDay) || startDay < 1 || startDay > 7) {
+      alert('Please enter a valid start day (1-7)');
+      return false;
+    }
+    
+    if (!endWeek || isNaN(endWeek) || endWeek < 1 || endWeek > 15) {
+      alert('Please enter a valid end week (1-15)');
+      return false;
+    }
+    
+    if (!endDay || isNaN(endDay) || endDay < 1 || endDay > 7) {
+      alert('Please enter a valid end day (1-7)');
+      return false;
+    }
+    
+    // Validate end date is after start date
+    if (parseInt(endWeek) < parseInt(startWeek) || 
+        (parseInt(endWeek) === parseInt(startWeek) && parseInt(endDay) < parseInt(startDay))) {
+      alert('End date must be after start date');
+      return false;
+    }
+
+    return validateDates();
+  }
+
+  // Delete confirmation
+  document.getElementById('delete-btn').addEventListener('click', function() {
+    if (confirm('Are you sure you want to delete this assessment? This action cannot be undone.')) {
+      document.getElementById('delete-form').submit();
+    }
+  });
+
+  // Auto-hide flash messages
   document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    
-    form.addEventListener('submit', function(e) {
-      const startWeek = parseInt(document.getElementById('start_week').value);
-      const startDay = parseInt(document.getElementById('start_day').value);
-      const endWeek = parseInt(document.getElementById('end_week').value);
-      const endDay = parseInt(document.getElementById('end_day').value);
-      
-      // Basic validation for end date being after start date
-      if (endWeek < startWeek || (endWeek === startWeek && endDay < startDay)) {
-        e.preventDefault();
-        alert('End date must be after start date');
-      }
-    });
-    
-    // Delete confirmation
-    const deleteBtn = document.getElementById('delete-btn');
-    const deleteForm = document.getElementById('delete-form');
-    
-    deleteBtn.addEventListener('click', function() {
-      if (confirm('Are you sure you want to delete this assessment? This action cannot be undone.')) {
-        deleteForm.submit();
-      }
-    });
-    
-    // Auto-hide flash messages after 5 seconds
     setTimeout(function() {
       const flashMessages = document.querySelectorAll('.flash-message');
       flashMessages.forEach(message => {

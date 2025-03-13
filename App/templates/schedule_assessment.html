@@ -101,6 +101,7 @@
                 <p><strong>Course:</strong> {{ assessment.course_code }}</p>
                 <p><strong>Assessment:</strong> {{ assessment.name }}</p>
                 <p><strong>Current Schedule:</strong> {{ assessment.scheduled if assessment.scheduled else 'Not Scheduled' }}</p>
+                <p><strong>Semester Date Range:</strong> {{ semester.start_date.strftime('%Y-%m-%d') }} to {{ semester.end_date.strftime('%Y-%m-%d') }}</p>
             </div>
 
             <form action="{{ url_for('assessment_views.update_assessment_schedule') }}" method="POST">
@@ -108,7 +109,12 @@
                 
                 <div class="form-group">
                     <label for="assessment_date">Assessment Date:</label>
-                    <input type="date" id="assessment_date" name="assessment_date" required>
+                    <input type="date" 
+                           id="assessment_date" 
+                           name="assessment_date" 
+                           min="{{ semester.start_date.strftime('%Y-%m-%d') }}"
+                           max="{{ semester.end_date.strftime('%Y-%m-%d') }}"
+                           required>
                 </div>
 
                 <div class="buttons-container">

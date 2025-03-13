@@ -186,7 +186,7 @@
   
   {% if semester %}
   <div class="course-info">
-    <p><strong>Semester:</strong> {{ semester.name }}</p>
+    <p><strong>Semester Date Range:</strong> {{ semester.start_date.strftime('%Y-%m-%d') }} to {{ semester.end_date.strftime('%Y-%m-%d') }}</p>
   </div>
   {% endif %}
   
@@ -250,6 +250,49 @@
 </div>
 
 <script>
+  var semesterStartDate = null;
+  var semesterEndDate = null;
+  
+  {%- if semester -%}
+  semesterStartDate = '{{ semester.start_date.strftime('%Y-%m-%d') }}';
+  semesterEndDate = '{{ semester.end_date.strftime('%Y-%m-%d') }}';
+  {%- endif -%}
+
+  function validateDates() {
+    if (!semesterStartDate || !semesterEndDate) {
+      return true;
+    }
+
+    const startWeek = parseInt(document.getElementById('start_week').value);
+    const startDay = parseInt(document.getElementById('start_day').value);
+    const endWeek = parseInt(document.getElementById('end_week').value);
+    const endDay = parseInt(document.getElementById('end_day').value);
+
+    // Calculate the date based on week and day
+    const semStart = new Date(semesterStartDate);
+    const semEnd = new Date(semesterEndDate);
+
+    // Calculate assessment dates
+    const assessmentStartDate = new Date(semStart);
+    assessmentStartDate.setDate(assessmentStartDate.getDate() + ((startWeek - 1) * 7) + (startDay - 1));
+
+    const assessmentEndDate = new Date(semStart);
+    assessmentEndDate.setDate(assessmentEndDate.getDate() + ((endWeek - 1) * 7) + (endDay - 1));
+
+    // Check if dates are within semester bounds
+    if (assessmentStartDate < semStart || assessmentStartDate > semEnd) {
+      alert('Assessment start date must be within the semester dates (' + semesterStartDate + ' to ' + semesterEndDate + ')');
+      return false;
+    }
+
+    if (assessmentEndDate < semStart || assessmentEndDate > semEnd) {
+      alert('Assessment end date must be within the semester dates (' + semesterStartDate + ' to ' + semesterEndDate + ')');
+      return false;
+    }
+
+    return true;
+  }
+
   function validateForm() {
     // Get form values
     const courseCode = document.getElementById('course_code').value;
@@ -259,17 +302,6 @@
     const startDay = document.getElementById('start_day').value;
     const endWeek = document.getElementById('end_week').value;
     const endDay = document.getElementById('end_day').value;
-    
-    // Log values for debugging
-    console.log('Form values before submission:');
-    console.log('Course Code:', courseCode);
-    console.log('Name:', name);
-    console.log('Percentage:', percentage);
-    console.log('Start Week:', startWeek);
-    console.log('Start Day:', startDay);
-    console.log('End Week:', endWeek);
-    console.log('End Day:', endDay);
-    console.log('Proctored:', document.getElementById('proctored').checked);
     
     // Validate required fields
     if (!courseCode) {
@@ -314,8 +346,8 @@
       alert('End date must be after start date');
       return false;
     }
-    
-    return true;
+
+    return validateDates();
   }
   
   document.addEventListener('DOMContentLoaded', function() {
