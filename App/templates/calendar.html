@@ -5,6 +5,39 @@
 {% block head %}
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
 <link rel="stylesheet" href="../static/css/style.css">
+<style>
+  .unscheduled-assessments {
+    padding: 20px;
+    background: var(--primary-color);
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .unscheduled-assessments h3 {
+    color: white;
+    margin-bottom: 15px;
+  }
+  
+  .draggable-assessment {
+    background: var(--secondary-color);
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 4px;
+    cursor: move;
+    color: white;
+    border-left: 4px solid var(--tertiary-color);
+  }
+  
+  .draggable-assessment.proctored {
+    border-left-color: #CC4E4E;
+  }
+  
+  .assessment-info {
+    font-size: 0.9em;
+    color: #ccc;
+    margin-top: 5px;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -32,30 +65,51 @@
     </select>
   </div>
   <div id="main">
-
     <div id="calendar"></div>
     <div id="nav">
-      <div id="courses-list"></div>
-      <div id="remove-event"></div>
+      <div class="unscheduled-assessments">
+        <h3>Unscheduled Assessments</h3>
+        <div id="unscheduled-list">
+          {% for assessment in unscheduled_assessments %}
+          <div class="draggable-assessment {% if assessment.proctored %}proctored{% endif %}"
+               data-assessment-id="{{ assessment.id }}"
+               data-course-code="{{ assessment.course_code }}"
+               data-percentage="{{ assessment.percentage }}"
+               data-proctored="{{ assessment.proctored }}">
+            <div>{{ assessment.course_code }} - {{ assessment.name }}</div>
+            <div class="assessment-info">
+              Percentage: {{ assessment.percentage }}%
+              {% if assessment.proctored %}
+              | Proctored
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
 <script>
-  // Pass model data to JavaScript
-  var exams = {{ staff_exams | tojson }};
-  var myCourses = {{ staff_courses | tojson }};
-  var semester = {{ semester | tojson }};
-  var otherExams = {{ other_exams | tojson }};
+  // Pass model data to JavaScript with proper defaults
+  var scheduledAssessments = {{ scheduled_assessments | tojson }} || [];
+  var unscheduledAssessments = {{ unscheduled_assessments | tojson }} || [];
+  var myCourses = {{ staff_courses | tojson }} || [];
+  var semester = {{ semester | tojson }} || { start_date: null, end_date: null };
   
   // Add semester week data for calculations
-  var semesterStartDate = new Date(semester.start_date);
-  var semesterEndDate = new Date(semester.end_date);
-  var semesterWeeks = Math.ceil((semesterEndDate - semesterStartDate) / (7 * 24 * 60 * 60 * 1000));
+  var semesterStartDate = semester.start_date ? new Date(semester.start_date) : new Date();
+  var semesterEndDate = semester.end_date ? new Date(semester.end_date) : new Date();
+  var semesterWeeks = Math.ceil((semesterEndDate - semesterStartDate) / (7 * 24 * 60 * 60 * 1000)) || 15;
   
   // Function to convert week/day to actual dates
   function getDateFromWeekDay(startDate, week, day) {
+    if (!(startDate instanceof Date) || isNaN(startDate)) {
+      startDate = new Date();
+    }
     const result = new Date(startDate);
     result.setDate(result.getDate() + (week - 1) * 7 + day - 1);
     return result;
@@ -63,5 +117,4 @@
 </script>
 <script src="{{url_for('static', filename='index.js')}}"></script>
 <script src="{{url_for('static', filename='js/mobileMenu.js')}}"></script>
-
 {% endblock %}

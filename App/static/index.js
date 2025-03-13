@@ -12,13 +12,49 @@ document.addEventListener("DOMContentLoaded", function () {
     Proctored: "#8B4513"
   };
 
-  const calendarEvents = [];
-  renderCourses(myCourses, exams);
+  // Initialize calendar events with scheduled assessments
+  const calendarEvents = scheduledAssessments.map(assessment => ({
+    id: assessment.id,
+    title: `${assessment.course_code} - ${assessment.name} (${assessment.percentage}%)`,
+    start: assessment.scheduled,
+    allDay: true,
+    backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
+    extendedProps: {
+      course_code: assessment.course_code,
+      percentage: assessment.percentage,
+      proctored: assessment.proctored,
+      assessmentName: assessment.name
+    }
+  }));
+
   const levelFilter = document.getElementById("level");
   const courseFilter = document.getElementById("courses");
   const typeFilter = document.getElementById("assignmentType");
-
   const calendarEl = document.getElementById("calendar");
+  const unscheduledList = document.getElementById("unscheduled-list");
+
+  if (!calendarEl) {
+    console.error('Calendar element not found');
+    return;
+  }
+
+  // Make unscheduled assessments draggable
+  new FullCalendar.Draggable(unscheduledList, {
+    itemSelector: ".draggable-assessment",
+    eventData: function(eventEl) {
+      return {
+        id: eventEl.dataset.assessmentId,
+        title: eventEl.children[0].innerText,
+        backgroundColor: eventEl.dataset.proctored === "1" ? colors.Proctored : colors.Assignment,
+        extendedProps: {
+          course_code: eventEl.dataset.courseCode,
+          percentage: eventEl.dataset.percentage,
+          proctored: eventEl.dataset.proctored === "1",
+        }
+      };
+    }
+  });
+
   const calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: "dayGridMonth",
     headerToolbar: {
@@ -31,10 +67,10 @@ document.addEventListener("DOMContentLoaded", function () {
         type: "dayGridMonth",
         duration: { weeks: semesterWeeks },
         buttonText: "Semester",
-        visibleRange: {
+        visibleRange: semester.start_date && semester.end_date ? {
           start: semester.start_date,
           end: semester.end_date,
-        },
+        } : null,
       },
     },
     allDaySlot: false,
@@ -47,9 +83,19 @@ document.addEventListener("DOMContentLoaded", function () {
     eventResize: handleEventEdit,
     eventDrop: handleEventEdit,
     drop: handleNewItem,
+    eventDidMount: function(info) {
+      // Add tooltips to events
+      info.el.title = info.event.title;
+    }
   });
-  calendar.render();
 
+  try {
+    calendar.render();
+  } catch (error) {
+    console.error('Error rendering calendar:', error);
+  }
+
+  // Event handlers for filters
   levelFilter.addEventListener("change", function () {
     const selectedLevel = levelFilter.value;
     const selectedCourse = courseFilter.value;
@@ -74,141 +120,8 @@ document.addEventListener("DOMContentLoaded", function () {
     updateCalendarEvents(calendar, filteredEvents);
   });
 
-  function renderCourses(courses, assessments) {
-    const containerEl = document.getElementById("courses-list");
-    containerEl.innerHTML = '';
-    
-    courses.forEach((course) => {
-      const courseCard = document.createElement("div");
-      courseCard.classList.add("course-card");
-
-      const title = document.createElement("h3");
-      title.textContent = course.code + ": " + course.name;
-      courseCard.appendChild(title);
-
-      const eventsContainer = document.createElement("div");
-      eventsContainer.classList.add("course-events");
-
-      // Filter assessments for this course
-      const courseAssessments = assessments.filter((a) => a.course_code === course.code);
-      
-      courseAssessments.forEach((assessment) => {
-        const eventEl = createEventElement(assessment, course.code, colors);
-        
-        // If the assessment has scheduled dates, add it to calendar events
-        if (assessment.scheduled) {
-          const eventObj = createEventObject(assessment, colors);
-          calendarEvents.push(eventObj);
-        } else if (assessment.start_week && assessment.start_day) {
-          // Convert week/day to actual date and add to calendar
-          const startDate = getDateFromWeekDay(semesterStartDate, assessment.start_week, assessment.start_day);
-          const endDate = assessment.end_week && assessment.end_day ? 
-                          getDateFromWeekDay(semesterStartDate, assessment.end_week, assessment.end_day) : 
-                          startDate;
-          
-          const eventObj = {
-            id: assessment.id,
-            title: `${course.code} - ${assessment.name} (${assessment.percentage}%)`,
-            backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
-            start: startDate,
-            end: endDate,
-            extendedProps: {
-              percentage: assessment.percentage,
-              proctored: assessment.proctored,
-              assessmentName: assessment.name
-            }
-          };
-          calendarEvents.push(eventObj);
-        } else {
-          // Add to the draggable elements if not scheduled
-          eventsContainer.appendChild(eventEl);
-        }
-      });
-      
-      courseCard.appendChild(eventsContainer);
-      containerEl.appendChild(courseCard);
-    });
-
-    new FullCalendar.Draggable(containerEl, {
-      itemSelector: ".fc-event",
-      eventData: (eventEl) => ({
-        title: eventEl.innerText.trim(),
-        backgroundColor: eventEl.dataset.color,
-        id: eventEl.dataset.eventId,
-        extendedProps: {
-          course_code: eventEl.dataset.courseCode,
-          percentage: eventEl.dataset.percentage,
-          proctored: eventEl.dataset.proctored === "1",
-          assessmentName: eventEl.dataset.name
-        }
-      }),
-    });
-  }
-
-  function createEventElement(assessment, courseCode, colors) {
-    const color = assessment.proctored == 1 ? colors.Proctored : colors.Assignment;
-    
-    const eventEl = document.createElement("div");
-    eventEl.classList.add(
-      "fc-event",
-      "fc-h-event",
-      "fc-daygrid-event",
-      "fc-daygrid-block-event"
-    );
-    eventEl.dataset.color = color;
-    eventEl.style.backgroundColor = color;
-    eventEl.dataset.eventId = assessment.id;
-    eventEl.dataset.courseCode = courseCode;
-    eventEl.dataset.percentage = assessment.percentage;
-    eventEl.dataset.proctored = assessment.proctored;
-    eventEl.dataset.name = assessment.name;
-    
-    const eventTitle = `${courseCode} - ${assessment.name} (${assessment.percentage}%)`;
-    eventEl.innerHTML = '<div class="fc-event-main">' + eventTitle + '</div>';
-    
-    return eventEl;
-  }
-
-  function createEventObject(assessment, colors) {
-    // For assessments with explicit scheduled date
-    if (assessment.scheduled) {
-      return {
-        id: assessment.id,
-        title: `${assessment.course_code} - ${assessment.name}`,
-        backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
-        start: assessment.scheduled,
-        allDay: true,
-        extendedProps: {
-          percentage: assessment.percentage,
-          proctored: assessment.proctored,
-          assessmentName: assessment.name
-        }
-      };
-    }
-    
-    // For assessments with week/day scheduling
-    const startDate = getDateFromWeekDay(semesterStartDate, assessment.start_week, assessment.start_day);
-    const endDate = assessment.end_week && assessment.end_day ? 
-                    getDateFromWeekDay(semesterStartDate, assessment.end_week, assessment.end_day) : 
-                    startDate;
-    
-    return {
-      id: assessment.id,
-      title: `${assessment.course_code} - ${assessment.name} (${assessment.percentage}%)`,
-      backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
-      start: startDate,
-      end: endDate,
-      allDay: true,
-      extendedProps: {
-        percentage: assessment.percentage,
-        proctored: assessment.proctored,
-        assessmentName: assessment.name
-      }
-    };
-  }
-
   function filterEvents(level, courseCode, type) {
-    let filteredEvents = exams;
+    let filteredEvents = scheduledAssessments;
     
     // Filter by course level if specified
     if (level !== "0") {
@@ -220,8 +133,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Filter by specific course if specified
     if (courseCode !== "My Courses" && courseCode !== "all") {
       filteredEvents = filteredEvents.filter(item => item.course_code === courseCode);
-    } else if (courseCode === "all") {
-      filteredEvents = otherExams;
     }
     
     // Filter by assessment type if specified
@@ -236,9 +147,19 @@ document.addEventListener("DOMContentLoaded", function () {
   function updateCalendarEvents(calendar, newEvents) {
     calendar.removeAllEvents();
     
-    const updatedEvents = newEvents.map(assessment => {
-      return createEventObject(assessment, colors);
-    });
+    const updatedEvents = newEvents.map(assessment => ({
+      id: assessment.id,
+      title: `${assessment.course_code} - ${assessment.name} (${assessment.percentage}%)`,
+      start: assessment.scheduled,
+      allDay: true,
+      backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
+      extendedProps: {
+        course_code: assessment.course_code,
+        percentage: assessment.percentage,
+        proctored: assessment.proctored,
+        assessmentName: assessment.name
+      }
+    }));
     
     calendar.addEventSource(updatedEvents);
     calendar.refetchEvents();
@@ -246,83 +167,72 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function handleEventEdit(info) {
     const event = info.event;
-    const data = extractEventDetails(event);
-    console.log("Event edited:", data);
-    saveEvent(data);
+    const newDate = event.start;
+    
+    saveEvent({
+      id: event.id,
+      scheduled: newDate.toISOString().split('T')[0]
+    });
   }
 
-  function handleNewItem(arg) {
-    const event = arg.draggedEl;
-    const eventId = event.dataset.eventId;
-    const courseCode = event.dataset.courseCode;
-    const assessmentName = event.dataset.name;
-    const percentage = event.dataset.percentage;
-    const proctored = event.dataset.proctored;
+  function handleNewItem(info) {
+    const droppedDate = info.date;
+    const eventId = info.draggedEl.dataset.assessmentId;
     
-    // Calculate the week and day based on the drop date relative to semester start
-    const dropDate = arg.date;
-    const timeDiff = dropDate - semesterStartDate;
-    const daysDiff = Math.floor(timeDiff / (24 * 60 * 60 * 1000));
-    const weekNum = Math.floor(daysDiff / 7) + 1;
-    const dayNum = (daysDiff % 7) + 1;
-    
-    const data = {
+    saveEvent({
       id: eventId,
-      course_code: courseCode,
-      start_week: weekNum,
-      start_day: dayNum,
-      end_week: weekNum,
-      end_day: dayNum + 1,  // Default to one day duration
-      proctored: proctored
-    };
-    
-    console.log("New item dropped:", data);
-    saveEvent(data);
-    arg.draggedEl.parentNode.removeChild(arg.draggedEl);
-  }
-
-  function extractEventDetails(event) {
-    const id = event.id;
-    const startDate = event.start;
-    
-    // Calculate the week and day based on the event date relative to semester start
-    const timeDiff = startDate - semesterStartDate;
-    const daysDiff = Math.floor(timeDiff / (24 * 60 * 60 * 1000));
-    const startWeek = Math.floor(daysDiff / 7) + 1;
-    const startDay = (daysDiff % 7) + 1;
-    
-    let endWeek = startWeek;
-    let endDay = startDay;
-    
-    if (event.end) {
-      const endTimeDiff = event.end - semesterStartDate;
-      const endDaysDiff = Math.floor(endTimeDiff / (24 * 60 * 60 * 1000));
-      endWeek = Math.floor(endDaysDiff / 7) + 1;
-      endDay = (endDaysDiff % 7) + 1;
-    }
-    
-    return { 
-      id, 
-      start_week: startWeek,
-      start_day: startDay,
-      end_week: endWeek,
-      end_day: endDay,
-      extendedProps: event.extendedProps
-    };
+      scheduled: droppedDate.toISOString().split('T')[0]
+    });
   }
 
   function saveEvent(data) {
     $.ajax({
       url: "/update_assessment_schedule",
       method: "POST",
-      data,
-      success: () => {
+      data: data,
+      success: (response) => {
         console.log("Assessment schedule updated successfully");
-        location.reload();
+        
+        // Find the dragged element and remove it from unscheduled list
+        const draggedEl = document.querySelector(`[data-assessment-id="${data.id}"]`);
+        if (draggedEl) {
+          draggedEl.remove();
+        }
+        
+        // Add the event to the calendar
+        const matchingAssessment = unscheduledAssessments.find(a => a.id.toString() === data.id.toString());
+        if (matchingAssessment) {
+          const newEvent = {
+            id: matchingAssessment.id,
+            title: `${matchingAssessment.course_code} - ${matchingAssessment.name} (${matchingAssessment.percentage}%)`,
+            start: data.scheduled,
+            allDay: true,
+            backgroundColor: matchingAssessment.proctored ? colors.Proctored : colors.Assignment,
+            extendedProps: {
+              course_code: matchingAssessment.course_code,
+              percentage: matchingAssessment.percentage,
+              proctored: matchingAssessment.proctored,
+              assessmentName: matchingAssessment.name
+            }
+          };
+          
+          // Remove from unscheduled and add to scheduled
+          const index = unscheduledAssessments.indexOf(matchingAssessment);
+          if (index > -1) {
+            unscheduledAssessments.splice(index, 1);
+          }
+          matchingAssessment.scheduled = data.scheduled;
+          scheduledAssessments.push(matchingAssessment);
+          
+          // Update the calendar
+          calendar.addEvent(newEvent);
+        }
       },
       error: (xhr, status, error) => {
         console.error("Error updating assessment schedule:", error);
         alert("Failed to update assessment schedule. Please try again.");
+        // Refresh the page to restore the original state
+        location.reload();
       }
     });
   }
