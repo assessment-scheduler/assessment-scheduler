@@ -290,6 +290,10 @@
             color: #aaa;
             margin-bottom: 2rem;
         }
+
+        .schedule-btn {
+            background-color: #3498db;
+        }
     </style>
 {% endblock %}
 
@@ -348,6 +352,7 @@
                         <td>{{ assessment.scheduled if assessment.scheduled else 'Not Scheduled' }}</td>
                         <td>
                             <a href="{{ url_for('assessment_views.get_modify_assessments_page', id=assessment.id) }}" class="action-btn update-btn">Update</a>
+                            <a href="{{ url_for('assessment_views.get_schedule_assessment_page', id=assessment.id) }}" class="action-btn schedule-btn">Schedule</a>
                             <a href="#" class="action-btn delete-btn" data-id="{{ assessment.id }}">Delete</a>
                         </td>
                     </tr>

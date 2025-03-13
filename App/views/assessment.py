@@ -14,6 +14,7 @@ from ..controllers import (
     get_course,
     get_active_semester
 )
+from datetime import datetime
 
 assessment_views = Blueprint('assessment_views', __name__, template_folder='../templates')
 
@@ -173,37 +174,61 @@ def get_course_details(course_code):
 def update_assessment_schedule():
     try:
         assessment_id = request.form.get('id')
-        start_week = int(request.form.get('start_week', 0))
-        start_day = int(request.form.get('start_day', 0))
-        end_week = int(request.form.get('end_week', 0))
-        end_day = int(request.form.get('end_day', 0))
+        assessment_date = datetime.strptime(request.form.get('assessment_date'), '%Y-%m-%d').date()
         
         email = get_jwt_identity()
         user = get_user_by_email(email)
         assessment = get_assessment_by_id(assessment_id)
         
         if not assessment:
-            return jsonify({'success': False, 'message': 'Assessment not found'}), 404
+            flash('Assessment not found', 'error')
+            return redirect(url_for('assessment_views.get_assessments_page'))
             
         if not is_course_lecturer(user.id, assessment.course_code):
-            return jsonify({'success': False, 'message': 'You do not have permission to update this assessment'}), 403
-            
-        # Update only the scheduling fields
+            flash('You do not have permission to schedule this assessment', 'error')
+            return redirect(url_for('assessment_views.get_assessments_page'))
+        
+        # Update the assessment with the scheduled date
         result = update_assessment(
             assessment_id,
             assessment.name,
             assessment.percentage,
-            start_week,
-            start_day,
-            end_week,
-            end_day,
-            assessment.proctored
+            assessment.start_week,
+            assessment.start_day,
+            assessment.end_week,
+            assessment.end_day,
+            assessment.proctored,
+            assessment_date 
         )
         
         if result:
-            return jsonify({'success': True}), 200
+            flash('Assessment scheduled successfully', 'success')
         else:
-            return jsonify({'success': False, 'message': 'Failed to update assessment'}), 500
+            flash('Failed to schedule assessment', 'error')
+        
+        return redirect(url_for('assessment_views.get_assessments_page'))
             
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        flash(f'An error occurred: {str(e)}', 'error')
+        return redirect(url_for('assessment_views.get_assessments_page'))
+
+@assessment_views.route('/schedule_assessment/<string:id>', methods=['GET'])
+@jwt_required()
+def get_schedule_assessment_page(id):
+    email = get_jwt_identity()
+    user = get_user_by_email(email)
+    assessment = get_assessment_by_id(id)
+    
+    if not assessment:
+        flash('Assessment not found', 'error')
+        return redirect(url_for('assessment_views.get_assessments_page'))
+    
+    if not is_course_lecturer(user.id, assessment.course_code):
+        flash('You do not have permission to schedule assessments for this course', 'error')
+        return redirect(url_for('assessment_views.get_assessments_page'))
+    
+    semester = get_active_semester()
+    if not semester:
+        flash('No active semester found. Please contact an administrator.', 'warning')
+        
+    return render_template('schedule_assessment.html', assessment=assessment, semester=semester)
