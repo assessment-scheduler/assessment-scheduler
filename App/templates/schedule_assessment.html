@@ -1,0 +1,121 @@
+{% extends "layout.html" %}
+
+{% block title %}Schedule Assessment{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="../static/css/main.css">
+    <link rel="stylesheet" href="../static/css/assessments.css">
+    <style>
+        .schedule-form {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: var(--primary-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .form-group input[type="date"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #2a2e33;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .form-group input[type="date"]:focus {
+            outline: none;
+            border-color: var(--tertiary-color);
+        }
+
+        .assessment-info {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background-color: rgba(52, 152, 219, 0.1);
+            border-left: 4px solid var(--tertiary-color);
+            border-radius: 4px;
+        }
+
+        .assessment-info p {
+            margin: 0.5rem 0;
+            color: #fff;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .submit-btn {
+            background-color: var(--tertiary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .cancel-btn {
+            background-color: #7f8c8d;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .submit-btn:hover,
+        .cancel-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h2>Schedule Assessment</h2>
+
+        <div class="schedule-form">
+            <div class="assessment-info">
+                <p><strong>Course:</strong> {{ assessment.course_code }}</p>
+                <p><strong>Assessment:</strong> {{ assessment.name }}</p>
+                <p><strong>Current Schedule:</strong> {{ assessment.scheduled if assessment.scheduled else 'Not Scheduled' }}</p>
+            </div>
+
+            <form action="{{ url_for('assessment_views.update_assessment_schedule') }}" method="POST">
+                <input type="hidden" name="id" value="{{ assessment.id }}">
+                
+                <div class="form-group">
+                    <label for="assessment_date">Assessment Date:</label>
+                    <input type="date" id="assessment_date" name="assessment_date" required>
+                </div>
+
+                <div class="buttons-container">
+                    <a href="{{ url_for('assessment_views.get_assessments_page') }}" class="cancel-btn">Cancel</a>
+                    <button type="submit" class="submit-btn">Schedule Assessment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %} 

@@ -18,33 +18,33 @@
             <div class="links_container">
                 <ul id="layout_nav_links">
                     <!-- <li><a class="chat_nav_link nav_link" href="#">Chat</a></li> -->
-                    <li><a class="myAssessments_nav_link nav_link" href="/assessments">Assessments</a></li>
-                    <li><a class="calendar_nav_link nav_link" href="/calendar">Calendar</a></li>
-                    <li><a class="myAccount_nav_link nav_link" href="/account">Account</a></li>
-                    <li><a class="setting_nav_link nav_link" href="/settings">Settings</a></li>
+                    <li><a class="myAssessments_nav_link nav_link" href="{{ url_for('assessment_views.get_assessments_page') }}">Assessments</a></li>
+                    <li><a class="calendar_nav_link nav_link" href="{{ url_for('staff_views.get_calendar_page') }}">Calendar</a></li>
+                    <li><a class="myAccount_nav_link nav_link" href="{{ url_for('staff_views.get_account_page') }}">Account</a></li>
+                    <li><a class="setting_nav_link nav_link" href="{{ url_for('staff_views.get_settings_page') }}">Settings</a></li>
                     <!-- <li><a class="notification_nav_link nav_link" href="#">Notifications</a></li> -->
-                    <li><a class="logout_nav_link" href="/logout">Logout</a></li>
+                    <li><a class="logout_nav_link" href="{{ url_for('auth_views.logout') }}">Logout</a></li>
                 </ul>
             </div>
 
             <div class="links_container_mobile">
                 <ul id="layout_nav_links_mobile">
                     <!-- <li><a class="chat_nav_link mobile_links" href="#">Chat</a></li> -->
-                    <li><a class="myAssessments_nav_link mobile_links" href="/assessments">Assessments</a></li>
-                    <li><a class="calendar_nav_link mobile_links" href="/calendar">Calendar</a></li>
-                    <li><a class="myAccount_nav_link mobile_links" href="/account">Account</a></li>
-                    <li><a class="settings_nav_link mobile_links" href="/settings">Settings</a></li>
+                    <li><a class="myAssessments_nav_link mobile_links" href="{{ url_for('assessment_views.get_assessments_page') }}">Assessments</a></li>
+                    <li><a class="calendar_nav_link mobile_links" href="{{ url_for('staff_views.get_calendar_page') }}">Calendar</a></li>
+                    <li><a class="myAccount_nav_link mobile_links" href="{{ url_for('staff_views.get_account_page') }}">Account</a></li>
+                    <li><a class="settings_nav_link mobile_links" href="{{ url_for('staff_views.get_settings_page') }}">Settings</a></li>
                     <!-- <li><a class="notification_nav_link mobile_links" href="#">Notifications</a></li> -->
-                    <li class="logout_mobile_container"><a class="logout_nav_link mobile_links" href="/logout">Logout</a></li>
+                    <li class="logout_mobile_container"><a class="logout_nav_link mobile_links" href="{{ url_for('auth_views.logout') }}">Logout</a></li>
                 </ul>
                 <div class="exit">
-                    <img src="../static/images/exit-btn.svg" alt="">
+                    <img src="{{ url_for('static', filename='images/exit-btn.svg') }}" alt="">
                 </div>
             </div>
 
 
             <div class="burger">
-                <img src="../static/images/burgermenu.svg" alt="">
+                <img src="{{ url_for('static', filename='images/burgermenu.svg') }}" alt="">
             </div>
         </div>
     </nav>
@@ -61,7 +61,7 @@
 </body>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
-<script src="../static/js/mobileMenu.js"></script>
+<script src="{{ url_for('static', filename='js/mobileMenu.js') }}"></script>
 <script>
 
     setTimeout(function() {

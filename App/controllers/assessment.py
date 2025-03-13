@@ -50,7 +50,7 @@ def create_assessment(course_code:str, name:str, percentage:int, start_week:int,
     db.session.commit()
     return True
 
-def update_assessment(id:str, name:str, percentage:int, start_week:int, start_day:int, end_week:int, end_day:int, proctored:int)-> bool:
+def update_assessment(id:str, name:str, percentage:int, start_week:int, start_day:int, end_week:int, end_day:int, proctored:int, scheduled:str = None)-> bool:
     assessment: Optional[Assessment] =  Assessment.query.get(id)
     if assessment is None:
         return False
@@ -61,6 +61,8 @@ def update_assessment(id:str, name:str, percentage:int, start_week:int, start_da
     assessment.end_week = end_week
     assessment.end_day = end_day
     assessment.proctored = proctored
+    if scheduled is not None:
+        assessment.scheduled = scheduled
     db.session.commit()
     return True
 
