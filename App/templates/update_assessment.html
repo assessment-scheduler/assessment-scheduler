@@ -191,8 +191,7 @@
   <div class="course-info">
     <p><strong>Course:</strong> {{ assessment.course_code }}</p>
     {% if semester %}
-    <p><strong>Semester:</strong> {{ semester.name }}</p>
-    <p><strong>Date Range:</strong> {{ semester.start_date.strftime('%Y-%m-%d') }} to {{ semester.end_date.strftime('%Y-%m-%d') }}</p>
+    <p><strong>Semester Date Range:</strong> {{ semester.start_date.strftime('%Y-%m-%d') }} to {{ semester.end_date.strftime('%Y-%m-%d') }}</p>
     {% endif %}
   </div>
   
