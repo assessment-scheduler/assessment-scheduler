@@ -84,6 +84,51 @@
     width: 250px;
   }
   
+  /* Fix for calendar event tiles */
+  .fc-event {
+    border: none !important;
+    margin: 2px !important;
+    padding: 5px !important;
+  }
+  
+  .fc-daygrid-event {
+    white-space: normal !important;
+    align-items: flex-start !important;
+    overflow: hidden;
+  }
+  
+  .fc-daygrid-day-events {
+    padding: 2px !important;
+  }
+  
+  /* Fix for event content */
+  .fc-event-title {
+    padding: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: normal !important;
+    font-weight: normal !important;
+  }
+  
+  .fc-event-main {
+    padding: 3px 5px !important;
+  }
+  
+  /* Better appearance for small screens */
+  .fc-daygrid-day-frame {
+    min-height: 80px !important;
+  }
+  
+  .fc-day-today {
+    background-color: rgba(var(--tertiary-color-rgb), 0.1) !important;
+  }
+  
+  /* Make sure custom assessment styles override FullCalendar defaults */
+  .fc .fc-daygrid-day.fc-day-today {
+    background-color: rgba(80, 59, 154, 0.1) !important;
+  }
+  
+  /* Responsive styles */
   @media (max-width: 992px) {
     #main {
       flex-direction: column;
@@ -165,6 +210,14 @@
   // Variables specifically needed by index.js
   var scheduledAssessments = {{ scheduled_assessments | tojson }};
   var unscheduledAssessments = {{ unscheduled_assessments | tojson }};
+  
+  // Debug helper to log the scheduled assessments
+  console.log("Calendar received", scheduledAssessments.length, "scheduled assessments");
+  scheduledAssessments.forEach(function(assessment, index) {
+    if (index < 10) { // Log first 10 only to avoid console clutter
+      console.log(`Assessment ${index+1}: ${assessment.course_code}-${assessment.name}, Scheduled: ${assessment.scheduled}`);
+    }
+  });
   
   // Calculate semester duration in weeks
   var semesterWeeks = 15;  // Default if semester dates not available

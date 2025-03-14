@@ -13,9 +13,11 @@ from ..controllers import (
     get_assessments_by_course,
     get_course,
     get_active_semester,
-    get_num_assessments
+    get_num_assessments,
+    get_all_assessments
 )
 from datetime import datetime
+import json
 
 assessment_views = Blueprint('assessment_views', __name__, template_folder='../templates')
 
@@ -248,19 +250,22 @@ def get_calendar_page():
     email = get_jwt_identity()
     user = get_user_by_email(email)
     
-    # Get all assessments for the lecturer
-    assessments_list = get_assessments_by_lecturer(user.email) or []
+    # CRITICAL SECTION: Retrieve ALL assessments across the system
+    all_assessments = get_all_assessments() or []
+    print(f"Total assessments retrieved: {len(all_assessments)}")
     
-    # Convert Assessment objects to dictionaries
-    staff_exams = []
-    scheduled_assessments = []
-    unscheduled_assessments = []
+    # Get user's assessments (for unscheduled list)
+    user_assessments = get_assessments_by_lecturer(user.email) or []
     
-    for assessment in assessments_list:
-        if hasattr(assessment, 'to_json'):
-            assessment_dict = assessment.to_json()
-        else:
-            # Manual conversion if to_json method is not available
+    # Lists to be passed to the template
+    staff_exams = []  # Current user's assessments
+    scheduled_assessments = []  # All scheduled assessments for calendar display
+    unscheduled_assessments = []  # Current user's unscheduled assessments
+    
+    # Process all assessments for the calendar
+    for assessment in all_assessments:
+        # Handle assessments with scheduled dates
+        try:
             assessment_dict = {
                 'id': assessment.id,
                 'name': assessment.name,
@@ -273,62 +278,102 @@ def get_calendar_page():
                 'proctored': assessment.proctored,
                 'scheduled': assessment.scheduled.isoformat() if assessment.scheduled else None
             }
-        
-        staff_exams.append(assessment_dict)
-        
-        # Separate into scheduled and unscheduled
-        if assessment.scheduled:
-            scheduled_assessments.append(assessment_dict)
-        else:
-            unscheduled_assessments.append(assessment_dict)
+            
+            # If it's scheduled, add to scheduled list
+            if assessment.scheduled:
+                if isinstance(assessment_dict['scheduled'], str):
+                    if 'T' in assessment_dict['scheduled']:
+                        assessment_dict['scheduled'] = assessment_dict['scheduled'].split('T')[0]
+                
+                scheduled_assessments.append(assessment_dict)
+                print(f"Added to calendar: {assessment.course_code}-{assessment.name} on {assessment_dict['scheduled']}")
+                
+        except Exception as e:
+            print(f"Error processing assessment {assessment.id}: {str(e)}")
+    
+    # Process user's assessments for the unscheduled list
+    for assessment in user_assessments:
+        try:
+            assessment_dict = {
+                'id': assessment.id,
+                'name': assessment.name,
+                'course_code': assessment.course_code,
+                'percentage': assessment.percentage,
+                'start_week': assessment.start_week,
+                'start_day': assessment.start_day,
+                'end_week': assessment.end_week,
+                'end_day': assessment.end_day,
+                'proctored': assessment.proctored,
+                'scheduled': assessment.scheduled.isoformat() if assessment.scheduled else None
+            }
+            
+            # Format dates consistently
+            if assessment_dict.get('scheduled') and isinstance(assessment_dict['scheduled'], str):
+                if 'T' in assessment_dict['scheduled']:
+                    assessment_dict['scheduled'] = assessment_dict['scheduled'].split('T')[0]
+            
+            staff_exams.append(assessment_dict)
+            
+            # Add to unscheduled list if not scheduled
+            if not assessment.scheduled:
+                unscheduled_assessments.append(assessment_dict)
+        except Exception as e:
+            print(f"Error processing user assessment {assessment.id}: {str(e)}")
     
     # Get staff courses
     staff_course_objects = get_staff_courses(email) or []
     staff_courses = []
     
     for course in staff_course_objects:
-        if hasattr(course, 'to_json'):
-            staff_courses.append(course.to_json())
-        else:
-            # Manual conversion
+        try:
             course_dict = {
-                'id': course.id,
-                'code': course.code,
+                'code': course.code,  # Changed from course.id to course.code
                 'name': course.name,
-                'level': course.level
+                'level': course.code[4] if len(course.code) > 4 else ''  # Extract level from course code
             }
             staff_courses.append(course_dict)
+        except Exception as e:
+            print(f"Error processing course {course.code}: {str(e)}")  # Changed from course.id to course.code
     
     # For backwards compatibility
     courses = staff_courses
     other_exams = staff_exams
     
-    # Get active semester and ensure it exists
+    # Get active semester
     active_semester = get_active_semester()
     if not active_semester:
         flash('No active semester found. Please contact an administrator.', 'warning')
         semester = {}
     else:
-        if hasattr(active_semester, 'to_json'):
-            semester = active_semester.to_json()
-        else:
-            semester = {
-                'id': active_semester.id,
-                'start_date': active_semester.start_date.isoformat(),
-                'end_date': active_semester.end_date.isoformat(),
-                'sem_num': active_semester.sem_num,
-                'max_assessments': active_semester.max_assessments,
-                'constraint_value': active_semester.constraint_value,
-                'active': active_semester.active
-            }
+        semester = {
+            'id': active_semester.id,
+            'start_date': active_semester.start_date.isoformat(),
+            'end_date': active_semester.end_date.isoformat(),
+            'sem_num': active_semester.sem_num,
+            'max_assessments': active_semester.max_assessments,
+            'constraint_value': active_semester.constraint_value,
+            'active': active_semester.active
+        }
         
         # Ensure dates are in ISO format
         if isinstance(semester.get('start_date'), str):
-            semester['start_date'] = semester['start_date'].split(' ')[0]
+            semester['start_date'] = semester['start_date'].split('T')[0]
         if isinstance(semester.get('end_date'), str):
-            semester['end_date'] = semester['end_date'].split(' ')[0]
+            semester['start_date'].split('T')[0]
+            semester['end_date'] = semester['end_date'].split('T')[0]
     
-    # All data is now serializable
+    # Important debug information
+    print(f"Calendar: Passing {len(scheduled_assessments)} scheduled assessments to template")
+    for idx, assessment in enumerate(scheduled_assessments[:10]):  # Print first 10
+        print(f"  {idx+1}. ID: {assessment.get('id')}, Name: {assessment.get('name')}, Date: {assessment.get('scheduled')}, Course: {assessment.get('course_code')}")
+    
+    # Write to a debug file to inspect the data
+    with open('calendar_debug.json', 'w') as f:
+        f.write(json.dumps({
+            'scheduled_count': len(scheduled_assessments),
+            'scheduled_sample': scheduled_assessments[:10] if scheduled_assessments else []
+        }, indent=2))
+    
     return render_template('calendar.html', 
                           staff_exams=staff_exams,
                           other_exams=other_exams,
