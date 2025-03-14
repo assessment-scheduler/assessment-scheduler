@@ -12,7 +12,8 @@ from ..controllers import (
     get_assessments_by_lecturer,
     get_assessments_by_course,
     get_course,
-    get_active_semester
+    get_active_semester,
+    get_num_assessments
 )
 from datetime import datetime
 
@@ -232,3 +233,56 @@ def get_schedule_assessment_page(id):
         flash('No active semester found. Please contact an administrator.', 'warning')
         
     return render_template('schedule_assessment.html', assessment=assessment, semester=semester)
+
+@assessment_views.route('/calendar', methods=['GET'])
+@jwt_required()
+def get_calendar_page():
+    email = get_jwt_identity()
+    user = get_user_by_email(email)
+    
+    # Get all assessments for the lecturer
+    all_assessments = get_assessments_by_lecturer(user.email) or []
+    
+    # Separate into scheduled and unscheduled assessments
+    scheduled_assessments = []
+    unscheduled_assessments = []
+    
+    for assessment in all_assessments:
+        assessment_dict = {
+            'id': assessment.id,
+            'name': assessment.name,
+            'course_code': assessment.course_code,
+            'percentage': assessment.percentage,
+            'start_week': assessment.start_week,
+            'start_day': assessment.start_day,
+            'end_week': assessment.end_week,
+            'end_day': assessment.end_day,
+            'proctored': assessment.proctored,
+            'scheduled': assessment.scheduled.isoformat() if assessment.scheduled else None
+        }
+        
+        if assessment.scheduled:
+            scheduled_assessments.append(assessment_dict)
+        else:
+            unscheduled_assessments.append(assessment_dict)
+    
+    staff_courses = [course.to_json() for course in get_staff_courses(email) or []]
+    
+    # Get active semester and ensure it exists
+    active_semester = get_active_semester()
+    if not active_semester:
+        flash('No active semester found. Please contact an administrator.', 'warning')
+        semester = {}
+    else:
+        semester = active_semester.to_json()
+        # Ensure dates are in ISO format
+        if isinstance(semester.get('start_date'), str):
+            semester['start_date'] = semester['start_date'].split(' ')[0]
+        if isinstance(semester.get('end_date'), str):
+            semester['end_date'] = semester['end_date'].split(' ')[0]
+    
+    return render_template('calendar.html', 
+                         scheduled_assessments=scheduled_assessments,
+                         unscheduled_assessments=unscheduled_assessments,
+                         staff_courses=staff_courses, 
+                         semester=semester)
