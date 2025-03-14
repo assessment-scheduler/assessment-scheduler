@@ -24,6 +24,8 @@ class Assessment(db.Model):
     
     def to_json(self):
         return {
+            'id': self.id,
+            'course_code': self.course_code,
             'name': self.name,
             'percentage': self.percentage,
             'start_week': self.start_week,
@@ -31,9 +33,8 @@ class Assessment(db.Model):
             'end_week': self.end_week,
             'end_day': self.end_day,
             'proctored': self.proctored,
-            'scheduled' : self.scheduled
+            'scheduled': self.scheduled
         }
     
     def __repr__(self):
         return f'{self.course_code} {self.name}: {self.percentage}% Scheduled for { "N/A" if self.scheduled is None else self.scheduled}'
-    
