@@ -1,6 +1,9 @@
 var weekCounter = 0;
 
 document.addEventListener("DOMContentLoaded", function () {
+  // Debug logging
+  console.log("Initial scheduled assessments:", scheduledAssessments);
+
   // Update colors to use tertiary color (purple) from CSS variables
   const colors = {
     Assignment: 'var(--tertiary-color)',
@@ -14,20 +17,28 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   // Initialize calendar events with scheduled assessments only
-  const calendarEvents = scheduledAssessments.map(assessment => ({
-    id: assessment.id,
-    title: `${assessment.course_code} - ${assessment.name} (${assessment.percentage}%)`,
-    start: assessment.scheduled,
-    allDay: true,
-    backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
-    textColor: '#fff',
-    extendedProps: {
-      course_code: assessment.course_code,
-      percentage: assessment.percentage,
-      proctored: assessment.proctored,
-      assessmentName: assessment.name
-    }
-  }));
+  const calendarEvents = scheduledAssessments.map(assessment => {
+    console.log("Processing assessment for calendar:", assessment);
+    return {
+      id: assessment.id,
+      title: `${assessment.course_code}-${assessment.name} (${assessment.percentage}%)`,
+      start: assessment.scheduled,
+      allDay: true,
+      backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
+      textColor: '#fff',
+      extendedProps: {
+        course_code: assessment.course_code,
+        percentage: assessment.percentage,
+        proctored: assessment.proctored,
+        assessmentName: assessment.name
+      }
+    };
+  }).filter(event => {
+    console.log("Filtered event start date:", event.start);
+    return event.start != null;
+  });
+
+  console.log("Processed calendar events:", calendarEvents);
 
   const levelFilter = document.getElementById("level");
   const courseFilter = document.getElementById("courses");
@@ -46,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
     eventData: function(eventEl) {
       return {
         id: eventEl.dataset.assessmentId,
-        title: `${eventEl.dataset.courseCode} - ${eventEl.children[0].innerText} (${eventEl.dataset.percentage}%)`,
+        title: `${eventEl.dataset.courseCode}-${eventEl.children[0].innerText.split('-')[1]} (${eventEl.dataset.percentage}%)`,
         backgroundColor: eventEl.dataset.proctored === "1" ? colors.Proctored : colors.Assignment,
         textColor: '#fff',
         extendedProps: {
@@ -93,7 +104,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Save the event to server
       saveEvent({
         id: tempEvent.id,
-        scheduled: tempEvent.start.toISOString().split('T')[0]
+        assessment_date: tempEvent.start.toISOString().split('T')[0]
       }, tempEvent);
     },
     eventDidMount: function(info) {
@@ -162,8 +173,8 @@ document.addEventListener("DOMContentLoaded", function () {
     
     const updatedEvents = newEvents.map(assessment => ({
       id: assessment.id,
-      title: `${assessment.course_code} - ${assessment.name} (${assessment.percentage}%)`,
-      start: assessment.scheduled,
+      title: `${assessment.course_code}-${assessment.name} (${assessment.percentage}%)`,
+      start: assessment.scheduled ? assessment.scheduled.split('T')[0] : assessment.scheduled,
       allDay: true,
       backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
       textColor: '#fff',
@@ -173,7 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
         proctored: assessment.proctored,
         assessmentName: assessment.name
       }
-    }));
+    })).filter(event => event.start !== null);
     
     calendar.addEventSource(updatedEvents);
     calendar.refetchEvents();
@@ -185,7 +196,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     saveEvent({
       id: event.id,
-      scheduled: newDate.toISOString().split('T')[0]
+      assessment_date: newDate.toISOString().split('T')[0]
     });
   }
 
@@ -195,41 +206,72 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function saveEvent(data, tempEvent = null) {
+    console.log("Saving event with data:", data);
     $.ajax({
       url: "/update_assessment_schedule",
       method: "POST",
       data: data,
       success: (response) => {
-        console.log("Assessment schedule updated successfully");
+        console.log("Server response:", response);
         
-        // Find and remove the dragged element from unscheduled list
-        const draggedEl = document.querySelector(`[data-assessment-id="${data.id}"]`);
-        if (draggedEl) {
-          draggedEl.remove();
-        }
-        
-        // Update our assessment arrays
-        const matchingAssessment = unscheduledAssessments.find(a => a.id.toString() === data.id.toString());
-        if (matchingAssessment) {
-          const index = unscheduledAssessments.indexOf(matchingAssessment);
-          if (index > -1) {
-            unscheduledAssessments.splice(index, 1);
+        if (response.success) {
+          // Update the scheduledAssessments array
+          const updatedAssessment = response.assessment;
+          
+          // Remove from unscheduled if it was there
+          const unscheduledIndex = unscheduledAssessments.findIndex(a => a.id.toString() === data.id.toString());
+          if (unscheduledIndex > -1) {
+            unscheduledAssessments.splice(unscheduledIndex, 1);
+            
+            // Remove the draggable element from the UI
+            const draggedEl = document.querySelector(`[data-assessment-id="${data.id}"]`);
+            if (draggedEl) {
+              draggedEl.remove();
+            }
           }
-          matchingAssessment.scheduled = data.scheduled;
-          scheduledAssessments.push(matchingAssessment);
+          
+          // Update or add to scheduledAssessments
+          const scheduledIndex = scheduledAssessments.findIndex(a => a.id.toString() === data.id.toString());
+          if (scheduledIndex > -1) {
+            scheduledAssessments[scheduledIndex] = updatedAssessment;
+          } else {
+            scheduledAssessments.push(updatedAssessment);
+          }
+          
+          // Update the calendar
+          calendar.removeAllEvents();
+          const updatedEvents = scheduledAssessments.map(assessment => ({
+            id: assessment.id,
+            title: `${assessment.course_code}-${assessment.name} (${assessment.percentage}%)`,
+            start: assessment.scheduled,
+            allDay: true,
+            backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
+            textColor: '#fff',
+            extendedProps: {
+              course_code: assessment.course_code,
+              percentage: assessment.percentage,
+              proctored: assessment.proctored,
+              assessmentName: assessment.name
+            }
+          })).filter(event => event.start != null);
+          
+          calendar.addEventSource(updatedEvents);
+          calendar.refetchEvents();
+        } else {
+          // Handle error
+          alert(response.message || "Failed to update assessment schedule");
+          if (tempEvent) {
+            tempEvent.remove();
+          }
         }
       },
       error: (xhr, status, error) => {
-        console.error("Error updating assessment schedule:", error);
+        console.error("Error details:", {xhr, status, error});
         alert("Failed to update assessment schedule. Please try again.");
         
-        // Remove the temporary event if it exists
         if (tempEvent) {
           tempEvent.remove();
         }
-        
-        // Refresh the page to restore the original state
-        location.reload();
       }
     });
   }

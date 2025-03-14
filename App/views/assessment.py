@@ -182,12 +182,10 @@ def update_assessment_schedule():
         assessment = get_assessment_by_id(assessment_id)
         
         if not assessment:
-            flash('Assessment not found', 'error')
-            return redirect(url_for('assessment_views.get_assessments_page'))
+            return jsonify({'success': False, 'message': 'Assessment not found'}), 404
             
         if not is_course_lecturer(user.id, assessment.course_code):
-            flash('You do not have permission to schedule this assessment', 'error')
-            return redirect(url_for('assessment_views.get_assessments_page'))
+            return jsonify({'success': False, 'message': 'Permission denied'}), 403
         
         # Update the assessment with the scheduled date
         result = update_assessment(
@@ -203,15 +201,25 @@ def update_assessment_schedule():
         )
         
         if result:
-            flash('Assessment scheduled successfully', 'success')
+            # Get the updated assessment
+            updated_assessment = get_assessment_by_id(assessment_id)
+            return jsonify({
+                'success': True, 
+                'message': 'Assessment scheduled successfully',
+                'assessment': {
+                    'id': updated_assessment.id,
+                    'name': updated_assessment.name,
+                    'course_code': updated_assessment.course_code,
+                    'percentage': updated_assessment.percentage,
+                    'scheduled': updated_assessment.scheduled.isoformat() if updated_assessment.scheduled else None,
+                    'proctored': updated_assessment.proctored
+                }
+            })
         else:
-            flash('Failed to schedule assessment', 'error')
-        
-        return redirect(url_for('assessment_views.get_assessments_page'))
+            return jsonify({'success': False, 'message': 'Failed to schedule assessment'}), 500
             
     except Exception as e:
-        flash(f'An error occurred: {str(e)}', 'error')
-        return redirect(url_for('assessment_views.get_assessments_page'))
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 @assessment_views.route('/schedule_assessment/<string:id>', methods=['GET'])
 @jwt_required()

@@ -137,10 +137,11 @@
                 data-assessment-id="{{ assessment.id }}" 
                 data-course-code="{{ assessment.course_code }}" 
                 data-percentage="{{ assessment.percentage }}"
-                data-proctored="{{ assessment.proctored }}">
-              <span class="assessment-name">{{ assessment.name }}</span>
+                data-proctored="{{ assessment.proctored }}"
+                data-name="{{ assessment.name }}">
+              <span class="assessment-name">{{ assessment.course_code }}-{{ assessment.name }}</span>
               <div class="assessment-details">
-                {{ assessment.course_code }} | Weight: {{ assessment.percentage }}%
+                Weight: {{ assessment.percentage }}%
                 {% if assessment.proctored %}<span class="badge">Proctored</span>{% endif %}
               </div>
             </div>
