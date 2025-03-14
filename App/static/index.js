@@ -1,24 +1,26 @@
 var weekCounter = 0;
 
 document.addEventListener("DOMContentLoaded", function () {
+  // Update colors to use tertiary color (purple) from CSS variables
   const colors = {
-    Assignment: "#3397b9",
+    Assignment: 'var(--tertiary-color)',
     Quiz: "#499373",
     Project: "#006064",
     Exam: "#CC4E4E",
     Presentation: "#cc7a50",
     Other: "#C29203",
     Pending: "#999999",
-    Proctored: "#8B4513"
+    Proctored: '#9C9FE2'
   };
 
-  // Initialize calendar events with scheduled assessments
+  // Initialize calendar events with scheduled assessments only
   const calendarEvents = scheduledAssessments.map(assessment => ({
     id: assessment.id,
     title: `${assessment.course_code} - ${assessment.name} (${assessment.percentage}%)`,
     start: assessment.scheduled,
     allDay: true,
     backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
+    textColor: '#fff',
     extendedProps: {
       course_code: assessment.course_code,
       percentage: assessment.percentage,
@@ -44,8 +46,9 @@ document.addEventListener("DOMContentLoaded", function () {
     eventData: function(eventEl) {
       return {
         id: eventEl.dataset.assessmentId,
-        title: eventEl.children[0].innerText,
+        title: `${eventEl.dataset.courseCode} - ${eventEl.children[0].innerText} (${eventEl.dataset.percentage}%)`,
         backgroundColor: eventEl.dataset.proctored === "1" ? colors.Proctored : colors.Assignment,
+        textColor: '#fff',
         extendedProps: {
           course_code: eventEl.dataset.courseCode,
           percentage: eventEl.dataset.percentage,
@@ -79,10 +82,20 @@ document.addEventListener("DOMContentLoaded", function () {
     editable: true,
     selectable: true,
     droppable: true,
-    events: calendarEvents,
+    events: calendarEvents,  // Use only the filtered calendar events
     eventResize: handleEventEdit,
     eventDrop: handleEventEdit,
     drop: handleNewItem,
+    eventReceive: function(info) {
+      // Keep the temporary event until server confirms
+      const tempEvent = info.event;
+      
+      // Save the event to server
+      saveEvent({
+        id: tempEvent.id,
+        scheduled: tempEvent.start.toISOString().split('T')[0]
+      }, tempEvent);
+    },
     eventDidMount: function(info) {
       // Add tooltips to events
       info.el.title = info.event.title;
@@ -153,6 +166,7 @@ document.addEventListener("DOMContentLoaded", function () {
       start: assessment.scheduled,
       allDay: true,
       backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
+      textColor: '#fff',
       extendedProps: {
         course_code: assessment.course_code,
         percentage: assessment.percentage,
@@ -176,16 +190,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function handleNewItem(info) {
-    const droppedDate = info.date;
-    const eventId = info.draggedEl.dataset.assessmentId;
-    
-    saveEvent({
-      id: eventId,
-      scheduled: droppedDate.toISOString().split('T')[0]
-    });
+    // This is now handled by eventReceive
+    return;
   }
 
-  function saveEvent(data) {
+  function saveEvent(data, tempEvent = null) {
     $.ajax({
       url: "/update_assessment_schedule",
       method: "POST",
@@ -193,44 +202,32 @@ document.addEventListener("DOMContentLoaded", function () {
       success: (response) => {
         console.log("Assessment schedule updated successfully");
         
-        // Find the dragged element and remove it from unscheduled list
+        // Find and remove the dragged element from unscheduled list
         const draggedEl = document.querySelector(`[data-assessment-id="${data.id}"]`);
         if (draggedEl) {
           draggedEl.remove();
         }
         
-        // Add the event to the calendar
+        // Update our assessment arrays
         const matchingAssessment = unscheduledAssessments.find(a => a.id.toString() === data.id.toString());
         if (matchingAssessment) {
-          const newEvent = {
-            id: matchingAssessment.id,
-            title: `${matchingAssessment.course_code} - ${matchingAssessment.name} (${matchingAssessment.percentage}%)`,
-            start: data.scheduled,
-            allDay: true,
-            backgroundColor: matchingAssessment.proctored ? colors.Proctored : colors.Assignment,
-            extendedProps: {
-              course_code: matchingAssessment.course_code,
-              percentage: matchingAssessment.percentage,
-              proctored: matchingAssessment.proctored,
-              assessmentName: matchingAssessment.name
-            }
-          };
-          
-          // Remove from unscheduled and add to scheduled
           const index = unscheduledAssessments.indexOf(matchingAssessment);
           if (index > -1) {
             unscheduledAssessments.splice(index, 1);
           }
           matchingAssessment.scheduled = data.scheduled;
           scheduledAssessments.push(matchingAssessment);
-          
-          // Update the calendar
-          calendar.addEvent(newEvent);
         }
       },
       error: (xhr, status, error) => {
         console.error("Error updating assessment schedule:", error);
         alert("Failed to update assessment schedule. Please try again.");
+        
+        // Remove the temporary event if it exists
+        if (tempEvent) {
+          tempEvent.remove();
+        }
+        
         // Refresh the page to restore the original state
         location.reload();
       }

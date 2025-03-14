@@ -6,36 +6,97 @@
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
 <link rel="stylesheet" href="../static/css/style.css">
 <style>
-  .unscheduled-assessments {
-    padding: 20px;
-    background: var(--primary-color);
-    border-radius: 8px;
-    margin-bottom: 20px;
+  /* Enhanced styles for the unscheduled assessments panel */
+  #unscheduled-list {
+    padding: 10px;
+    background: var(--secondary-color);
+    border-radius: 5px;
+    margin-top: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    max-height: 500px;
+    overflow-y: auto;
   }
   
-  .unscheduled-assessments h3 {
-    color: white;
-    margin-bottom: 15px;
+  #unscheduled-list h3 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #444;
+    color: #fff;
   }
   
   .draggable-assessment {
-    background: var(--secondary-color);
+    background: var(--tertiary-color);
     padding: 10px;
-    margin: 5px 0;
+    margin-bottom: 10px;
     border-radius: 4px;
     cursor: move;
-    color: white;
-    border-left: 4px solid var(--tertiary-color);
+    border-left: 4px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+    color: #fff;
+  }
+  
+  .draggable-assessment:hover {
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    transform: translateY(-2px);
+    background: #503b9a;
   }
   
   .draggable-assessment.proctored {
-    border-left-color: #CC4E4E;
+    border-left: 4px solid #9C9FE2;
   }
   
-  .assessment-info {
-    font-size: 0.9em;
-    color: #ccc;
+  .assessment-details {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
     margin-top: 5px;
+  }
+  
+  .assessment-name {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+    color: #fff;
+  }
+  
+  .badge {
+    background: var(--tertiary-color);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    margin-left: 5px;
+  }
+  
+  /* Layout adjustments */
+  #main {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  #calendar {
+    flex: 1;
+    min-width: 600px;
+    margin-right: 20px;
+  }
+  
+  #nav {
+    width: 250px;
+  }
+  
+  @media (max-width: 992px) {
+    #main {
+      flex-direction: column;
+    }
+    
+    #calendar {
+      margin-right: 0;
+      margin-bottom: 20px;
+    }
+    
+    #nav {
+      width: 100%;
+    }
   }
 </style>
 {% endblock %}
@@ -53,68 +114,67 @@
     <select id="courses">
       <option value="My Courses">My Courses</option>
       <option value="all">ALL</option>
-      {% for course in staff_courses %}
-      <option value="{{course.code}}">{{course.code}} - {{course.name}}</option>
+      {% for course in courses %}
+      <option value="{{course.code}}">{{course.code}}</option>
       {% endfor %}
     </select>
-
+    
     <select id="assignmentType">
       <option value="all">All Types</option>
-      <option value="0">Assignments</option>
-      <option value="1">Proctored Exams</option>
+      <option value="0">Regular</option>
+      <option value="1">Proctored</option>
     </select>
   </div>
+  
   <div id="main">
     <div id="calendar"></div>
     <div id="nav">
-      <div class="unscheduled-assessments">
+      <div id="unscheduled-list">
         <h3>Unscheduled Assessments</h3>
-        <div id="unscheduled-list">
+        {% if unscheduled_assessments %}
           {% for assessment in unscheduled_assessments %}
-          <div class="draggable-assessment {% if assessment.proctored %}proctored{% endif %}"
-               data-assessment-id="{{ assessment.id }}"
-               data-course-code="{{ assessment.course_code }}"
-               data-percentage="{{ assessment.percentage }}"
-               data-proctored="{{ assessment.proctored }}">
-            <div>{{ assessment.course_code }} - {{ assessment.name }}</div>
-            <div class="assessment-info">
-              Percentage: {{ assessment.percentage }}%
-              {% if assessment.proctored %}
-              | Proctored
-              {% endif %}
+            <div class="draggable-assessment {% if assessment.proctored %}proctored{% endif %}" 
+                data-assessment-id="{{ assessment.id }}" 
+                data-course-code="{{ assessment.course_code }}" 
+                data-percentage="{{ assessment.percentage }}"
+                data-proctored="{{ assessment.proctored }}">
+              <span class="assessment-name">{{ assessment.name }}</span>
+              <div class="assessment-details">
+                {{ assessment.course_code }} | Weight: {{ assessment.percentage }}%
+                {% if assessment.proctored %}<span class="badge">Proctored</span>{% endif %}
+              </div>
             </div>
-          </div>
           {% endfor %}
-        </div>
+        {% else %}
+          <p>No unscheduled assessments found.</p>
+        {% endif %}
       </div>
     </div>
   </div>
 </div>
-
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
 <script>
-  // Pass model data to JavaScript with proper defaults
-  var scheduledAssessments = {{ scheduled_assessments | tojson }} || [];
-  var unscheduledAssessments = {{ unscheduled_assessments | tojson }} || [];
-  var myCourses = {{ staff_courses | tojson }} || [];
-  var semester = {{ semester | tojson }} || { start_date: null, end_date: null };
+  // Essential variables for calendar functionality
+  var staff_exams = {{ staff_exams | tojson }};
+  var myCourses = {{ staff_courses | tojson }};
+  var semester = {{ semester | tojson }};
+  var otherExams = {{ other_exams | tojson }};
   
-  // Add semester week data for calculations
-  var semesterStartDate = semester.start_date ? new Date(semester.start_date) : new Date();
-  var semesterEndDate = semester.end_date ? new Date(semester.end_date) : new Date();
-  var semesterWeeks = Math.ceil((semesterEndDate - semesterStartDate) / (7 * 24 * 60 * 60 * 1000)) || 15;
+  // Variables specifically needed by index.js
+  var scheduledAssessments = {{ scheduled_assessments | tojson }};
+  var unscheduledAssessments = {{ unscheduled_assessments | tojson }};
   
-  // Function to convert week/day to actual dates
-  function getDateFromWeekDay(startDate, week, day) {
-    if (!(startDate instanceof Date) || isNaN(startDate)) {
-      startDate = new Date();
-    }
-    const result = new Date(startDate);
-    result.setDate(result.getDate() + (week - 1) * 7 + day - 1);
-    return result;
+  // Calculate semester duration in weeks
+  var semesterWeeks = 15;  // Default if semester dates not available
+  if (semester && semester.start_date && semester.end_date) {
+    const startDate = new Date(semester.start_date);
+    const endDate = new Date(semester.end_date);
+    const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+    semesterWeeks = Math.ceil(daysDiff / 7);
   }
 </script>
 <script src="{{url_for('static', filename='index.js')}}"></script>
 <script src="{{url_for('static', filename='js/mobileMenu.js')}}"></script>
+
 {% endblock %}

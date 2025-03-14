@@ -241,32 +241,59 @@ def get_calendar_page():
     user = get_user_by_email(email)
     
     # Get all assessments for the lecturer
-    all_assessments = get_assessments_by_lecturer(user.email) or []
+    assessments_list = get_assessments_by_lecturer(user.email) or []
     
-    # Separate into scheduled and unscheduled assessments
+    # Convert Assessment objects to dictionaries
+    staff_exams = []
     scheduled_assessments = []
     unscheduled_assessments = []
     
-    for assessment in all_assessments:
-        assessment_dict = {
-            'id': assessment.id,
-            'name': assessment.name,
-            'course_code': assessment.course_code,
-            'percentage': assessment.percentage,
-            'start_week': assessment.start_week,
-            'start_day': assessment.start_day,
-            'end_week': assessment.end_week,
-            'end_day': assessment.end_day,
-            'proctored': assessment.proctored,
-            'scheduled': assessment.scheduled.isoformat() if assessment.scheduled else None
-        }
+    for assessment in assessments_list:
+        if hasattr(assessment, 'to_json'):
+            assessment_dict = assessment.to_json()
+        else:
+            # Manual conversion if to_json method is not available
+            assessment_dict = {
+                'id': assessment.id,
+                'name': assessment.name,
+                'course_code': assessment.course_code,
+                'percentage': assessment.percentage,
+                'start_week': assessment.start_week,
+                'start_day': assessment.start_day,
+                'end_week': assessment.end_week,
+                'end_day': assessment.end_day,
+                'proctored': assessment.proctored,
+                'scheduled': assessment.scheduled.isoformat() if assessment.scheduled else None
+            }
         
+        staff_exams.append(assessment_dict)
+        
+        # Separate into scheduled and unscheduled
         if assessment.scheduled:
             scheduled_assessments.append(assessment_dict)
         else:
             unscheduled_assessments.append(assessment_dict)
     
-    staff_courses = [course.to_json() for course in get_staff_courses(email) or []]
+    # Get staff courses
+    staff_course_objects = get_staff_courses(email) or []
+    staff_courses = []
+    
+    for course in staff_course_objects:
+        if hasattr(course, 'to_json'):
+            staff_courses.append(course.to_json())
+        else:
+            # Manual conversion
+            course_dict = {
+                'id': course.id,
+                'code': course.code,
+                'name': course.name,
+                'level': course.level
+            }
+            staff_courses.append(course_dict)
+    
+    # For backwards compatibility
+    courses = staff_courses
+    other_exams = staff_exams
     
     # Get active semester and ensure it exists
     active_semester = get_active_semester()
@@ -274,15 +301,31 @@ def get_calendar_page():
         flash('No active semester found. Please contact an administrator.', 'warning')
         semester = {}
     else:
-        semester = active_semester.to_json()
+        if hasattr(active_semester, 'to_json'):
+            semester = active_semester.to_json()
+        else:
+            semester = {
+                'id': active_semester.id,
+                'start_date': active_semester.start_date.isoformat(),
+                'end_date': active_semester.end_date.isoformat(),
+                'sem_num': active_semester.sem_num,
+                'max_assessments': active_semester.max_assessments,
+                'constraint_value': active_semester.constraint_value,
+                'active': active_semester.active
+            }
+        
         # Ensure dates are in ISO format
         if isinstance(semester.get('start_date'), str):
             semester['start_date'] = semester['start_date'].split(' ')[0]
         if isinstance(semester.get('end_date'), str):
             semester['end_date'] = semester['end_date'].split(' ')[0]
     
+    # All data is now serializable
     return render_template('calendar.html', 
-                         scheduled_assessments=scheduled_assessments,
-                         unscheduled_assessments=unscheduled_assessments,
-                         staff_courses=staff_courses, 
-                         semester=semester)
+                          staff_exams=staff_exams,
+                          other_exams=other_exams,
+                          staff_courses=staff_courses,
+                          courses=courses,
+                          semester=semester,
+                          scheduled_assessments=scheduled_assessments,
+                          unscheduled_assessments=unscheduled_assessments)
