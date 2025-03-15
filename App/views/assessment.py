@@ -43,8 +43,14 @@ def get_add_assessments_page():
     email = get_jwt_identity()
     staff_courses = get_staff_courses(email)
     semester = get_active_semester()
+    
+    selected_course = request.args.get('course')
+    
     return render_template(
-        "add_assessment.html", courses=staff_courses, semester=semester
+        "add_assessment.html", 
+        courses=staff_courses, 
+        semester=semester,
+        selected_course=selected_course
     )
 
 
@@ -231,17 +237,17 @@ def update_assessment_schedule():
         assessment = get_assessment_by_id(assessment_id)
 
         if not assessment:
-            return jsonify({"success": False, "message": "Assessment not found"}), 404
+            flash("Assessment not found", "error")
+            return redirect(url_for("assessment_views.get_assessments_page"))
 
         if not is_course_lecturer(user.id, assessment.course_code):
-            return jsonify({"success": False, "message": "Permission denied"}), 403
+            flash("You do not have permission to schedule assessments for this course", "error")
+            return redirect(url_for("assessment_views.get_assessments_page"))
 
         semester = get_active_semester()
         if not semester:
-            return (
-                jsonify({"success": False, "message": "No active semester found"}),
-                400,
-            )
+            flash("No active semester found", "error")
+            return redirect(url_for("assessment_views.get_assessments_page"))
 
         days_diff = (assessment_date - semester.start_date).days
         week = (days_diff // 7) + 1
@@ -260,33 +266,15 @@ def update_assessment_schedule():
         )
 
         if result:
-            updated_assessment = get_assessment_by_id(assessment_id)
-            return jsonify(
-                {
-                    "success": True,
-                    "message": "Assessment scheduled successfully",
-                    "assessment": {
-                        "id": updated_assessment.id,
-                        "name": updated_assessment.name,
-                        "course_code": updated_assessment.course_code,
-                        "percentage": updated_assessment.percentage,
-                        "scheduled": (
-                            updated_assessment.scheduled.isoformat()
-                            if updated_assessment.scheduled
-                            else None
-                        ),
-                        "proctored": updated_assessment.proctored,
-                    },
-                }
-            )
+            flash("Assessment scheduled successfully", "success")
+            return redirect(url_for("assessment_views.get_assessments_page"))
         else:
-            return (
-                jsonify({"success": False, "message": "Failed to schedule assessment"}),
-                500,
-            )
+            flash("Failed to schedule assessment", "error")
+            return redirect(url_for("assessment_views.get_schedule_assessment_page", id=assessment_id))
 
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+        flash(f"An error occurred: {str(e)}", "error")
+        return redirect(url_for("assessment_views.get_assessments_page"))
 
 
 @assessment_views.route("/schedule_assessment/<string:id>", methods=["GET"])

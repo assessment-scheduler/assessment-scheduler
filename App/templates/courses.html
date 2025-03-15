@@ -226,6 +226,9 @@
         <tr>
           <th>Course Code</th>
           <th>Course Title</th>
+          <th>Level</th>
+          <th>Credits</th>
+          <th>Semester</th>
           <th>Lecturer</th>
           <th>Actions</th>
         </tr>
@@ -235,6 +238,9 @@
         <tr class="course-row" data-code="{{ course.code }}">
           <td>{{ course.code }}</td> 
           <td>{{ course.name }}</td>
+          <td>{{ course.level or '-' }}</td>
+          <td>{{ course.credits or '-' }}</td>
+          <td>{{ course.semester or '-' }}</td>
           <td>{{ course.lecturer.email if course.lecturer else 'No Lecturer Assigned' }}</td>
           <td>
             <a href="/update_course/{{ course.code }}" class="action-btn update-btn">Update</a>

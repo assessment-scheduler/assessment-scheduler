@@ -108,6 +108,30 @@
         </div>
 
         <div class="formInputContainer normalLabel">
+            <label class="mainLabel" for="level">Level</label>
+            <input type="text" name="level" id="level" maxlength="1" placeholder="1, 2, 3, etc.">
+            <span class="hint-text">Course level (e.g., 1, 2, 3)</span>
+        </div>
+
+        <div class="formInputContainer normalLabel">
+            <label class="mainLabel" for="credits">Credits</label>
+            <input type="number" name="credits" id="credits" min="1" max="10" placeholder="3">
+            <span class="hint-text">Number of credits</span>
+        </div>
+
+        <div class="formInputContainer normalLabel">
+            <label class="mainLabel" for="semester">Semester</label>
+            <select name="semester" id="semester">
+                <option value="">-- Select Semester --</option>
+                <option value="1">Semester 1</option>
+                <option value="2">Semester 2</option>
+                <option value="Summer">Summer</option>
+                <option value="Year-long">Year-long</option>
+            </select>
+            <span class="hint-text">When the course is typically offered</span>
+        </div>
+
+        <div class="formInputContainer normalLabel">
             <label class="mainLabel" for="lecturer_id">Lecturer</label>
             <select name="lecturer_id" id="lecturer_id">
                 <option value="">-- Select Lecturer --</option>

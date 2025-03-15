@@ -33,10 +33,20 @@ def get_new_course():
 def add_course_action():
     course_code = request.form.get('course_code')
     title = request.form.get('title')
+    level = request.form.get('level')
+    credits = request.form.get('credits')
+    semester = request.form.get('semester')
+    
+    # Convert credits to integer if provided
+    if credits and credits.isdigit():
+        credits = int(credits)
+    else:
+        credits = None
+        
     if (get_course(course_code)):
         flash("Course already exists", "error")
         return redirect(url_for('course_views.get_new_course')) 
-    result = create_course(course_code, title)
+    result = create_course(course_code, title, level, credits, semester)
     if result:
         flash("Course added successfully!")
         return redirect(url_for('course_views.get_courses'))
@@ -62,13 +72,23 @@ def update_course_action():
         old_course_code = request.form.get('old_course_code')
         new_course_code = request.form.get('new_course_code')
         new_course_name = request.form.get('title')
+        level = request.form.get('level')
+        credits = request.form.get('credits')
+        semester = request.form.get('semester')
         lecturer_id = request.form.get('lecturer_id')
+        
+        # Convert credits to integer if provided
+        if credits and credits.isdigit():
+            credits = int(credits)
+        else:
+            credits = None
+            
         print(f"Updating course: {old_course_code} -> {new_course_code}, {new_course_name}, lecturer: {lecturer_id}")
         if not old_course_code or not new_course_code or not new_course_name:
             flash("Course code and course name are required", "error")
             return redirect(url_for('course_views.get_update_course', course_code=old_course_code))
 
-        course_update_success = update_course(old_course_code, new_course_code, new_course_name)
+        course_update_success = update_course(old_course_code, new_course_code, new_course_name, level, credits, semester)
         if not course_update_success:
             flash("Failed to update course details", "error")
             return redirect(url_for('course_views.get_update_course', course_code=old_course_code))
@@ -110,7 +130,16 @@ def upload_course_file():
     with open(os.path.join('App/uploads', filename)) as course_file:
         reader = csv.DictReader(course_file)
         for row in reader:
-            if create_course(row['course_code'], row['course_name']):
+            level = row.get('level')
+            credits = row.get('credits')
+            semester = row.get('semester')
+            
+            if credits and credits.isdigit():
+                credits = int(credits)
+            else:
+                credits = None
+                
+            if create_course(row['course_code'], row['course_name'], level, credits, semester):
                 courses_added += 1
         message = f'<strong>Success!</strong> {courses_added} courses have been added to the database.'
         return render_template('upload_files.html', message=message)
