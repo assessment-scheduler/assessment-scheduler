@@ -59,7 +59,7 @@ def schedule_all_assessments(schedule):
     for row in schedule:
         code = row[3]
         name = row[4].split('-')[0]
-        schedule_date = semester.start_date + timedelta(days=int(row[1]))
+        schedule_date = semester.start_date + timedelta(days=int(row[0]))
         schedule_assessment(semester, schedule_date,code,name)
 
 
@@ -70,4 +70,4 @@ kris_views = Blueprint('kris', __name__, template_folder ='../templates')
 def get_schedule_action():
     schedule = compute_schedule()
     schedule_all_assessments(schedule)
-    return redirect(url_for())
+    return redirect(url_for('assessment.assessments'))
