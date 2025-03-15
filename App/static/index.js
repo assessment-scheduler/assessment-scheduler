@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
     Presentation: "#cc7a50",
     Other: "#C29203",
     Pending: "#999999",
-    Proctored: "#7678b0"
+    Proctored: "#674ECC"
   };
 
   function formatDate(dateStr) {
@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
       eventEl.style.width = '100%';
       
       if (isProctored) {
-        eventEl.style.borderLeft = '4px solid #9C9FE2';
+        eventEl.style.borderLeft = '4px solid #674ECC';
       } else {
         eventEl.style.borderLeft = '4px solid #fff';
       }
@@ -469,9 +469,9 @@ document.addEventListener("DOMContentLoaded", function () {
   autoscheduleButton.textContent = "Autoschedule ALL";
   autoscheduleButton.className = "btn mb-3";
   autoscheduleButton.style.width = "100%";
-  autoscheduleButton.style.backgroundColor = "#7678b0";  // Purple color matching proctored events
+  autoscheduleButton.style.backgroundColor = "#674ECC";
   autoscheduleButton.style.color = "white";
-  autoscheduleButton.style.padding = "12px";  // Make it taller
+  autoscheduleButton.style.padding = "12px";
   autoscheduleButton.style.fontWeight = "bold";
   autoscheduleButton.style.border = "none";
   
@@ -508,7 +508,7 @@ document.addEventListener("DOMContentLoaded", function () {
       modalOverlay.style.zIndex = '9999';
       
       const modalContent = document.createElement('div');
-      modalContent.style.backgroundColor = '#7678b0';
+      modalContent.style.backgroundColor = '#674ECC';
       modalContent.style.padding = '2rem';
       modalContent.style.borderRadius = '8px';
       modalContent.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
@@ -555,7 +555,7 @@ document.addEventListener("DOMContentLoaded", function () {
       confirmButton.textContent = 'Proceed';
       confirmButton.className = 'btn';
       confirmButton.style.backgroundColor = 'white';
-      confirmButton.style.color = '#7678b0';
+      confirmButton.style.color = '#674ECC';
       confirmButton.style.border = 'none';
       confirmButton.style.padding = '8px 16px';
       confirmButton.style.borderRadius = '4px';
@@ -582,7 +582,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.removeChild(modalOverlay);
         autoscheduleButton.disabled = true;
         autoscheduleButton.textContent = "Scheduling...";
-        autoscheduleButton.style.backgroundColor = "#9b9dc7";  // Lighter purple for disabled state
+        autoscheduleButton.style.backgroundColor = "#674ECC";
         
         // Submit the form
         form.submit();
@@ -592,7 +592,7 @@ document.addEventListener("DOMContentLoaded", function () {
           if (autoscheduleButton.disabled) {
             autoscheduleButton.disabled = false;
             autoscheduleButton.textContent = "Autoschedule ALL";
-            autoscheduleButton.style.backgroundColor = "#7678b0";
+            autoscheduleButton.style.backgroundColor = "#674ECC";
             alert("The scheduling process is still running in the background. Please refresh the page in a few moments to see the results.");
           }
         }, 60000);
@@ -604,6 +604,31 @@ document.addEventListener("DOMContentLoaded", function () {
           document.body.removeChild(modalOverlay);
         }
       };
+    });
+  }
+
+  // Add filter styling
+  const filters = document.getElementById("filters");
+  if (filters) {
+    filters.style.marginBottom = '20px';
+    
+    // Style all select elements in the filters
+    const selects = filters.querySelectorAll('select');
+    selects.forEach(select => {
+      select.style.backgroundColor = '#674ECC';
+      select.style.color = 'white';
+      select.style.border = '1px solid #674ECC';
+      select.style.borderRadius = '4px';
+      select.style.padding = '8px 12px';
+      select.style.margin = '0 8px 8px 0';
+      select.style.cursor = 'pointer';
+      select.style.fontWeight = '500';
+      
+      // Style the options
+      const options = select.querySelectorAll('option');
+      options.forEach(option => {
+        option.style.backgroundColor = '#674ECC';
+      });
     });
   }
 }); 
