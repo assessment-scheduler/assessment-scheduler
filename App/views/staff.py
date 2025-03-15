@@ -14,6 +14,7 @@ from ..controllers import (
     get_num_assessments,
     get_active_semester
 )
+from ..controllers.auth import staff_required
 
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
 
@@ -42,7 +43,7 @@ def register_staff_action():
         return redirect(url_for('staff_views.get_signup_page'))
 
 @staff_views.route('/account', methods=['GET'])
-@jwt_required(Staff)
+@staff_required
 def get_account_page():
     email = get_jwt_identity()
     staff = get_staff_by_email(email)
@@ -52,15 +53,13 @@ def get_account_page():
         num_assessments  = num_assessments + get_num_assessments(course.code)
     return render_template('account.html', staff=staff, courses=courses, num_assessments = num_assessments)
 
-# Calendar and assessment routes removed - now handled in assessment_views
-
 @staff_views.route('/settings', methods=['GET'])
-@jwt_required()
+@staff_required
 def get_settings_page():
     return render_template('settings.html')
 
 @staff_views.route('/settings', methods=['POST'])
-@jwt_required()
+@staff_required
 def update_settings():
     email = get_jwt_identity()
     user = get_user_by_email(email)

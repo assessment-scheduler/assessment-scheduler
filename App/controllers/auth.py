@@ -1,10 +1,10 @@
-from flask import  redirect, jsonify, url_for, make_response
+from flask import redirect, jsonify, url_for, make_response, flash, current_app
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, verify_jwt_in_request, JWTManager
 import flask_login
 from flask_login import logout_user
 from ..models import User, Admin, Staff
-from ..controllers.staff import validate_staff
-from ..controllers.admin import validate_admin
+from ..controllers.staff import validate_staff, get_staff
+from ..controllers.admin import validate_admin, is_admin
 from functools import wraps
 
 def setup_jwt(app):
@@ -65,19 +65,35 @@ def setup_flask_login(app):
     return None
 
 def login_required(required_class):
-
   def wrapper(f):
-
     @wraps(f)
-    @jwt_required()  # Ensure JWT authentication
+    @jwt_required()
     def decorated_function(*args, **kwargs):
-      user = required_class.query.filter_by(
-          username=get_jwt_identity()).first()
-      print(user.__class__, required_class, user.__class__ == required_class)
-      if user.__class__ != required_class:  # Check class equality
+      email = get_jwt_identity()
+      user = required_class.query.filter_by(email=email).first()
+      if not user or user.__class__ != required_class:
         return jsonify(error='Invalid user role'), 403
       return f(*args, **kwargs)
+    return decorated_function
+  return wrapper
 
+def admin_required(f):
+    @wraps(f)
+    @jwt_required()
+    def decorated_function(*args, **kwargs):
+        email = get_jwt_identity()
+        if not is_admin(email):
+            return redirect('/login')
+        return f(*args, **kwargs)
     return decorated_function
 
-  return wrapper
+def staff_required(f):
+    @wraps(f)
+    @jwt_required()
+    def decorated_function(*args, **kwargs):
+        email = get_jwt_identity()
+        staff = get_staff(email)
+        if not staff:
+            return redirect('/login')
+        return f(*args, **kwargs)
+    return decorated_function

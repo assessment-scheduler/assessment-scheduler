@@ -16,6 +16,7 @@ from ..controllers import (
     get_num_assessments,
     get_all_assessments,
     get_semester_duration,
+    staff_required
 )
 from ..views import compute_schedule, schedule_all_assessments
 from datetime import datetime
@@ -28,7 +29,7 @@ assessment_views = Blueprint(
 
 
 @assessment_views.route("/assessments", methods=["GET"])
-@jwt_required()
+@staff_required
 def get_assessments_page():
     email = get_jwt_identity()
     user = get_staff_by_email(email)
@@ -37,7 +38,7 @@ def get_assessments_page():
 
 
 @assessment_views.route("/add_assessment", methods=["GET"])
-@jwt_required()
+@staff_required
 def get_add_assessments_page():
     email = get_jwt_identity()
     staff_courses = get_staff_courses(email)
@@ -48,7 +49,7 @@ def get_add_assessments_page():
 
 
 @assessment_views.route("/add_assessment", methods=["POST"])
-@jwt_required()
+@staff_required
 def add_assessments_action():
     try:
         course_code = request.form.get("course_code")
@@ -88,7 +89,7 @@ def add_assessments_action():
 
 
 @assessment_views.route("/update_assessment/<string:id>", methods=["GET"])
-@jwt_required()
+@staff_required
 def get_modify_assessments_page(id):
     email = get_jwt_identity()
     user = get_user_by_email(email)
@@ -114,7 +115,7 @@ def get_modify_assessments_page(id):
 
 
 @assessment_views.route("/update_assessment/<string:id>", methods=["POST"])
-@jwt_required()
+@staff_required
 def modify_assessment(id):
     try:
         email = get_jwt_identity()
@@ -166,7 +167,7 @@ def modify_assessment(id):
 @assessment_views.route(
     "/delete_assessment/<int:assessment_id>", methods=["POST", "GET"]
 )
-@jwt_required()
+@staff_required
 def delete_assessment_action(assessment_id):
     try:
         email = get_jwt_identity()
@@ -196,7 +197,7 @@ def delete_assessment_action(assessment_id):
 
 
 @assessment_views.route("/assessments/<course_code>", methods=["GET"])
-@jwt_required()
+@staff_required
 def get_course_details(course_code):
     email = get_jwt_identity()
     user = get_user_by_email(email)
@@ -217,7 +218,7 @@ def get_course_details(course_code):
 
 
 @assessment_views.route("/update_assessment_schedule", methods=["POST"])
-@jwt_required()
+@staff_required
 def update_assessment_schedule():
     try:
         assessment_id = request.form.get("id")
@@ -290,7 +291,7 @@ def update_assessment_schedule():
 
 
 @assessment_views.route("/schedule_assessment/<string:id>", methods=["GET"])
-@jwt_required()
+@staff_required
 def get_schedule_assessment_page(id):
     email = get_jwt_identity()
     user = get_user_by_email(email)
@@ -317,14 +318,14 @@ def get_schedule_assessment_page(id):
 
 
 @assessment_views.route("/calendar", methods=["GET"])
-@jwt_required()
+@staff_required
 def get_calendar_page():
     email = get_jwt_identity()
-    user = get_user_by_email(email)
+    staff = get_staff_by_email(email)
 
     all_assessments = get_all_assessments() or []
 
-    user_assessments = get_assessments_by_lecturer(user.email) or []
+    user_assessments = get_assessments_by_lecturer(staff.email) or []
 
     staff_exams = []
     scheduled_assessments = []
@@ -442,7 +443,7 @@ def get_calendar_page():
 
 
 @assessment_views.route("/autoschedule", methods=["POST"])
-@jwt_required()
+@staff_required
 def autoschedule_assessments():
     try:
         # Get the active semester
@@ -492,7 +493,7 @@ def autoschedule_assessments():
 
 
 @assessment_views.route("/unschedule_assessment", methods=["POST"])
-@jwt_required()
+@staff_required
 def unschedule_assessment():
     try:
         assessment_id = request.form.get("id")

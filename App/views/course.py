@@ -13,22 +13,23 @@ from ..controllers import (
     get_course,
     get_all_staff
 )
+from ..controllers.auth import admin_required
 
 course_views = Blueprint('course_views', __name__, template_folder ='../templates')
 @course_views.route('/courses', methods=['GET'])
-@jwt_required(Admin)
+@admin_required
 def get_courses():
     courses = get_all_courses()
     return render_template('courses.html', courses=courses)
 
 @course_views.route('/new_course', methods=['GET'])
-@jwt_required(Admin)
+@admin_required
 def get_new_course():
     staff_list = get_all_staff()
     return render_template('add_course.html', staff_list=staff_list)  
 
 @course_views.route('/new_course', methods=['POST'])
-@jwt_required(Admin)
+@admin_required
 def add_course_action():
     course_code = request.form.get('course_code')
     title = request.form.get('title')
@@ -45,7 +46,7 @@ def add_course_action():
     
     
 @course_views.route('/update_course/<string:course_code>', methods=['GET'])
-@jwt_required(Admin)
+@admin_required
 def get_update_course(course_code):
     course = get_course(course_code)
     if not course:
@@ -55,7 +56,7 @@ def get_update_course(course_code):
     return render_template('modify_course.html', course=course, staff_list=staff_list)
 
 @course_views.route('/update_course', methods=['POST'])
-@jwt_required(Admin)
+@admin_required
 def update_course_action():
     try:
         old_course_code = request.form.get('old_course_code')
@@ -87,7 +88,7 @@ def update_course_action():
         return redirect(url_for('course_views.get_update_course', course_code=old_course_code))
 
 @course_views.route('/delete_course/<string:course_code>', methods = ['POST'])
-@jwt_required(Admin)
+@admin_required
 def delete_course_action(course_code):
     if not delete_course(course_code):
         flash("Failed to delete course")
@@ -96,7 +97,7 @@ def delete_course_action(course_code):
     return redirect(url_for('course_views.get_courses'))
 
 @course_views.route('/upload_course', methods=['POST'])
-@jwt_required(Admin)
+@admin_required
 def upload_course_file():
     
     file = request.files['file'] 

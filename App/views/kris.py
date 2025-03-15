@@ -18,6 +18,7 @@ from ..controllers import (
     get_active_semester,
     get_semester_duration,
 )
+from ..controllers.auth import staff_required
 
 
 def compile_course_data() -> List:
@@ -141,7 +142,7 @@ kris_views = Blueprint("kris", __name__, template_folder="../templates")
 
 
 @kris_views.route("/schedule", methods=["POST"])
-@jwt_required(Staff)
+@staff_required
 def get_schedule_action():
     schedule = compute_schedule()
     schedule_all_assessments(schedule)
@@ -149,7 +150,7 @@ def get_schedule_action():
 
 
 @kris_views.route("/solve", methods=["GET", "POST"])
-@jwt_required(Staff)
+@staff_required
 def solve_schedule():
     schedule = compute_schedule()
     if schedule:
@@ -159,7 +160,7 @@ def solve_schedule():
 
 
 @kris_views.route("/solve-done", methods=["GET", "POST"])
-@jwt_required(Staff)
+@staff_required
 def solve_done():
     flash("Schedule solved successfully", "success")
     return redirect(url_for("admin_views.get_admin_dashboard_page"))

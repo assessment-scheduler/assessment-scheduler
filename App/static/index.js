@@ -28,7 +28,6 @@ document.addEventListener("DOMContentLoaded", function () {
       let startDate = formatDate(assessment.scheduled);
       if (!startDate) return null;
       
-      // Check if the assessment belongs to the logged-in user
       const isOwnedAssessment = staff_exams.some(exam => exam.id === assessment.id) || 
                                (myCourses && myCourses.some(course => course.code === assessment.course_code));
       
@@ -147,7 +146,6 @@ document.addEventListener("DOMContentLoaded", function () {
         eventEl.style.borderLeft = '4px solid #fff';
       }
       
-      // Apply faded style for non-owned assessments
       if (!isOwnedAssessment) {
         eventEl.style.opacity = '0.6';
         eventEl.style.cursor = 'default';
@@ -158,7 +156,6 @@ document.addEventListener("DOMContentLoaded", function () {
       eventEl.style.borderRadius = '4px';
       eventEl.style.transition = 'all 0.2s ease';
       
-      // Only add hover effects for owned assessments
       if (isOwnedAssessment) {
         eventEl.addEventListener('mouseenter', function() {
           eventEl.style.boxShadow = '0 3px 6px rgba(0,0,0,0.3)';
@@ -220,13 +217,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log('Successfully unscheduled assessment:', response.assessment);
                 const unscheduledAssessment = response.assessment;
                 
-                // Remove from scheduled assessments array
                 const scheduledIndex = scheduledAssessments.findIndex(a => a.id.toString() === info.event.id.toString());
                 if (scheduledIndex > -1) {
                   scheduledAssessments.splice(scheduledIndex, 1);
                 }
                 
-                // Add to unscheduled assessments array if not already there
                 const existingUnscheduledIndex = unscheduledAssessments.findIndex(a => a.id.toString() === info.event.id.toString());
                 if (existingUnscheduledIndex === -1) {
                   unscheduledAssessments.push({
@@ -235,7 +230,6 @@ document.addEventListener("DOMContentLoaded", function () {
                   });
                 }
                 
-                // Create and append the unscheduled assessment element
                 const unscheduledList = document.getElementById("unscheduled-list");
                 const existingElement = unscheduledList.querySelector(`[data-assessment-id="${info.event.id}"]`);
                 
@@ -262,7 +256,6 @@ document.addEventListener("DOMContentLoaded", function () {
                   unscheduledList.appendChild(newAssessmentEl);
                 }
                 
-                // Remove the event from the calendar
                 info.event.remove();
               } else {
                 alert(response.message || "Failed to unschedule assessment");
@@ -273,7 +266,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           });
         } else {
-          // If user cancels, add the event back to the calendar
           calendar.addEvent(info.event.toPlainObject());
         }
       }
@@ -363,7 +355,6 @@ document.addEventListener("DOMContentLoaded", function () {
         let startDate = formatDate(assessment.scheduled);
         if (!startDate) return null;
         
-        // Check if the assessment belongs to the logged-in user
         const isOwnedAssessment = staff_exams.some(exam => exam.id === assessment.id) || 
                                  (myCourses && myCourses.some(course => course.code === assessment.course_code));
         
@@ -397,20 +388,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const assessmentDate = new Date(date);
     const startDate = new Date(semesterStartDate);
     
-    // Calculate the difference in days
     const dayDiff = Math.floor((assessmentDate - startDate) / (1000 * 60 * 60 * 24));
     
-    // Calculate week offset (0-based)
     const weekOffset = Math.floor(dayDiff / 7);
     
-    // Calculate day offset (0-based)
     const dayOffset = assessmentDate.getDay();
     
     return {
       startWeek: weekOffset,
       startDay: dayOffset,
-      endWeek: weekOffset,  // Since it's a single day event
-      endDay: dayOffset     // Since it's a single day event
+      endWeek: weekOffset,
+      endDay: dayOffset
     };
   }
 
@@ -440,7 +428,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function saveEvent(data, tempEvent = null) {
-    // Store current filter values
     const currentLevel = levelFilter.value;
     const currentCourse = courseFilter.value;
     const currentType = typeFilter.value;
@@ -457,7 +444,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    // Log the data being sent
     console.log('Sending assessment update:', {
       id: data.id,
       date: data.assessment_date,
@@ -467,7 +453,6 @@ document.addEventListener("DOMContentLoaded", function () {
       end_day: data.end_day
     });
 
-    // Ensure all values are properly formatted as integers
     const formattedData = {
       id: parseInt(data.id),
       assessment_date: data.assessment_date,
@@ -503,7 +488,6 @@ document.addEventListener("DOMContentLoaded", function () {
             scheduledAssessments.push(updatedAssessment);
           }
           
-          // Apply the stored filter values and update calendar
           levelFilter.value = currentLevel;
           courseFilter.value = currentCourse;
           typeFilter.value = currentType;
@@ -515,7 +499,6 @@ document.addEventListener("DOMContentLoaded", function () {
           if (tempEvent) {
             tempEvent.remove();
           } else {
-            // Reapply filters even on failure
             const filteredEvents = filterEvents(currentLevel, currentCourse, currentType);
             updateCalendarEvents(calendar, filteredEvents);
           }
@@ -528,7 +511,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (tempEvent) {
           tempEvent.remove();
         } else {
-          // Reapply filters even on error
           const filteredEvents = filterEvents(currentLevel, currentCourse, currentType);
           updateCalendarEvents(calendar, filteredEvents);
         }
@@ -536,7 +518,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Add autoschedule button functionality
   const disclaimerText = document.createElement("div");
   disclaimerText.textContent = "Page may occasionally refresh on calendar input";
   disclaimerText.style.color = "#666";
@@ -556,25 +537,20 @@ document.addEventListener("DOMContentLoaded", function () {
   autoscheduleButton.style.border = "none";
   
   if (unscheduledList) {
-    // Create a form for the button
     const form = document.createElement("form");
     form.method = "POST";
     form.action = "/autoschedule";
     form.style.width = "100%";
     form.style.marginBottom = "1rem";
     
-    // Add the disclaimer and button to the form
     form.appendChild(disclaimerText);
     form.appendChild(autoscheduleButton);
     
-    // Add the form before the unscheduled list
     unscheduledList.parentNode.insertBefore(form, unscheduledList);
     
-    // Handle button click
     form.addEventListener("submit", function(e) {
       e.preventDefault();
       
-      // Create modal container
       const modalOverlay = document.createElement('div');
       modalOverlay.style.position = 'fixed';
       modalOverlay.style.top = '0';
@@ -597,7 +573,6 @@ document.addEventListener("DOMContentLoaded", function () {
       modalContent.style.position = 'relative';
       modalContent.style.color = 'white';
       
-      // Create modal header
       const modalHeader = document.createElement('div');
       modalHeader.style.marginBottom = '1.5rem';
       modalHeader.innerHTML = `
@@ -606,7 +581,6 @@ document.addEventListener("DOMContentLoaded", function () {
         </h3>
       `;
       
-      // Create modal body
       const modalBody = document.createElement('div');
       modalBody.style.marginBottom = '1.5rem';
       modalBody.innerHTML = `
@@ -615,7 +589,6 @@ document.addEventListener("DOMContentLoaded", function () {
         </p>
       `;
       
-      // Create modal footer with buttons
       const modalFooter = document.createElement('div');
       modalFooter.style.display = 'flex';
       modalFooter.style.justifyContent = 'flex-end';
@@ -644,16 +617,13 @@ document.addEventListener("DOMContentLoaded", function () {
       modalFooter.appendChild(cancelButton);
       modalFooter.appendChild(confirmButton);
       
-      // Assemble modal
       modalContent.appendChild(modalHeader);
       modalContent.appendChild(modalBody);
       modalContent.appendChild(modalFooter);
       modalOverlay.appendChild(modalContent);
       
-      // Add modal to page
       document.body.appendChild(modalOverlay);
       
-      // Handle button clicks
       cancelButton.onclick = function() {
         document.body.removeChild(modalOverlay);
       };
@@ -664,10 +634,8 @@ document.addEventListener("DOMContentLoaded", function () {
         autoscheduleButton.textContent = "Scheduling...";
         autoscheduleButton.style.backgroundColor = "#674ECC";
         
-        // Submit the form
         form.submit();
         
-        // Reset button after 60 seconds if no response
         setTimeout(() => {
           if (autoscheduleButton.disabled) {
             autoscheduleButton.disabled = false;
@@ -678,7 +646,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 60000);
       };
       
-      // Close modal when clicking outside
       modalOverlay.onclick = function(event) {
         if (event.target === modalOverlay) {
           document.body.removeChild(modalOverlay);
@@ -687,12 +654,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Add filter styling
   const filters = document.getElementById("filters");
   if (filters) {
     filters.style.marginBottom = '20px';
     
-    // Style all select elements in the filters
     const selects = filters.querySelectorAll('select');
     selects.forEach(select => {
       select.style.backgroundColor = '#674ECC';
@@ -704,7 +669,6 @@ document.addEventListener("DOMContentLoaded", function () {
       select.style.cursor = 'pointer';
       select.style.fontWeight = '500';
       
-      // Style the options
       const options = select.querySelectorAll('option');
       options.forEach(option => {
         option.style.backgroundColor = '#674ECC';
