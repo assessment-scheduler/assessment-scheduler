@@ -50,8 +50,12 @@ def compute_schedule():
 
         courses: List = compile_course_data()
         if not courses:
-            print("No courses found")
+            print("No unscheduled assessments found")
             return None
+
+        # Log the number of assessments being scheduled
+        total_assessments = sum(len(course['assessments']) for course in courses)
+        print(f"Attempting to schedule {total_assessments} assessments")
 
         matrix: List[List[int]] = compile_class_matrix()
         phi_matrix: List[List[int]] = get_phi_matrix(matrix)
@@ -61,13 +65,22 @@ def compute_schedule():
         M: int = semester.constraint_value
 
         if k <= 0 or d <= 0 or M <= 0:
-            print(f"Invalid parameters: k={k}, d={d}, M={M}")
+            print(f"Invalid scheduling parameters: semester duration={k} weeks, max assessments per day={d}, constraint value={M}")
             return None
 
-        U_star, stage1_status, _ = solve_stage1(courses, matrix, k, M)
+        # Log scheduling constraints
+        print(f"Scheduling constraints: {total_assessments} assessments over {k} weeks, max {d} per day")
+        if total_assessments > (k * 5 * d):  # 5 days per week
+            print(f"Warning: More assessments ({total_assessments}) than available slots ({k * 5 * d})")
+
+        U_star, stage1_status, stage1_info = solve_stage1(courses, matrix, k, M)
         
         if not stage1_status or U_star is None:
-            print("Stage 1 failed to find an optimal solution")
+            print(f"Stage 1 failed: Could not find valid assessment spacing.")
+            print(f"This usually means either:")
+            print(f"1. Too many assessments for the semester duration")
+            print(f"2. Conflicting time windows between assessments")
+            print(f"3. The constraint value (M={M}) is too restrictive")
             return None
             
         schedule, Y_star, probability = solve_stage2(
@@ -75,7 +88,10 @@ def compute_schedule():
         )
         
         if not schedule:
-            print("Stage 2 failed to generate a schedule")
+            print("Stage 2 failed: Could not generate a valid schedule.")
+            print(f"This usually means either:")
+            print(f"1. Maximum assessments per day (d={d}) is too low")
+            print(f"2. Assessment spacing constraints cannot be satisfied")
             return None
             
         print_schedule(schedule, U_star, d, probability)

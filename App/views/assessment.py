@@ -15,6 +15,7 @@ from ..controllers import (
     get_active_semester,
     get_num_assessments,
     get_all_assessments,
+    get_semester_duration,
 )
 from ..views import compute_schedule, schedule_all_assessments
 from datetime import datetime
@@ -455,27 +456,38 @@ def autoschedule_assessments():
         unscheduled = [a for a in all_assessments if not a.scheduled]
         
         if not unscheduled:
-            flash("No unscheduled assessments found.", "info")
+            flash("No unscheduled assessments found to schedule.", "info")
+            return redirect(url_for('assessment_views.get_calendar_page'))
+
+        # Check if we have too many assessments for the semester
+        semester_weeks = get_semester_duration(active_semester.id)
+        max_slots = semester_weeks * 5 * active_semester.max_assessments  # 5 days per week
+        if len(unscheduled) > max_slots:
+            flash(f"Too many assessments ({len(unscheduled)}) for available slots ({max_slots}). Try increasing the maximum assessments per day or reducing the number of assessments.", "error")
             return redirect(url_for('assessment_views.get_calendar_page'))
 
         # Compute the schedule
         schedule = compute_schedule()
         if not schedule:
-            flash("Could not find a valid schedule that satisfies all constraints. Try adjusting assessment dates or reducing the number of assessments per day.", "error")
+            flash("Could not find a valid schedule. This could be due to:", "error")
+            flash("1. Too many assessments for the semester duration", "error")
+            flash("2. Maximum assessments per day is too restrictive", "error")
+            flash("3. Conflicting assessment time windows", "error")
+            flash("Try adjusting these parameters or reducing the number of assessments.", "error")
             return redirect(url_for('assessment_views.get_calendar_page'))
 
         # Apply the schedule
         if schedule_all_assessments(schedule):
             flash("Successfully scheduled all assessments! The calendar has been updated.", "success")
         else:
-            flash("Failed to apply the computed schedule. Please try again or contact support if the problem persists.", "error")
+            flash("Generated a schedule but failed to apply it. Please try again or contact support if the problem persists.", "error")
 
         return redirect(url_for('assessment_views.get_calendar_page'))
 
     except Exception as e:
         print(f"Error in autoschedule: {str(e)}")
         traceback.print_exc()
-        flash(f"An error occurred while scheduling assessments: {str(e)}", "error")
+        flash(f"An unexpected error occurred while scheduling assessments. Please try again or contact support if the problem persists.", "error")
         return redirect(url_for('assessment_views.get_calendar_page'))
 
 
