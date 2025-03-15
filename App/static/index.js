@@ -2,14 +2,14 @@ var weekCounter = 0;
 
 document.addEventListener("DOMContentLoaded", function () {
   const colors = {
-    Assignment: '#3e2a73',
-    Quiz: "#37705a",
-    Project: "#004850",
-    Exam: "#a03e3e",
-    Presentation: "#a45e38",
-    Other: "#9a7502",
-    Pending: "#757575",
-    Proctored: '#7678b0'
+    Assignment: "#3397b9",
+    Quiz: "#499373",
+    Project: "#006064",
+    Exam: "#CC4E4E",
+    Presentation: "#cc7a50",
+    Other: "#C29203",
+    Pending: "#999999",
+    Proctored: "#674ECC"
   };
 
   function formatDate(dateStr) {
@@ -21,12 +21,16 @@ document.addEventListener("DOMContentLoaded", function () {
     
     return dateStr;
   }
-  
+
   const calendarEvents = (scheduledAssessments || [])
     .filter(assessment => assessment.scheduled !== null && assessment.scheduled !== undefined)
     .map(assessment => {
       let startDate = formatDate(assessment.scheduled);
       if (!startDate) return null;
+      
+      // Check if the assessment belongs to the logged-in user
+      const isOwnedAssessment = staff_exams.some(exam => exam.id === assessment.id) || 
+                               (myCourses && myCourses.some(course => course.code === assessment.course_code));
       
       return {
         id: assessment.id,
@@ -35,11 +39,13 @@ document.addEventListener("DOMContentLoaded", function () {
         allDay: true,
         backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
         textColor: '#fff',
+        editable: isOwnedAssessment,
         extendedProps: {
           course_code: assessment.course_code,
           percentage: assessment.percentage,
           proctored: assessment.proctored,
-          assessmentName: assessment.name
+          assessmentName: assessment.name,
+          isOwnedAssessment: isOwnedAssessment
         }
       };
     })
@@ -89,14 +95,23 @@ document.addEventListener("DOMContentLoaded", function () {
           end: semester.end_date,
         } : null,
       },
+      timeGridWeek: {
+        allDaySlot: true,
+        allDayText: 'Assessments',
+        slotMinTime: "08:00:00",
+        slotMaxTime: "20:00:00",
+      }
     },
     height: 'auto',
-    allDaySlot: false,
+    displayEventTime: false,
+    allDaySlot: true,
+    allDayText: 'Assessments',
     slotMinTime: "08:00:00",
     slotMaxTime: "20:00:00",
     editable: true,
     selectable: true,
     droppable: true,
+    dayMaxEvents: false,
     
     eventDidMount: function(info) {
       const eventEl = info.el;
@@ -106,6 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const courseCode = info.event.extendedProps?.course_code || '';
       const percentage = info.event.extendedProps?.percentage || '';
       const assessmentName = info.event.extendedProps?.assessmentName || '';
+      const isOwnedAssessment = info.event.extendedProps?.isOwnedAssessment;
       
       let html = `
         <div class="assessment-name">${courseCode}-${assessmentName}</div>
@@ -119,25 +135,41 @@ document.addEventListener("DOMContentLoaded", function () {
         eventContent.innerHTML = html;
       }
       
+      eventEl.style.margin = '2px 0';
+      eventEl.style.padding = '4px 8px';
+      eventEl.style.height = 'auto';
+      eventEl.style.minHeight = '50px';
+      eventEl.style.width = '100%';
+      
       if (isProctored) {
-        eventEl.style.borderLeft = '4px solid #9C9FE2';
+        eventEl.style.borderLeft = '4px solid #674ECC';
       } else {
         eventEl.style.borderLeft = '4px solid #fff';
+      }
+      
+      // Apply faded style for non-owned assessments
+      if (!isOwnedAssessment) {
+        eventEl.style.opacity = '0.6';
+        eventEl.style.cursor = 'default';
+        eventEl.style.pointerEvents = isOwnedAssessment ? 'auto' : 'none';
       }
       
       eventEl.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
       eventEl.style.borderRadius = '4px';
       eventEl.style.transition = 'all 0.2s ease';
       
-      eventEl.addEventListener('mouseenter', function() {
-        eventEl.style.boxShadow = '0 3px 6px rgba(0,0,0,0.3)';
-        eventEl.style.transform = 'translateY(-2px)';
-      });
-      
-      eventEl.addEventListener('mouseleave', function() {
-        eventEl.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
-        eventEl.style.transform = 'translateY(0)';
-      });
+      // Only add hover effects for owned assessments
+      if (isOwnedAssessment) {
+        eventEl.addEventListener('mouseenter', function() {
+          eventEl.style.boxShadow = '0 3px 6px rgba(0,0,0,0.3)';
+          eventEl.style.transform = 'translateY(-2px)';
+        });
+        
+        eventEl.addEventListener('mouseleave', function() {
+          eventEl.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
+          eventEl.style.transform = 'translateY(0)';
+        });
+      }
       
       eventEl.title = info.event.title;
     },
@@ -148,9 +180,20 @@ document.addEventListener("DOMContentLoaded", function () {
     eventReceive: function(info) {
       const tempEvent = info.event;
       
+      if (!semester || !semester.start_date) {
+        console.error('Semester start date not available');
+        return;
+      }
+      
+      const offsets = calculateWeekAndDayOffsets(tempEvent.start, semester.start_date);
+      
       saveEvent({
         id: tempEvent.id,
-        assessment_date: tempEvent.start.toISOString().split('T')[0]
+        assessment_date: tempEvent.start.toISOString().split('T')[0],
+        start_week: offsets.startWeek,
+        start_day: offsets.startDay,
+        end_week: offsets.endWeek,
+        end_day: offsets.endDay
       }, tempEvent);
     }
   });
@@ -240,6 +283,10 @@ document.addEventListener("DOMContentLoaded", function () {
         let startDate = formatDate(assessment.scheduled);
         if (!startDate) return null;
         
+        // Check if the assessment belongs to the logged-in user
+        const isOwnedAssessment = staff_exams.some(exam => exam.id === assessment.id) || 
+                                 (myCourses && myCourses.some(course => course.code === assessment.course_code));
+        
         return {
           id: assessment.id,
           title: `${assessment.course_code}-${assessment.name} (${assessment.percentage}%)`,
@@ -247,11 +294,13 @@ document.addEventListener("DOMContentLoaded", function () {
           allDay: true,
           backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
           textColor: '#fff',
+          editable: isOwnedAssessment,
           extendedProps: {
             course_code: assessment.course_code,
             percentage: assessment.percentage,
             proctored: assessment.proctored,
-            assessmentName: assessment.name
+            assessmentName: assessment.name,
+            isOwnedAssessment: isOwnedAssessment
           }
         };
       })
@@ -264,13 +313,45 @@ document.addEventListener("DOMContentLoaded", function () {
     calendar.refetchEvents();
   }
 
+  function calculateWeekAndDayOffsets(date, semesterStartDate) {
+    const assessmentDate = new Date(date);
+    const startDate = new Date(semesterStartDate);
+    
+    // Calculate the difference in days
+    const dayDiff = Math.floor((assessmentDate - startDate) / (1000 * 60 * 60 * 24));
+    
+    // Calculate week offset (0-based)
+    const weekOffset = Math.floor(dayDiff / 7);
+    
+    // Calculate day offset (0-based)
+    const dayOffset = assessmentDate.getDay();
+    
+    return {
+      startWeek: weekOffset,
+      startDay: dayOffset,
+      endWeek: weekOffset,  // Since it's a single day event
+      endDay: dayOffset     // Since it's a single day event
+    };
+  }
+
   function handleEventEdit(info) {
     const event = info.event;
     const newDate = event.start;
     
+    if (!semester || !semester.start_date) {
+      console.error('Semester start date not available');
+      return;
+    }
+    
+    const offsets = calculateWeekAndDayOffsets(newDate, semester.start_date);
+    
     saveEvent({
       id: event.id,
-      assessment_date: newDate.toISOString().split('T')[0]
+      assessment_date: newDate.toISOString().split('T')[0],
+      start_week: offsets.startWeek,
+      start_day: offsets.startDay,
+      end_week: offsets.endWeek,
+      end_day: offsets.endDay
     });
   }
 
@@ -279,16 +360,50 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function saveEvent(data, tempEvent = null) {
+    // Store current filter values
+    const currentLevel = levelFilter.value;
+    const currentCourse = courseFilter.value;
+    const currentType = typeFilter.value;
+
     if (!data.assessment_date && tempEvent && tempEvent.start) {
       data.assessment_date = tempEvent.start.toISOString().split('T')[0];
+      
+      if (semester && semester.start_date) {
+        const offsets = calculateWeekAndDayOffsets(tempEvent.start, semester.start_date);
+        data.start_week = offsets.startWeek;
+        data.start_day = offsets.startDay;
+        data.end_week = offsets.endWeek;
+        data.end_day = offsets.endDay;
+      }
     }
+
+    // Log the data being sent
+    console.log('Sending assessment update:', {
+      id: data.id,
+      date: data.assessment_date,
+      start_week: data.start_week,
+      start_day: data.start_day,
+      end_week: data.end_week,
+      end_day: data.end_day
+    });
+
+    // Ensure all values are properly formatted as integers
+    const formattedData = {
+      id: parseInt(data.id),
+      assessment_date: data.assessment_date,
+      start_week: parseInt(data.start_week),
+      start_day: parseInt(data.start_day),
+      end_week: parseInt(data.end_week),
+      end_day: parseInt(data.end_day)
+    };
 
     $.ajax({
       url: "/update_assessment_schedule",
       method: "POST",
-      data: data,
+      data: formattedData,
       success: (response) => {
         if (response.success) {
+          console.log('Successfully updated assessment:', response.assessment);
           const updatedAssessment = response.assessment;
           
           const unscheduledIndex = unscheduledAssessments.findIndex(a => a.id.toString() === data.id.toString());
@@ -308,42 +423,21 @@ document.addEventListener("DOMContentLoaded", function () {
             scheduledAssessments.push(updatedAssessment);
           }
           
-          calendar.removeAllEvents();
+          // Apply the stored filter values and update calendar
+          levelFilter.value = currentLevel;
+          courseFilter.value = currentCourse;
+          typeFilter.value = currentType;
           
-          const updatedEvents = scheduledAssessments
-            .filter(assessment => assessment.scheduled !== null)
-            .map(assessment => {
-              let startDate = formatDate(assessment.scheduled);
-              if (!startDate) return null;
-              
-              return {
-                id: assessment.id,
-                title: `${assessment.course_code}-${assessment.name} (${assessment.percentage}%)`,
-                start: startDate,
-                allDay: true,
-                backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
-                textColor: '#fff',
-                extendedProps: {
-                  course_code: assessment.course_code,
-                  percentage: assessment.percentage,
-                  proctored: assessment.proctored,
-                  assessmentName: assessment.name
-                }
-              };
-            })
-            .filter(event => event !== null);
-          
-          updatedEvents.forEach(event => {
-            calendar.addEvent(event);
-          });
-          
-          calendar.refetchEvents();
+          const filteredEvents = filterEvents(currentLevel, currentCourse, currentType);
+          updateCalendarEvents(calendar, filteredEvents);
         } else {
           alert(response.message || "Failed to update assessment schedule");
           if (tempEvent) {
             tempEvent.remove();
           } else {
-            calendar.refetchEvents();
+            // Reapply filters even on failure
+            const filteredEvents = filterEvents(currentLevel, currentCourse, currentType);
+            updateCalendarEvents(calendar, filteredEvents);
           }
         }
       },
@@ -354,9 +448,187 @@ document.addEventListener("DOMContentLoaded", function () {
         if (tempEvent) {
           tempEvent.remove();
         } else {
-          calendar.refetchEvents();
+          // Reapply filters even on error
+          const filteredEvents = filterEvents(currentLevel, currentCourse, currentType);
+          updateCalendarEvents(calendar, filteredEvents);
         }
       }
     });
   }
-});
+
+  // Add autoschedule button functionality
+  const disclaimerText = document.createElement("div");
+  disclaimerText.textContent = "Page may occasionally refresh on calendar input";
+  disclaimerText.style.color = "#666";
+  disclaimerText.style.fontSize = "12px";
+  disclaimerText.style.marginBottom = "8px";
+  disclaimerText.style.textAlign = "center";
+  disclaimerText.style.fontStyle = "italic";
+
+  const autoscheduleButton = document.createElement("button");
+  autoscheduleButton.textContent = "Autoschedule ALL";
+  autoscheduleButton.className = "btn mb-3";
+  autoscheduleButton.style.width = "100%";
+  autoscheduleButton.style.backgroundColor = "#674ECC";
+  autoscheduleButton.style.color = "white";
+  autoscheduleButton.style.padding = "12px";
+  autoscheduleButton.style.fontWeight = "bold";
+  autoscheduleButton.style.border = "none";
+  
+  if (unscheduledList) {
+    // Create a form for the button
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = "/autoschedule";
+    form.style.width = "100%";
+    form.style.marginBottom = "1rem";
+    
+    // Add the disclaimer and button to the form
+    form.appendChild(disclaimerText);
+    form.appendChild(autoscheduleButton);
+    
+    // Add the form before the unscheduled list
+    unscheduledList.parentNode.insertBefore(form, unscheduledList);
+    
+    // Handle button click
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      
+      // Create modal container
+      const modalOverlay = document.createElement('div');
+      modalOverlay.style.position = 'fixed';
+      modalOverlay.style.top = '0';
+      modalOverlay.style.left = '0';
+      modalOverlay.style.width = '100%';
+      modalOverlay.style.height = '100%';
+      modalOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+      modalOverlay.style.display = 'flex';
+      modalOverlay.style.justifyContent = 'center';
+      modalOverlay.style.alignItems = 'center';
+      modalOverlay.style.zIndex = '9999';
+      
+      const modalContent = document.createElement('div');
+      modalContent.style.backgroundColor = '#674ECC';
+      modalContent.style.padding = '2rem';
+      modalContent.style.borderRadius = '8px';
+      modalContent.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+      modalContent.style.maxWidth = '400px';
+      modalContent.style.width = '90%';
+      modalContent.style.position = 'relative';
+      modalContent.style.color = 'white';
+      
+      // Create modal header
+      const modalHeader = document.createElement('div');
+      modalHeader.style.marginBottom = '1.5rem';
+      modalHeader.innerHTML = `
+        <h3 style="margin: 0; font-size: 1.5rem; font-weight: bold;">
+          ⚠️ Autoschedule Confirmation
+        </h3>
+      `;
+      
+      // Create modal body
+      const modalBody = document.createElement('div');
+      modalBody.style.marginBottom = '1.5rem';
+      modalBody.innerHTML = `
+        <p style="margin-bottom: 1rem; line-height: 1.5;">
+          This will automatically schedule all unscheduled assessments. The process may take up to a minute to complete.
+        </p>
+      `;
+      
+      // Create modal footer with buttons
+      const modalFooter = document.createElement('div');
+      modalFooter.style.display = 'flex';
+      modalFooter.style.justifyContent = 'flex-end';
+      modalFooter.style.gap = '1rem';
+      
+      const cancelButton = document.createElement('button');
+      cancelButton.textContent = 'Cancel';
+      cancelButton.className = 'btn';
+      cancelButton.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+      cancelButton.style.color = 'white';
+      cancelButton.style.border = '1px solid white';
+      cancelButton.style.padding = '8px 16px';
+      cancelButton.style.borderRadius = '4px';
+      cancelButton.style.cursor = 'pointer';
+      
+      const confirmButton = document.createElement('button');
+      confirmButton.textContent = 'Proceed';
+      confirmButton.className = 'btn';
+      confirmButton.style.backgroundColor = 'white';
+      confirmButton.style.color = '#674ECC';
+      confirmButton.style.border = 'none';
+      confirmButton.style.padding = '8px 16px';
+      confirmButton.style.borderRadius = '4px';
+      confirmButton.style.cursor = 'pointer';
+      
+      modalFooter.appendChild(cancelButton);
+      modalFooter.appendChild(confirmButton);
+      
+      // Assemble modal
+      modalContent.appendChild(modalHeader);
+      modalContent.appendChild(modalBody);
+      modalContent.appendChild(modalFooter);
+      modalOverlay.appendChild(modalContent);
+      
+      // Add modal to page
+      document.body.appendChild(modalOverlay);
+      
+      // Handle button clicks
+      cancelButton.onclick = function() {
+        document.body.removeChild(modalOverlay);
+      };
+      
+      confirmButton.onclick = function() {
+        document.body.removeChild(modalOverlay);
+        autoscheduleButton.disabled = true;
+        autoscheduleButton.textContent = "Scheduling...";
+        autoscheduleButton.style.backgroundColor = "#674ECC";
+        
+        // Submit the form
+        form.submit();
+        
+        // Reset button after 60 seconds if no response
+        setTimeout(() => {
+          if (autoscheduleButton.disabled) {
+            autoscheduleButton.disabled = false;
+            autoscheduleButton.textContent = "Autoschedule ALL";
+            autoscheduleButton.style.backgroundColor = "#674ECC";
+            alert("The scheduling process is still running in the background. Please refresh the page in a few moments to see the results.");
+          }
+        }, 60000);
+      };
+      
+      // Close modal when clicking outside
+      modalOverlay.onclick = function(event) {
+        if (event.target === modalOverlay) {
+          document.body.removeChild(modalOverlay);
+        }
+      };
+    });
+  }
+
+  // Add filter styling
+  const filters = document.getElementById("filters");
+  if (filters) {
+    filters.style.marginBottom = '20px';
+    
+    // Style all select elements in the filters
+    const selects = filters.querySelectorAll('select');
+    selects.forEach(select => {
+      select.style.backgroundColor = '#674ECC';
+      select.style.color = 'white';
+      select.style.border = '1px solid #674ECC';
+      select.style.borderRadius = '4px';
+      select.style.padding = '8px 12px';
+      select.style.margin = '0 8px 8px 0';
+      select.style.cursor = 'pointer';
+      select.style.fontWeight = '500';
+      
+      // Style the options
+      const options = select.querySelectorAll('option');
+      options.forEach(option => {
+        option.style.backgroundColor = '#674ECC';
+      });
+    });
+  }
+}); 

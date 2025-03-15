@@ -16,8 +16,10 @@ from ..controllers import (
     get_num_assessments,
     get_all_assessments,
 )
+from ..views import compute_schedule, schedule_all_assessments
 from datetime import datetime
 import json
+import traceback
 
 assessment_views = Blueprint(
     "assessment_views", __name__, template_folder="../templates"
@@ -436,3 +438,40 @@ def get_calendar_page():
         scheduled_assessments=scheduled_assessments,
         unscheduled_assessments=unscheduled_assessments,
     )
+
+
+@assessment_views.route("/autoschedule", methods=["POST"])
+@jwt_required()
+def autoschedule_assessments():
+    try:
+        # Get the active semester
+        active_semester = get_active_semester()
+        if not active_semester:
+            flash("No active semester found. Please set an active semester first.", "error")
+            return redirect(url_for('assessment_views.get_calendar_page'))
+
+        # Get all unscheduled assessments
+        unscheduled = get_all_assessments()
+        if not unscheduled:
+            flash("No unscheduled assessments found.", "info")
+            return redirect(url_for('assessment_views.get_calendar_page'))
+
+        # Compute the schedule
+        schedule = compute_schedule()
+        if not schedule:
+            flash("Failed to compute a valid schedule. Please try adjusting your assessment dates or constraints.", "error")
+            return redirect(url_for('assessment_views.get_calendar_page'))
+
+        # Apply the schedule
+        if schedule_all_assessments(schedule):
+            flash("Successfully scheduled all assessments! The calendar has been updated.", "success")
+        else:
+            flash("Failed to apply the computed schedule. Please try again.", "error")
+
+        return redirect(url_for('assessment_views.get_calendar_page'))
+
+    except Exception as e:
+        print(f"Error in autoschedule: {str(e)}")
+        traceback.print_exc()
+        flash(f"Error scheduling assessments: {str(e)}", "error")
+        return redirect(url_for('assessment_views.get_calendar_page'))

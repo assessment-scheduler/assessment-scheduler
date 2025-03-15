@@ -168,8 +168,8 @@
     </select>
 
     <select id="courses">
-      <option value="My Courses">My Courses</option>
       <option value="all">ALL</option>
+      <option value="My Courses">My Courses</option>
       {% for course in courses %}
       <option value="{{course.code}}">{{course.code}}</option>
       {% endfor %}
