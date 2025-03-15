@@ -28,6 +28,10 @@ document.addEventListener("DOMContentLoaded", function () {
       let startDate = formatDate(assessment.scheduled);
       if (!startDate) return null;
       
+      // Check if the assessment belongs to the logged-in user
+      const isOwnedAssessment = staff_exams.some(exam => exam.id === assessment.id) || 
+                               (myCourses && myCourses.some(course => course.code === assessment.course_code));
+      
       return {
         id: assessment.id,
         title: `${assessment.course_code}-${assessment.name} (${assessment.percentage}%)`,
@@ -35,11 +39,13 @@ document.addEventListener("DOMContentLoaded", function () {
         allDay: true,
         backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
         textColor: '#fff',
+        editable: isOwnedAssessment,
         extendedProps: {
           course_code: assessment.course_code,
           percentage: assessment.percentage,
           proctored: assessment.proctored,
-          assessmentName: assessment.name
+          assessmentName: assessment.name,
+          isOwnedAssessment: isOwnedAssessment
         }
       };
     })
@@ -115,6 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const courseCode = info.event.extendedProps?.course_code || '';
       const percentage = info.event.extendedProps?.percentage || '';
       const assessmentName = info.event.extendedProps?.assessmentName || '';
+      const isOwnedAssessment = info.event.extendedProps?.isOwnedAssessment;
       
       let html = `
         <div class="assessment-name">${courseCode}-${assessmentName}</div>
@@ -140,19 +147,29 @@ document.addEventListener("DOMContentLoaded", function () {
         eventEl.style.borderLeft = '4px solid #fff';
       }
       
+      // Apply faded style for non-owned assessments
+      if (!isOwnedAssessment) {
+        eventEl.style.opacity = '0.6';
+        eventEl.style.cursor = 'default';
+        eventEl.style.pointerEvents = isOwnedAssessment ? 'auto' : 'none';
+      }
+      
       eventEl.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
       eventEl.style.borderRadius = '4px';
       eventEl.style.transition = 'all 0.2s ease';
       
-      eventEl.addEventListener('mouseenter', function() {
-        eventEl.style.boxShadow = '0 3px 6px rgba(0,0,0,0.3)';
-        eventEl.style.transform = 'translateY(-2px)';
-      });
-      
-      eventEl.addEventListener('mouseleave', function() {
-        eventEl.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
-        eventEl.style.transform = 'translateY(0)';
-      });
+      // Only add hover effects for owned assessments
+      if (isOwnedAssessment) {
+        eventEl.addEventListener('mouseenter', function() {
+          eventEl.style.boxShadow = '0 3px 6px rgba(0,0,0,0.3)';
+          eventEl.style.transform = 'translateY(-2px)';
+        });
+        
+        eventEl.addEventListener('mouseleave', function() {
+          eventEl.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
+          eventEl.style.transform = 'translateY(0)';
+        });
+      }
       
       eventEl.title = info.event.title;
     },
@@ -266,6 +283,10 @@ document.addEventListener("DOMContentLoaded", function () {
         let startDate = formatDate(assessment.scheduled);
         if (!startDate) return null;
         
+        // Check if the assessment belongs to the logged-in user
+        const isOwnedAssessment = staff_exams.some(exam => exam.id === assessment.id) || 
+                                 (myCourses && myCourses.some(course => course.code === assessment.course_code));
+        
         return {
           id: assessment.id,
           title: `${assessment.course_code}-${assessment.name} (${assessment.percentage}%)`,
@@ -273,11 +294,13 @@ document.addEventListener("DOMContentLoaded", function () {
           allDay: true,
           backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
           textColor: '#fff',
+          editable: isOwnedAssessment,
           extendedProps: {
             course_code: assessment.course_code,
             percentage: assessment.percentage,
             proctored: assessment.proctored,
-            assessmentName: assessment.name
+            assessmentName: assessment.name,
+            isOwnedAssessment: isOwnedAssessment
           }
         };
       })
@@ -337,6 +360,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function saveEvent(data, tempEvent = null) {
+    // Store current filter values
+    const currentLevel = levelFilter.value;
+    const currentCourse = courseFilter.value;
+    const currentType = typeFilter.value;
+
     if (!data.assessment_date && tempEvent && tempEvent.start) {
       data.assessment_date = tempEvent.start.toISOString().split('T')[0];
       
@@ -395,42 +423,21 @@ document.addEventListener("DOMContentLoaded", function () {
             scheduledAssessments.push(updatedAssessment);
           }
           
-          calendar.removeAllEvents();
+          // Apply the stored filter values and update calendar
+          levelFilter.value = currentLevel;
+          courseFilter.value = currentCourse;
+          typeFilter.value = currentType;
           
-          const updatedEvents = scheduledAssessments
-            .filter(assessment => assessment.scheduled !== null)
-            .map(assessment => {
-              let startDate = formatDate(assessment.scheduled);
-              if (!startDate) return null;
-              
-              return {
-                id: assessment.id,
-                title: `${assessment.course_code}-${assessment.name} (${assessment.percentage}%)`,
-                start: startDate,
-                allDay: true,
-                backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
-                textColor: '#fff',
-                extendedProps: {
-                  course_code: assessment.course_code,
-                  percentage: assessment.percentage,
-                  proctored: assessment.proctored,
-                  assessmentName: assessment.name
-                }
-              };
-            })
-            .filter(event => event !== null);
-          
-          updatedEvents.forEach(event => {
-            calendar.addEvent(event);
-          });
-          
-          calendar.refetchEvents();
+          const filteredEvents = filterEvents(currentLevel, currentCourse, currentType);
+          updateCalendarEvents(calendar, filteredEvents);
         } else {
           alert(response.message || "Failed to update assessment schedule");
           if (tempEvent) {
             tempEvent.remove();
           } else {
-            calendar.refetchEvents();
+            // Reapply filters even on failure
+            const filteredEvents = filterEvents(currentLevel, currentCourse, currentType);
+            updateCalendarEvents(calendar, filteredEvents);
           }
         }
       },
@@ -441,8 +448,69 @@ document.addEventListener("DOMContentLoaded", function () {
         if (tempEvent) {
           tempEvent.remove();
         } else {
-          calendar.refetchEvents();
+          // Reapply filters even on error
+          const filteredEvents = filterEvents(currentLevel, currentCourse, currentType);
+          updateCalendarEvents(calendar, filteredEvents);
         }
+      }
+    });
+  }
+
+  // Add autoschedule button functionality
+  const autoscheduleButton = document.createElement("button");
+  autoscheduleButton.textContent = "Autoschedule ALL";
+  autoscheduleButton.className = "btn mb-3";
+  autoscheduleButton.style.width = "100%";
+  autoscheduleButton.style.backgroundColor = "#7678b0";  // Purple color matching proctored events
+  autoscheduleButton.style.color = "white";
+  autoscheduleButton.style.padding = "12px";  // Make it taller
+  autoscheduleButton.style.fontWeight = "bold";
+  autoscheduleButton.style.border = "none";
+  
+  if (unscheduledList) {
+    // Create a form for the button
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = "/autoschedule";
+    form.style.width = "100%";
+    form.style.marginBottom = "1rem";
+    
+    // Add the button to the form
+    form.appendChild(autoscheduleButton);
+    
+    // Add the form before the unscheduled list
+    unscheduledList.parentNode.insertBefore(form, unscheduledList);
+    
+    // Handle button click
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      
+      const warningMessage = `Warning: This will automatically schedule all unscheduled assessments.
+
+• This process may take several minutes
+• The algorithm will attempt to find an optimal schedule
+• All existing scheduled dates will be preserved
+• The page will refresh when complete
+
+Do you want to continue?`;
+      
+      if (confirm(warningMessage)) {
+        autoscheduleButton.disabled = true;
+        autoscheduleButton.textContent = "Scheduling...";
+        autoscheduleButton.style.backgroundColor = "#9b9dc7";  // Lighter purple for disabled state
+        
+        // Submit the form
+        this.submit();
+        
+        // Reset button after 60 seconds if no response (increased from 30 to 60 seconds)
+        setTimeout(() => {
+          if (autoscheduleButton.disabled) {
+            autoscheduleButton.disabled = false;
+            autoscheduleButton.textContent = "Autoschedule ALL";
+            autoscheduleButton.style.backgroundColor = "#7678b0";
+            alert("The scheduling process is still running in the background. Please refresh the page in a few moments to see the results.");
+          }
+        }, 60000);
       }
     });
   }
