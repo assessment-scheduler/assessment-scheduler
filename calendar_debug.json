@@ -1,6 +1,18 @@
 {
-  "scheduled_count": 15,
+  "scheduled_count": 211,
   "scheduled_sample": [
+    {
+      "id": 1,
+      "name": "A1",
+      "course_code": "COMP1600",
+      "percentage": 10,
+      "start_week": 2,
+      "start_day": 2,
+      "end_week": 3,
+      "end_day": 5,
+      "proctored": 0,
+      "scheduled": "2025-03-09"
+    },
     {
       "id": 2,
       "name": "A1",
@@ -11,7 +23,7 @@
       "end_week": 4,
       "end_day": 7,
       "proctored": 0,
-      "scheduled": "2025-03-06"
+      "scheduled": "2025-03-11"
     },
     {
       "id": 3,
@@ -23,7 +35,7 @@
       "end_week": 8,
       "end_day": 7,
       "proctored": 0,
-      "scheduled": "2025-03-06"
+      "scheduled": "2025-03-15"
     },
     {
       "id": 4,
@@ -35,7 +47,7 @@
       "end_week": 11,
       "end_day": 7,
       "proctored": 0,
-      "scheduled": "2025-04-17"
+      "scheduled": "2025-03-18"
     },
     {
       "id": 5,
@@ -47,7 +59,7 @@
       "end_week": 9,
       "end_day": 7,
       "proctored": 1,
-      "scheduled": "2025-03-14"
+      "scheduled": "2025-03-16"
     },
     {
       "id": 6,
@@ -59,67 +71,55 @@
       "end_week": 12,
       "end_day": 7,
       "proctored": 1,
-      "scheduled": "2025-03-11"
+      "scheduled": "2025-03-19"
     },
     {
-      "id": 67,
+      "id": 7,
       "name": "A1",
-      "course_code": "COMP2611",
+      "course_code": "COMP1602",
       "percentage": 5,
       "start_week": 3,
       "start_day": 1,
       "end_week": 4,
       "end_day": 7,
       "proctored": 0,
-      "scheduled": "2025-03-05"
+      "scheduled": "2025-03-11"
     },
     {
-      "id": 68,
+      "id": 8,
       "name": "A2",
-      "course_code": "COMP2611",
+      "course_code": "COMP1602",
       "percentage": 6,
-      "start_week": 7,
+      "start_week": 8,
       "start_day": 1,
-      "end_week": 8,
+      "end_week": 9,
       "end_day": 7,
       "proctored": 0,
-      "scheduled": "2025-03-07"
+      "scheduled": "2025-03-16"
     },
     {
-      "id": 69,
+      "id": 9,
       "name": "A3",
-      "course_code": "COMP2611",
+      "course_code": "COMP1602",
       "percentage": 6,
       "start_week": 10,
       "start_day": 1,
       "end_week": 11,
       "end_day": 7,
       "proctored": 0,
-      "scheduled": "2025-03-02"
+      "scheduled": "2025-03-18"
     },
     {
-      "id": 70,
+      "id": 10,
       "name": "CW1",
-      "course_code": "COMP2611",
+      "course_code": "COMP1602",
       "percentage": 10,
-      "start_week": 8,
+      "start_week": 6,
       "start_day": 1,
-      "end_week": 9,
+      "end_week": 7,
       "end_day": 7,
       "proctored": 1,
-      "scheduled": "2025-03-21"
-    },
-    {
-      "id": 71,
-      "name": "CW2",
-      "course_code": "COMP2611",
-      "percentage": 20,
-      "start_week": 12,
-      "start_day": 1,
-      "end_week": 12,
-      "end_day": 7,
-      "proctored": 1,
-      "scheduled": "2025-02-27"
+      "scheduled": "2025-03-13"
     }
   ]
 }
