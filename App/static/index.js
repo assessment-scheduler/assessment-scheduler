@@ -2,14 +2,14 @@ var weekCounter = 0;
 
 document.addEventListener("DOMContentLoaded", function () {
   const colors = {
-    Assignment: '#3e2a73',
-    Quiz: "#37705a",
-    Project: "#004850",
-    Exam: "#a03e3e",
-    Presentation: "#a45e38",
-    Other: "#9a7502",
-    Pending: "#757575",
-    Proctored: '#7678b0'
+    Assignment: "#3397b9",
+    Quiz: "#499373",
+    Project: "#006064",
+    Exam: "#CC4E4E",
+    Presentation: "#cc7a50",
+    Other: "#C29203",
+    Pending: "#999999",
+    Proctored: "#7678b0"
   };
 
   function formatDate(dateStr) {
@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     return dateStr;
   }
-  
+
   const calendarEvents = (scheduledAssessments || [])
     .filter(assessment => assessment.scheduled !== null && assessment.scheduled !== undefined)
     .map(assessment => {
@@ -89,14 +89,23 @@ document.addEventListener("DOMContentLoaded", function () {
           end: semester.end_date,
         } : null,
       },
+      timeGridWeek: {
+        allDaySlot: true,
+        allDayText: 'Assessments',
+        slotMinTime: "08:00:00",
+        slotMaxTime: "20:00:00",
+      }
     },
     height: 'auto',
-    allDaySlot: false,
+    displayEventTime: false,
+    allDaySlot: true,
+    allDayText: 'Assessments',
     slotMinTime: "08:00:00",
     slotMaxTime: "20:00:00",
     editable: true,
     selectable: true,
     droppable: true,
+    dayMaxEvents: false,
     
     eventDidMount: function(info) {
       const eventEl = info.el;
@@ -118,6 +127,12 @@ document.addEventListener("DOMContentLoaded", function () {
       if (eventContent) {
         eventContent.innerHTML = html;
       }
+      
+      eventEl.style.margin = '2px 0';
+      eventEl.style.padding = '4px 8px';
+      eventEl.style.height = 'auto';
+      eventEl.style.minHeight = '50px';
+      eventEl.style.width = '100%';
       
       if (isProctored) {
         eventEl.style.borderLeft = '4px solid #9C9FE2';
@@ -148,9 +163,20 @@ document.addEventListener("DOMContentLoaded", function () {
     eventReceive: function(info) {
       const tempEvent = info.event;
       
+      if (!semester || !semester.start_date) {
+        console.error('Semester start date not available');
+        return;
+      }
+      
+      const offsets = calculateWeekAndDayOffsets(tempEvent.start, semester.start_date);
+      
       saveEvent({
         id: tempEvent.id,
-        assessment_date: tempEvent.start.toISOString().split('T')[0]
+        assessment_date: tempEvent.start.toISOString().split('T')[0],
+        start_week: offsets.startWeek,
+        start_day: offsets.startDay,
+        end_week: offsets.endWeek,
+        end_day: offsets.endDay
       }, tempEvent);
     }
   });
@@ -264,13 +290,45 @@ document.addEventListener("DOMContentLoaded", function () {
     calendar.refetchEvents();
   }
 
+  function calculateWeekAndDayOffsets(date, semesterStartDate) {
+    const assessmentDate = new Date(date);
+    const startDate = new Date(semesterStartDate);
+    
+    // Calculate the difference in days
+    const dayDiff = Math.floor((assessmentDate - startDate) / (1000 * 60 * 60 * 24));
+    
+    // Calculate week offset (0-based)
+    const weekOffset = Math.floor(dayDiff / 7);
+    
+    // Calculate day offset (0-based)
+    const dayOffset = assessmentDate.getDay();
+    
+    return {
+      startWeek: weekOffset,
+      startDay: dayOffset,
+      endWeek: weekOffset,  // Since it's a single day event
+      endDay: dayOffset     // Since it's a single day event
+    };
+  }
+
   function handleEventEdit(info) {
     const event = info.event;
     const newDate = event.start;
     
+    if (!semester || !semester.start_date) {
+      console.error('Semester start date not available');
+      return;
+    }
+    
+    const offsets = calculateWeekAndDayOffsets(newDate, semester.start_date);
+    
     saveEvent({
       id: event.id,
-      assessment_date: newDate.toISOString().split('T')[0]
+      assessment_date: newDate.toISOString().split('T')[0],
+      start_week: offsets.startWeek,
+      start_day: offsets.startDay,
+      end_week: offsets.endWeek,
+      end_day: offsets.endDay
     });
   }
 
@@ -281,14 +339,43 @@ document.addEventListener("DOMContentLoaded", function () {
   function saveEvent(data, tempEvent = null) {
     if (!data.assessment_date && tempEvent && tempEvent.start) {
       data.assessment_date = tempEvent.start.toISOString().split('T')[0];
+      
+      if (semester && semester.start_date) {
+        const offsets = calculateWeekAndDayOffsets(tempEvent.start, semester.start_date);
+        data.start_week = offsets.startWeek;
+        data.start_day = offsets.startDay;
+        data.end_week = offsets.endWeek;
+        data.end_day = offsets.endDay;
+      }
     }
+
+    // Log the data being sent
+    console.log('Sending assessment update:', {
+      id: data.id,
+      date: data.assessment_date,
+      start_week: data.start_week,
+      start_day: data.start_day,
+      end_week: data.end_week,
+      end_day: data.end_day
+    });
+
+    // Ensure all values are properly formatted as integers
+    const formattedData = {
+      id: parseInt(data.id),
+      assessment_date: data.assessment_date,
+      start_week: parseInt(data.start_week),
+      start_day: parseInt(data.start_day),
+      end_week: parseInt(data.end_week),
+      end_day: parseInt(data.end_day)
+    };
 
     $.ajax({
       url: "/update_assessment_schedule",
       method: "POST",
-      data: data,
+      data: formattedData,
       success: (response) => {
         if (response.success) {
+          console.log('Successfully updated assessment:', response.assessment);
           const updatedAssessment = response.assessment;
           
           const unscheduledIndex = unscheduledAssessments.findIndex(a => a.id.toString() === data.id.toString());
@@ -359,4 +446,4 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
-});
+}); 
