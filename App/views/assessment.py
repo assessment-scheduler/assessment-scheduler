@@ -236,7 +236,6 @@ def update_assessment_schedule():
         if not is_course_lecturer(user.id, assessment.course_code):
             return jsonify({"success": False, "message": "Permission denied"}), 403
 
-        # Calculate week and day from the scheduled date
         semester = get_active_semester()
         if not semester:
             return (

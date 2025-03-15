@@ -390,9 +390,12 @@ document.addEventListener("DOMContentLoaded", function () {
     
     const dayDiff = Math.floor((assessmentDate - startDate) / (1000 * 60 * 60 * 24));
     
-    const weekOffset = Math.floor(dayDiff / 7);
+    const weekOffset = Math.floor(dayDiff / 7) + 1; 
     
-    const dayOffset = assessmentDate.getDay();
+    let dayOffset = assessmentDate.getDay();
+    if (dayOffset === 0) {
+      dayOffset = 7;  
+    }
     
     return {
       startWeek: weekOffset,
