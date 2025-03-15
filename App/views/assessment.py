@@ -451,7 +451,9 @@ def autoschedule_assessments():
             return redirect(url_for('assessment_views.get_calendar_page'))
 
         # Get all unscheduled assessments
-        unscheduled = get_all_assessments()
+        all_assessments = get_all_assessments()
+        unscheduled = [a for a in all_assessments if not a.scheduled]
+        
         if not unscheduled:
             flash("No unscheduled assessments found.", "info")
             return redirect(url_for('assessment_views.get_calendar_page'))
@@ -459,19 +461,67 @@ def autoschedule_assessments():
         # Compute the schedule
         schedule = compute_schedule()
         if not schedule:
-            flash("Failed to compute a valid schedule. Please try adjusting your assessment dates or constraints.", "error")
+            flash("Could not find a valid schedule that satisfies all constraints. Try adjusting assessment dates or reducing the number of assessments per day.", "error")
             return redirect(url_for('assessment_views.get_calendar_page'))
 
         # Apply the schedule
         if schedule_all_assessments(schedule):
             flash("Successfully scheduled all assessments! The calendar has been updated.", "success")
         else:
-            flash("Failed to apply the computed schedule. Please try again.", "error")
+            flash("Failed to apply the computed schedule. Please try again or contact support if the problem persists.", "error")
 
         return redirect(url_for('assessment_views.get_calendar_page'))
 
     except Exception as e:
         print(f"Error in autoschedule: {str(e)}")
         traceback.print_exc()
-        flash(f"Error scheduling assessments: {str(e)}", "error")
+        flash(f"An error occurred while scheduling assessments: {str(e)}", "error")
         return redirect(url_for('assessment_views.get_calendar_page'))
+
+
+@assessment_views.route("/unschedule_assessment", methods=["POST"])
+@jwt_required()
+def unschedule_assessment():
+    try:
+        assessment_id = request.form.get("id")
+        email = get_jwt_identity()
+        user = get_user_by_email(email)
+        assessment = get_assessment_by_id(assessment_id)
+
+        if not assessment:
+            return jsonify({"success": False, "message": "Assessment not found"}), 404
+
+        if not is_course_lecturer(user.id, assessment.course_code):
+            return jsonify({"success": False, "message": "Permission denied"}), 403
+
+        result = update_assessment(
+            assessment_id,
+            assessment.name,
+            assessment.percentage,
+            assessment.start_week,
+            assessment.start_day,
+            assessment.end_week,
+            assessment.end_day,
+            assessment.proctored,
+            None 
+        )
+
+        if result:
+            updated_assessment = get_assessment_by_id(assessment_id)
+            return jsonify({
+                "success": True,
+                "message": "Assessment unscheduled successfully",
+                "assessment": {
+                    "id": updated_assessment.id,
+                    "name": updated_assessment.name,
+                    "course_code": updated_assessment.course_code,
+                    "percentage": updated_assessment.percentage,
+                    "scheduled": None,
+                    "proctored": updated_assessment.proctored,
+                }
+            })
+        else:
+            return jsonify({"success": False, "message": "Failed to unschedule assessment"}), 500
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500

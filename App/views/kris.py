@@ -25,7 +25,13 @@ def compile_course_data() -> List:
     courses: list = get_all_courses()
     for course in courses:
         assessments: List[Assessment] = get_assessment_dictionary_by_course(course.code)
-        course_assessment_list.append(assessments)
+        if assessments and 'assessments' in assessments:
+            filtered_assessments = {
+                'code': assessments['code'],
+                'assessments': [a for a in assessments['assessments'] if not a.get('scheduled')]
+            }
+            if filtered_assessments['assessments']:
+                course_assessment_list.append(filtered_assessments)
     return course_assessment_list
 
 

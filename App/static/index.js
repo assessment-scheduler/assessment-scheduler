@@ -195,6 +195,88 @@ document.addEventListener("DOMContentLoaded", function () {
         end_week: offsets.endWeek,
         end_day: offsets.endDay
       }, tempEvent);
+    },
+    eventDragStop: function(info) {
+      const calendarRect = calendarEl.getBoundingClientRect();
+      const eventRect = info.jsEvent.target.getBoundingClientRect();
+      
+      if (eventRect.left < calendarRect.left || eventRect.right > calendarRect.right ||
+          eventRect.top < calendarRect.top || eventRect.bottom > calendarRect.bottom) {
+        
+        if (!info.event.extendedProps.isOwnedAssessment) {
+          alert("You can only unschedule assessments that belong to your courses.");
+          return;
+        }
+
+        if (confirm("Are you sure you want to unschedule this assessment?")) {
+          $.ajax({
+            url: "/unschedule_assessment",
+            method: "POST",
+            data: {
+              id: info.event.id
+            },
+            success: (response) => {
+              if (response.success) {
+                console.log('Successfully unscheduled assessment:', response.assessment);
+                const unscheduledAssessment = response.assessment;
+                
+                // Remove from scheduled assessments array
+                const scheduledIndex = scheduledAssessments.findIndex(a => a.id.toString() === info.event.id.toString());
+                if (scheduledIndex > -1) {
+                  scheduledAssessments.splice(scheduledIndex, 1);
+                }
+                
+                // Add to unscheduled assessments array if not already there
+                const existingUnscheduledIndex = unscheduledAssessments.findIndex(a => a.id.toString() === info.event.id.toString());
+                if (existingUnscheduledIndex === -1) {
+                  unscheduledAssessments.push({
+                    ...unscheduledAssessment,
+                    name: info.event.extendedProps.assessmentName || info.event.title.split('-')[1].split(' ')[0]
+                  });
+                }
+                
+                // Create and append the unscheduled assessment element
+                const unscheduledList = document.getElementById("unscheduled-list");
+                const existingElement = unscheduledList.querySelector(`[data-assessment-id="${info.event.id}"]`);
+                
+                if (!existingElement) {
+                  const newAssessmentEl = document.createElement("div");
+                  newAssessmentEl.className = "draggable-assessment";
+                  if (info.event.extendedProps.proctored) {
+                    newAssessmentEl.classList.add("proctored");
+                  }
+                  newAssessmentEl.dataset.assessmentId = unscheduledAssessment.id;
+                  newAssessmentEl.dataset.courseCode = unscheduledAssessment.course_code;
+                  newAssessmentEl.dataset.name = info.event.extendedProps.assessmentName || info.event.title.split('-')[1].split(' ')[0];
+                  newAssessmentEl.dataset.percentage = unscheduledAssessment.percentage;
+                  newAssessmentEl.dataset.proctored = unscheduledAssessment.proctored ? "1" : "0";
+                  
+                  newAssessmentEl.innerHTML = `
+                    <span class="assessment-name">${unscheduledAssessment.course_code}-${newAssessmentEl.dataset.name}</span>
+                    <div class="assessment-details">
+                      Weight: ${unscheduledAssessment.percentage}%
+                      ${unscheduledAssessment.proctored ? '<span class="badge">Proctored</span>' : ''}
+                    </div>
+                  `;
+                  
+                  unscheduledList.appendChild(newAssessmentEl);
+                }
+                
+                // Remove the event from the calendar
+                info.event.remove();
+              } else {
+                alert(response.message || "Failed to unschedule assessment");
+              }
+            },
+            error: () => {
+              alert("An error occurred while unscheduling the assessment");
+            }
+          });
+        } else {
+          // If user cancels, add the event back to the calendar
+          calendar.addEvent(info.event.toPlainObject());
+        }
+      }
     }
   });
 
@@ -211,13 +293,11 @@ document.addEventListener("DOMContentLoaded", function () {
   try {
     calendar.render();
     
-    // Initial refresh to ensure events are displayed
     setTimeout(() => calendar.refetchEvents(), 300);
   } catch (error) {
     console.error('Error rendering calendar:', error);
   }
 
-  // Event handlers for filters
   if (levelFilter) {
     levelFilter.addEventListener("change", function () {
       const selectedLevel = levelFilter.value;

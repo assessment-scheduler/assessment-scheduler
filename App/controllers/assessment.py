@@ -101,8 +101,7 @@ def update_assessment(
     assessment.end_week = end_week
     assessment.end_day = end_day
     assessment.proctored = proctored
-    if scheduled is not None:
-        assessment.scheduled = scheduled
+    assessment.scheduled = scheduled
     db.session.commit()
     return True
 
