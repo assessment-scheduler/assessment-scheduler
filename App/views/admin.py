@@ -1,5 +1,5 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash, session
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 import os, csv
 from ..database import db
@@ -26,34 +26,33 @@ from ..controllers import (
     set_active,
     parse_date
 )
+from ..controllers.auth import admin_required
 
 admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
 
 @admin_views.route('/dashboard', methods=['GET'])
+@admin_required
 def admin_dashboard():
     return render_template('admin_dashboard.html')
 
 @admin_views.route('/semester', methods=['GET'])
-@jwt_required(Admin)
+@admin_required
 def get_upload_page():
     semesters = get_all_semesters()
     return render_template('semester.html', semesters=semesters)
-## working
 
 @admin_views.route('/upload_files', methods=['GET'])
-@jwt_required(Admin)
+@admin_required
 def get_upload_files_page():
     return render_template('upload_files.html')
-## working
 
 @admin_views.route('/new_semester', methods=['GET'])
-@jwt_required(Admin)
+@admin_required
 def get_new_semester_form():
     return render_template('add_semester.html')
-## working
 
 @admin_views.route('/add_semester', methods=['POST'])
-@jwt_required(Admin)
+@admin_required
 def add_new_semester():
     if request.method == 'POST':
         start_date = request.form.get('start_date')
@@ -81,10 +80,9 @@ def add_new_semester():
             flash('Failed to add semester', 'error')
         
         return redirect(url_for('admin_views.get_upload_page'))
-## working
 
 @admin_views.route('/update_semester/<int:semester_id>', methods=['GET'])
-@jwt_required(Admin)
+@admin_required
 def get_update_semester(semester_id):
     semester = get_semester(semester_id)
     if not semester:
@@ -92,10 +90,9 @@ def get_update_semester(semester_id):
         return redirect(url_for('admin_views.get_upload_page'))
     
     return render_template('add_semester.html', semester=semester)
-## working
 
 @admin_views.route('/delete_semester/<int:semester_id>', methods=['POST'])
-@jwt_required(Admin)
+@admin_required
 def delete_semester(semester_id):
     semester = get_semester(semester_id)
     if not semester:
@@ -110,11 +107,9 @@ def delete_semester(semester_id):
         flash(f'Failed to delete semester: {str(e)}', 'error')
     
     return redirect(url_for('admin_views.get_upload_page'))
-## working
-
 
 @admin_views.route('/set_active_semester/<int:semester_id>', methods=['POST'])
-@jwt_required(Admin)
+@admin_required
 def set_active_semester(semester_id):
     result = set_active(semester_id)
     
@@ -124,10 +119,9 @@ def set_active_semester(semester_id):
         flash('Failed to set semester as active', 'error')
     
     return redirect(url_for('admin_views.get_upload_page'))
-## working
 
 @admin_views.route('/new_semester', methods=['POST'])
-@jwt_required(Admin)
+@admin_required
 def new_semester_action():
     if request.method == 'POST':
         start_date = request.form.get('teachingBegins')
@@ -137,27 +131,21 @@ def new_semester_action():
         create_semester(start_date, end_date, sem_num, max_assessments)
 
         return render_template('upload_files.html')  
-## working
 
-
-# Commenting out clash-related routes
 @admin_views.route('/staff', methods=['GET'])
-@jwt_required(Admin)
+@admin_required
 def get_staff_list():
     staff_list = get_all_staff()
     return render_template('staff.html', staff=staff_list)
-## working
-
 
 @admin_views.route('/new_staff', methods=['GET'])
 @admin_views.route('/create_staff', methods=['GET'])
-@jwt_required(Admin)
+@admin_required
 def get_new_staff_page():
     return render_template('add_staff.html')
-## working
 
 @admin_views.route('/add_staff', methods=['POST'])
-@jwt_required(Admin)
+@admin_required
 def add_staff_action():
     try:
         staff_id = request.form.get('id')
@@ -179,11 +167,9 @@ def add_staff_action():
     except Exception as e:
         flash(f'Error: {str(e)}', 'error')
         return redirect(url_for('admin_views.get_new_staff_page'))
-## working
-
 
 @admin_views.route('/edit_staff/<int:staff_id>', methods=['GET'])
-@jwt_required(Admin)
+@admin_required
 def get_update_staff_page(staff_id):
     staff = get_staff_by_id(staff_id)
     if not staff:
@@ -191,10 +177,9 @@ def get_update_staff_page(staff_id):
         return redirect(url_for('admin_views.get_staff_list'))
     
     return render_template('update_staff.html', staff=staff)
-## working
 
 @admin_views.route('/update_staff', methods=['POST'])
-@jwt_required(Admin)
+@admin_required
 def update_staff_action():
     try:
         staff_id = request.form.get('staffID')
@@ -215,11 +200,9 @@ def update_staff_action():
     except Exception as e:
         flash(f'Error updating staff member: {str(e)}', 'error')
         return redirect(url_for('admin_views.get_staff_list'))
-## working
-
 
 @admin_views.route('/delete_staff/<int:staff_id>', methods=['POST'])
-@jwt_required(Admin)
+@admin_required
 def delete_staff_action(staff_id):
     try:
         result = delete_staff(staff_id)
@@ -233,11 +216,9 @@ def delete_staff_action(staff_id):
     except Exception as e:
         flash(f'Error deleting staff member: {str(e)}', 'error')
         return redirect(url_for('admin_views.get_staff_list'))
-## working
-
 
 @admin_views.route('/staff_courses/<int:staff_id>', methods=['GET'])
-@jwt_required(Admin)
+@admin_required
 def get_staff_courses_page(staff_id):
     staff = get_staff_by_id(staff_id)
     if not staff:
@@ -246,10 +227,9 @@ def get_staff_courses_page(staff_id):
     
     courses = get_staff_courses(staff.email)
     return render_template('staff_courses.html', staff=staff, courses=courses)
-## working
 
 @admin_views.route('/uploadassessments', methods=['POST'])
-@jwt_required(Admin)
+@admin_required
 def upload_assessments_file():
     if request.method == 'POST': 
         file = request.files['file'] 
@@ -299,7 +279,7 @@ def upload_assessments_file():
             return render_template('upload_files.html', message=message)
 
 @admin_views.route('/uploadcells', methods=['POST'])
-@jwt_required(Admin)
+@admin_required
 def upload_cells_file():
     if request.method == 'POST': 
         file = request.files['file'] 
@@ -341,7 +321,7 @@ def upload_cells_file():
             return render_template('upload_files.html', message=message)
 
 @admin_views.route('/uploadsemesters', methods=['POST'])
-@jwt_required(Admin)
+@admin_required
 def upload_semesters_file():
     if request.method == 'POST': 
         file = request.files['file'] 
@@ -389,7 +369,7 @@ def upload_semesters_file():
             return render_template('upload_files.html', message=message)
 
 @admin_views.route('/uploadstaff', methods=['POST'])
-@jwt_required(Admin)
+@admin_required
 def upload_staff_file():
     if request.method == 'POST': 
         file = request.files['file'] 
@@ -430,7 +410,7 @@ def upload_staff_file():
             return render_template('upload_files.html', message=message)
 
 @admin_views.route('/uploadlecturerassignments', methods=['POST'])
-@jwt_required(Admin)
+@admin_required
 def upload_lecturer_assignments_file():
     if request.method == 'POST': 
         file = request.files['file'] 
