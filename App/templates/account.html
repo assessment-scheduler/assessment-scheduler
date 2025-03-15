@@ -113,17 +113,27 @@
     display: flex;
     margin-bottom: 12px;
     align-items: center;
+    justify-content: space-between;
+    padding: 8px 15px;
+    background-color: var(--medium-gray);
+    border-radius: 6px;
+    transition: transform 0.2s, background-color 0.2s;
+  }
+
+  .detail-item:hover {
+    background-color: #3a546e;
+    transform: translateY(-2px);
   }
 
   .detail-label {
     font-weight: 600;
-    width: 100px;
     color: var(--light-gray);
   }
 
   .detail-value {
-    flex: 1;
     color: var(--light-text);
+    text-align: right;
+    font-weight: 500;
   }
 
   .courses-container {
@@ -316,8 +326,24 @@
         <span class="detail-value">{{ staff.id }}</span>
       </div>
       <div class="detail-item">
+        <span class="detail-label">Name:</span>
+        <span class="detail-value">{{ staff.first_name }} {{ staff.last_name }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Department:</span>
+        <span class="detail-value">{{ staff.department or 'DCIT' }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Faculty:</span>
+        <span class="detail-value">{{ staff.faculty or 'FST' }}</span>
+      </div>
+      <div class="detail-item">
         <span class="detail-label">Courses:</span>
         <span class="detail-value">{{ courses|length if courses else 0 }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Assessments:</span>
+        <span class="detail-value">{{ num_assessments }}</span>
       </div>
     </div>
     {% else %}

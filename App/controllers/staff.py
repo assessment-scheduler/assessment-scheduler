@@ -2,12 +2,12 @@ from typing import List, Optional
 from ..models import Staff, Course
 from ..database import db
 
-def create_staff(id: str, email: str, password: str, first_name: str, last_name: str) -> bool:
+def create_staff(id: str, email: str, password: str, first_name: str, last_name: str, department: str = None, faculty: str = None) -> bool:
     staff: Optional[Staff] = get_staff_by_email(email)
     if staff:
         return False
     else:
-        new_staff = Staff(id=id, email=email, password=password, first_name=first_name, last_name=last_name)
+        new_staff = Staff(id=id, email=email, password=password, first_name=first_name, last_name=last_name, department=department, faculty=faculty)
         db.session.add(new_staff)
         db.session.commit()
         return True
@@ -24,7 +24,7 @@ def get_all_staff() -> List[Staff]:
 def get_staff_by_email(email: str) -> Optional[Staff]:
     return Staff.query.filter_by(email=email).first()
 
-def update_staff(id: str, email: str, first_name: str, last_name: str) -> bool:
+def update_staff(id: str, email: str, first_name: str, last_name: str, department: str = None, faculty: str = None) -> bool:
     staff: Optional[Staff] = get_staff_by_id(id)
     if staff is None:
         print(f"Could not find staff member: {id}")
@@ -32,6 +32,8 @@ def update_staff(id: str, email: str, first_name: str, last_name: str) -> bool:
     staff.first_name = first_name
     staff.last_name = last_name
     staff.email = email
+    staff.department = department
+    staff.faculty = faculty
     db.session.commit()
     return True
 

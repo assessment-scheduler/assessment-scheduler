@@ -30,8 +30,10 @@ def register_staff_action():
         id = request.form.get('id')
         email = request.form.get('email')
         password = request.form.get('password')
+        department = request.form.get('department', 'DCIT') 
+        faculty = request.form.get('faculty', 'FST')  
         
-        staff = create_staff(id, email, password, first_name, last_name)
+        staff = create_staff(id, email, password, first_name, last_name, department, faculty)
         if staff:
             flash('Registration successful! Please log in.', 'success')
             return redirect(url_for('auth_views.get_login_page'))
