@@ -49,12 +49,16 @@
         </div>
     </nav>
     <div>
-        {% for message in messages %}
-            <div class="flash-message" id="flashMsg">
-                <span class="msgContainer">{{ message }}</span>
-                <button class="close-btn" onclick="this.parentElement.style.display = 'none';">×</button>
-            </div>
-        {% endfor %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}" id="flashMsg">
+                        <span class="msgContainer">{{ message }}</span>
+                        <button class="close-btn" onclick="this.parentElement.style.display = 'none';">×</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </div>
     
@@ -63,12 +67,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
 <script src="{{ url_for('static', filename='js/mobileMenu.js') }}"></script>
 <script>
-
     setTimeout(function() {
-            var flashMessages = document.getElementById('flashMsg');
-            if (flashMessages) {
-                flashMessages.classList.add('hiddenFlashMsg');
-            }
-        }, 1500);
+        var flashMessages = document.querySelectorAll('.flash-message');
+        flashMessages.forEach(function(msg) {
+            msg.classList.add('hiddenFlashMsg');
+            setTimeout(function() {
+                msg.style.display = 'none';
+            }, 300);
+        });
+    }, 5000);
 </script>
 </html>

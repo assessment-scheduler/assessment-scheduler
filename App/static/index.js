@@ -457,6 +457,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Add autoschedule button functionality
+  const disclaimerText = document.createElement("div");
+  disclaimerText.textContent = "Page may occasionally refresh on calendar input";
+  disclaimerText.style.color = "#666";
+  disclaimerText.style.fontSize = "12px";
+  disclaimerText.style.marginBottom = "8px";
+  disclaimerText.style.textAlign = "center";
+  disclaimerText.style.fontStyle = "italic";
+
   const autoscheduleButton = document.createElement("button");
   autoscheduleButton.textContent = "Autoschedule ALL";
   autoscheduleButton.className = "btn mb-3";
@@ -475,7 +483,8 @@ document.addEventListener("DOMContentLoaded", function () {
     form.style.width = "100%";
     form.style.marginBottom = "1rem";
     
-    // Add the button to the form
+    // Add the disclaimer and button to the form
+    form.appendChild(disclaimerText);
     form.appendChild(autoscheduleButton);
     
     // Add the form before the unscheduled list
@@ -485,24 +494,100 @@ document.addEventListener("DOMContentLoaded", function () {
     form.addEventListener("submit", function(e) {
       e.preventDefault();
       
-      const warningMessage = `Warning: This will automatically schedule all unscheduled assessments.
-
-• This process may take several minutes
-• The algorithm will attempt to find an optimal schedule
-• All existing scheduled dates will be preserved
-• The page will refresh when complete
-
-Do you want to continue?`;
+      // Create modal container
+      const modalOverlay = document.createElement('div');
+      modalOverlay.style.position = 'fixed';
+      modalOverlay.style.top = '0';
+      modalOverlay.style.left = '0';
+      modalOverlay.style.width = '100%';
+      modalOverlay.style.height = '100%';
+      modalOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+      modalOverlay.style.display = 'flex';
+      modalOverlay.style.justifyContent = 'center';
+      modalOverlay.style.alignItems = 'center';
+      modalOverlay.style.zIndex = '9999';
       
-      if (confirm(warningMessage)) {
+      const modalContent = document.createElement('div');
+      modalContent.style.backgroundColor = '#7678b0';
+      modalContent.style.padding = '2rem';
+      modalContent.style.borderRadius = '8px';
+      modalContent.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+      modalContent.style.maxWidth = '400px';
+      modalContent.style.width = '90%';
+      modalContent.style.position = 'relative';
+      modalContent.style.color = 'white';
+      
+      // Create modal header
+      const modalHeader = document.createElement('div');
+      modalHeader.style.marginBottom = '1.5rem';
+      modalHeader.innerHTML = `
+        <h3 style="margin: 0; font-size: 1.5rem; font-weight: bold;">
+          ⚠️ Autoschedule Confirmation
+        </h3>
+      `;
+      
+      // Create modal body
+      const modalBody = document.createElement('div');
+      modalBody.style.marginBottom = '1.5rem';
+      modalBody.innerHTML = `
+        <p style="margin-bottom: 1rem; line-height: 1.5;">
+          This will automatically schedule all unscheduled assessments. The process may take up to a minute to complete.
+        </p>
+      `;
+      
+      // Create modal footer with buttons
+      const modalFooter = document.createElement('div');
+      modalFooter.style.display = 'flex';
+      modalFooter.style.justifyContent = 'flex-end';
+      modalFooter.style.gap = '1rem';
+      
+      const cancelButton = document.createElement('button');
+      cancelButton.textContent = 'Cancel';
+      cancelButton.className = 'btn';
+      cancelButton.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+      cancelButton.style.color = 'white';
+      cancelButton.style.border = '1px solid white';
+      cancelButton.style.padding = '8px 16px';
+      cancelButton.style.borderRadius = '4px';
+      cancelButton.style.cursor = 'pointer';
+      
+      const confirmButton = document.createElement('button');
+      confirmButton.textContent = 'Proceed';
+      confirmButton.className = 'btn';
+      confirmButton.style.backgroundColor = 'white';
+      confirmButton.style.color = '#7678b0';
+      confirmButton.style.border = 'none';
+      confirmButton.style.padding = '8px 16px';
+      confirmButton.style.borderRadius = '4px';
+      confirmButton.style.cursor = 'pointer';
+      
+      modalFooter.appendChild(cancelButton);
+      modalFooter.appendChild(confirmButton);
+      
+      // Assemble modal
+      modalContent.appendChild(modalHeader);
+      modalContent.appendChild(modalBody);
+      modalContent.appendChild(modalFooter);
+      modalOverlay.appendChild(modalContent);
+      
+      // Add modal to page
+      document.body.appendChild(modalOverlay);
+      
+      // Handle button clicks
+      cancelButton.onclick = function() {
+        document.body.removeChild(modalOverlay);
+      };
+      
+      confirmButton.onclick = function() {
+        document.body.removeChild(modalOverlay);
         autoscheduleButton.disabled = true;
         autoscheduleButton.textContent = "Scheduling...";
         autoscheduleButton.style.backgroundColor = "#9b9dc7";  // Lighter purple for disabled state
         
         // Submit the form
-        this.submit();
+        form.submit();
         
-        // Reset button after 60 seconds if no response (increased from 30 to 60 seconds)
+        // Reset button after 60 seconds if no response
         setTimeout(() => {
           if (autoscheduleButton.disabled) {
             autoscheduleButton.disabled = false;
@@ -511,7 +596,14 @@ Do you want to continue?`;
             alert("The scheduling process is still running in the background. Please refresh the page in a few moments to see the results.");
           }
         }, 60000);
-      }
+      };
+      
+      // Close modal when clicking outside
+      modalOverlay.onclick = function(event) {
+        if (event.target === modalOverlay) {
+          document.body.removeChild(modalOverlay);
+        }
+      };
     });
   }
 }); 

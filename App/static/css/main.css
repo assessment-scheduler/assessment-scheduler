@@ -105,10 +105,10 @@ html{
 
 .flash-message{
     background-color: var(--tertiary-color);
-    position: absolute;
-    top: 50%;
+    position: fixed;
+    top: 80px;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, 0);
     z-index: 100;
     padding: 1rem 1.5rem;
     border-radius: 6px;
@@ -116,11 +116,34 @@ html{
     align-items: center;
     justify-content: space-between;
     border: solid rgb(202, 202, 202) 1px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    min-width: 300px;
+    animation: slideIn 0.3s ease-out;
 }
 
-.hiddenFlashMsg{
+.flash-message.success {
+    background-color: #4CAF50;
+}
+
+.flash-message.error {
+    background-color: #f44336;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translate(-50%, -100%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+.hiddenFlashMsg {
     opacity: 0;
-    transition: opacity  0.25s ease;
+    transform: translate(-50%, -100%);
+    transition: all 0.3s ease;
     pointer-events: none;
 }
 

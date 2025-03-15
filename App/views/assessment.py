@@ -19,6 +19,7 @@ from ..controllers import (
 from ..views import compute_schedule, schedule_all_assessments
 from datetime import datetime
 import json
+import traceback
 
 assessment_views = Blueprint(
     "assessment_views", __name__, template_folder="../templates"
@@ -443,56 +444,34 @@ def get_calendar_page():
 @jwt_required()
 def autoschedule_assessments():
     try:
-        email = get_jwt_identity()
-        user = get_user_by_email(email)
-        
-        if not user:
-            flash("User not found", "error")
-            return redirect(url_for("assessment_views.get_calendar_page"))
+        # Get the active semester
+        active_semester = get_active_semester()
+        if not active_semester:
+            flash("No active semester found. Please set an active semester first.", "error")
+            return redirect(url_for('assessment_views.get_calendar_page'))
 
-        # Get active semester first
-        semester = get_active_semester()
-        if not semester:
-            flash("No active semester found. Please contact an administrator.", "error")
-            return redirect(url_for("assessment_views.get_calendar_page"))
+        # Get all unscheduled assessments
+        unscheduled = get_all_assessments()
+        if not unscheduled:
+            flash("No unscheduled assessments found.", "info")
+            return redirect(url_for('assessment_views.get_calendar_page'))
 
-        # Get all unscheduled assessments to check if there are any to schedule
-        try:
-            unscheduled = [a for a in get_all_assessments() if not a.scheduled]
-            if not unscheduled:
-                flash("No unscheduled assessments found to schedule.", "warning")
-                return redirect(url_for("assessment_views.get_calendar_page"))
-        except Exception as e:
-            print("Error getting unscheduled assessments:", str(e))
-            flash("Error retrieving unscheduled assessments.", "error")
-            return redirect(url_for("assessment_views.get_calendar_page"))
+        # Compute the schedule
+        schedule = compute_schedule()
+        if not schedule:
+            flash("Failed to compute a valid schedule. Please try adjusting your assessment dates or constraints.", "error")
+            return redirect(url_for('assessment_views.get_calendar_page'))
 
-        # Use Kris's scheduling algorithm
-        try:
-            schedule = compute_schedule()
-            if not schedule:
-                flash("Could not find a valid schedule. This usually means there are too many conflicting constraints. Try: 1) Reducing the number of assessments, 2) Increasing the max assessments per day, or 3) Widening the scheduling window.", "error")
-                return redirect(url_for("assessment_views.get_calendar_page"))
-        except Exception as e:
-            print("Error in compute_schedule:", str(e))
-            flash("An error occurred while computing the schedule.", "error")
-            return redirect(url_for("assessment_views.get_calendar_page"))
-            
-        # Apply the computed schedule
-        try:
-            if schedule_all_assessments(schedule):
-                flash("All assessments have been automatically scheduled!", "success")
-            else:
-                flash("Some assessments could not be scheduled. Please check the logs for details.", "error")
-        except Exception as e:
-            print("Error in schedule_all_assessments:", str(e))
-            flash("An error occurred while applying the schedule.", "error")
-            
-        return redirect(url_for("assessment_views.get_calendar_page"))
+        # Apply the schedule
+        if schedule_all_assessments(schedule):
+            flash("Successfully scheduled all assessments! The calendar has been updated.", "success")
+        else:
+            flash("Failed to apply the computed schedule. Please try again.", "error")
+
+        return redirect(url_for('assessment_views.get_calendar_page'))
 
     except Exception as e:
-        import traceback
-        print("Autoschedule error:", str(e))
-        print("Traceback:", traceback.format_exc())
-        flash("An unexpected error occurred. Please check the server logs for details.", "error")
-        return redirect(url_for("assessment_views.get_calendar_page"))
+        print(f"Error in autoschedule: {str(e)}")
+        traceback.print_exc()
+        flash(f"Error scheduling assessments: {str(e)}", "error")
+        return redirect(url_for('assessment_views.get_calendar_page'))
