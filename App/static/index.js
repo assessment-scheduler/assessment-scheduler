@@ -5,16 +5,16 @@ document.addEventListener("DOMContentLoaded", function () {
   console.log("Calendar initialization started");
   console.log("Initial scheduled assessments:", scheduledAssessments);
   
-  // Update colors to use tertiary color (purple) from CSS variables
+  // Update colors to use darker shades for both proctored and regular assessments
   const colors = {
-    Assignment: 'var(--tertiary-color)',
-    Quiz: "#499373",
-    Project: "#006064",
-    Exam: "#CC4E4E",
-    Presentation: "#cc7a50",
-    Other: "#C29203",
-    Pending: "#999999",
-    Proctored: '#9C9FE2'
+    Assignment: '#3e2a73', // Darker version of tertiary color
+    Quiz: "#37705a", // Darker version
+    Project: "#004850", // Darker version
+    Exam: "#a03e3e", // Darker version
+    Presentation: "#a45e38", // Darker version
+    Other: "#9a7502", // Darker version
+    Pending: "#757575", // Darker version
+    Proctored: '#7678b0' // Darker version of the proctored color
   };
 
   // Function to properly format dates for FullCalendar
@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const isProctored = info.event.extendedProps?.proctored;
       const courseCode = info.event.extendedProps?.course_code || '';
       const percentage = info.event.extendedProps?.percentage || '';
-      const assessmentName = info.event.extendedProps?.assessmentName || info.event.title.split('-')[1].split(' ')[0];
+      const assessmentName = info.event.extendedProps?.assessmentName || '';
       
       // Create a custom HTML structure similar to draggable cards
       let html = `
@@ -180,7 +180,7 @@ document.addEventListener("DOMContentLoaded", function () {
         eventEl.style.transform = 'translateY(0)';
       });
       
-      // Add tooltip
+      // Add tooltip with full details
       eventEl.title = info.event.title;
     },
     
