@@ -12,7 +12,8 @@ from ..controllers import (
     get_course,
     get_user_by_email,
     get_num_assessments,
-    get_active_semester
+    get_active_semester,
+    get_assessments_by_course
 )
 from ..controllers.auth import staff_required
 
@@ -52,26 +53,44 @@ def get_account_page():
     courses = get_staff_courses(email)
     num_assessments = 0
     for course in courses: 
-        num_assessments  = num_assessments + get_num_assessments(course.code)
-    return render_template('account.html', staff=staff, courses=courses, num_assessments = num_assessments)
+        num_assessments = num_assessments + get_num_assessments(course.code)
+    return render_template('account.html', staff=staff, courses=courses, num_assessments=num_assessments)
 
-@staff_views.route('/settings', methods=['GET'])
+@staff_views.route('/my_courses', methods=['GET'])
 @staff_required
-def get_settings_page():
-    return render_template('settings.html')
+def get_my_courses():
+    email = get_jwt_identity()
+    staff = get_staff_by_email(email)
+    courses = get_staff_courses(email)
+    
+    # Add assessments to each course
+    for course in courses:
+        course.assessments = get_assessments_by_course(course.code)
+    
+    return render_template('my_courses.html', staff=staff, courses=courses)
 
-@staff_views.route('/settings', methods=['POST'])
+@staff_views.route('/change_password', methods=['POST'])
 @staff_required
-def update_settings():
+def change_password():
     email = get_jwt_identity()
     user = get_user_by_email(email)
-    new_password = request.form.get('password')
+    current_password = request.form.get('current_password')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
     
-    if new_password:
-        user.set_password(new_password)
-        db.session.commit()
-        flash('Password updated successfully', 'success')
-    else:
-        flash('No password provided', 'error')
-        
-    return redirect(url_for('staff_views.get_settings_page'))
+    if not current_password or not new_password or not confirm_password:
+        flash('All password fields are required', 'error')
+        return redirect(url_for('staff_views.get_account_page'))
+    
+    if not user.check_password(current_password):
+        flash('Current password is incorrect', 'error')
+        return redirect(url_for('staff_views.get_account_page'))
+    
+    if new_password != confirm_password:
+        flash('New passwords do not match', 'error')
+        return redirect(url_for('staff_views.get_account_page'))
+    
+    user.set_password(new_password)
+    db.session.commit()
+    flash('Password updated successfully', 'success')
+    return redirect(url_for('staff_views.get_account_page'))

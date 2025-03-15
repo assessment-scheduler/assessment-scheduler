@@ -18,10 +18,10 @@ def get_course_name(course_code) -> str | None:
     course: Optional[Course] = get_course(course_code)
     return None if course is None else course.name
 
-def create_course(course_code:str, course_name:str)-> bool:
+def create_course(course_code:str, course_name:str, level:str=None, credits:int=None, semester:str=None)-> bool:
     if get_course(course_code): 
         return False
-    new_course:Course = Course(course_code, course_name)
+    new_course:Course = Course(course_code, course_name, level, credits, semester)
     db.session.add(new_course)
     db.session.commit()
     return True
@@ -34,12 +34,15 @@ def delete_course(course_code: str) -> bool:
     db.session.commit()
     return True
 
-def update_course(course_code: str, new_course_code:str, new_course_name:str) -> bool:
+def update_course(course_code: str, new_course_code:str, new_course_name:str, level:str=None, credits:int=None, semester:str=None) -> bool:
     course: Optional[Course] = get_course(course_code)
     if course is None:
         return False
     course.code = new_course_code
     course.name = new_course_name
+    course.level = level
+    course.credits = credits
+    course.semester = semester
     db.session.commit()
     return True    
 

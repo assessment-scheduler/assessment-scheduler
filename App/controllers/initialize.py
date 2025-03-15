@@ -23,7 +23,17 @@ def initialize() -> None:
     with open('App/uploads/courses.csv') as course_file:
         reader = csv.DictReader(course_file)
         for row in reader:
-            create_course(row['course_code'], row['course_name'])
+            level = row.get('level')
+            credits = row.get('credits')
+            semester = row.get('semester')
+            
+            # Convert credits to integer if provided
+            if credits and credits.isdigit():
+                credits = int(credits)
+            else:
+                credits = None
+                
+            create_course(row['course_code'], row['course_name'], level, credits, semester)
 
     with open('App/uploads/lecturerassignments.csv') as assigned_file:
          reader = csv.DictReader(assigned_file)

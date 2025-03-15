@@ -194,9 +194,9 @@
     <div class="form-group">
       <label for="course_code">Course</label>
       <select id="course_code" name="course_code" required>
-        <option value="" disabled selected>Select a course</option>
+        <option value="" disabled {% if not selected_course %}selected{% endif %}>Select a course</option>
         {% for course in courses %}
-        <option value="{{ course.code }}">{{ course.code }}: {{ course.name }}</option>
+        <option value="{{ course.code }}" {% if selected_course and selected_course == course.code %}selected{% endif %}>{{ course.code }}: {{ course.name }}</option>
         {% endfor %}
       </select>
     </div>

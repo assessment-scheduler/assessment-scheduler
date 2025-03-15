@@ -1,44 +1,44 @@
-course_code,course_name
-COMP1600,Introduction to Computing Concepts
-COMP1601,Introduction to Computer Programming I
-COMP1602,Introduction to Computer Programming II
-COMP1603,Introduction to Computer Programming III
-COMP1604,Mathematics for Computing
-INFO1600,Introduction to Information Technology Concepts
-INFO1601,Introduction to WWW Programming
-MATH1115,Fundamental Mathematics for the General Sciences I
-COMP2601,Computer Architecture
-COMP2602,Computer Networks
-COMP2603,Object-Oriented Programming I
-COMP2604,Operating Systems
-COMP2605,Enterprise Database Systems
-COMP2606,Software Engineering I
-COMP2611,Data Structures
-INFO2602,Web Programming and Technologies I
-INFO2604,Information Systems Security
-MATH2250,Industrial Statistics
-COMP3601,Design and Analysis of Algorithms
-COMP3602,Theory of Computing
-COMP3603,Human-Computer Interaction
-INFO3604,Project
-COMP3605,Introduction to Data Analytics
-COMP3606,Wireless and Mobile Computing
-COMP3607,Object-Oriented Programming II
-COMP3608,Intelligent Systems
-COMP3609,Game Programming
-COMP3610,Big Data Analytics
-COMP3611,Modelling and Simulation
-COMP3612,Special Topics in Computer Science
-COMP3613,Software Engineering II
-INFO2605,Professional Ethics and Law
-INFO3600,Business Information Systems
-INFO3605,Fundamentals of LAN Technologies
-INFO3606,Cloud Computing
-INFO3607,Fundamentals of WAN Technologies
-INFO3608,E-Commerce
-INFO3609,Internship I
-INFO3610,Internship II
-INFO3611,Database Administration
-FOUN1105,Scientific and Technical Writing
-FOUN1101,Caribbean Civilization
-FOUN1301,"Law, Governance, Economy and Society"
+course_code,course_name,level,credits,semester
+COMP1600,Introduction to Computing Concepts,1,3,1
+COMP1601,Introduction to Computer Programming I,1,3,1
+COMP1602,Introduction to Computer Programming II,1,3,2
+COMP1603,Introduction to Computer Programming III,1,3,2
+COMP1604,Mathematics for Computing,1,3,1
+INFO1600,Introduction to Information Technology Concepts,1,3,1
+INFO1601,Introduction to WWW Programming,1,3,2
+MATH1115,Fundamental Mathematics for the General Sciences I,1,3,1
+COMP2601,Computer Architecture,2,3,1
+COMP2602,Computer Networks,2,3,2
+COMP2603,Object-Oriented Programming I,2,3,1
+COMP2604,Operating Systems,2,3,2
+COMP2605,Enterprise Database Systems,2,3,1
+COMP2606,Software Engineering I,2,3,2
+COMP2611,Data Structures,2,3,1
+INFO2602,Web Programming and Technologies I,2,3,1
+INFO2604,Information Systems Security,2,3,2
+MATH2250,Industrial Statistics,2,3,1
+COMP3601,Design and Analysis of Algorithms,3,3,1
+COMP3602,Theory of Computing,3,3,1
+COMP3603,Human-Computer Interaction,3,3,2
+INFO3604,Project,3,6,Year-long
+COMP3605,Introduction to Data Analytics,3,3,1
+COMP3606,Wireless and Mobile Computing,3,3,2
+COMP3607,Object-Oriented Programming II,3,3,1
+COMP3608,Intelligent Systems,3,3,2
+COMP3609,Game Programming,3,3,2
+COMP3610,Big Data Analytics,3,3,2
+COMP3611,Modelling and Simulation,3,3,1
+COMP3612,Special Topics in Computer Science,3,3,2
+COMP3613,Software Engineering II,3,3,1
+INFO2605,Professional Ethics and Law,2,3,2
+INFO3600,Business Information Systems,3,3,1
+INFO3605,Fundamentals of LAN Technologies,3,3,1
+INFO3606,Cloud Computing,3,3,2
+INFO3607,Fundamentals of WAN Technologies,3,3,2
+INFO3608,E-Commerce,3,3,1
+INFO3609,Internship I,3,3,Summer
+INFO3610,Internship II,3,3,Summer
+INFO3611,Database Administration,3,3,2
+FOUN1105,Scientific and Technical Writing,1,3,1
+FOUN1101,Caribbean Civilization,1,3,2
+FOUN1301,"Law, Governance, Economy and Society",1,3,2
