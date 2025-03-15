@@ -268,24 +268,26 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>First Name</th>
-          <th>Last Name</th>
+          <th>Name</th>
           <th>Email</th>
+          <th>Department</th>
+          <th>Faculty</th>
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody id="staffTableBody">
-        {% for member in staff %}
-        <tr class="staff-row" data-id="{{ member.id }}">
-          <td>{{ member.id }}</td> 
-          <td>{{ member.first_name }}</td>
-          <td>{{ member.last_name }}</td>
-          <td><span class="email-text">{{ member.email }}</span></td>
+      <tbody>
+        {% for staff_member in staff %}
+        <tr class="staff-row" data-id="{{ staff_member.id }}">
+          <td>{{ staff_member.id }}</td>
+          <td>{{ staff_member.first_name }} {{ staff_member.last_name }}</td>
+          <td class="email-text">{{ staff_member.email }}</td>
+          <td>{{ staff_member.department or 'DCIT' }}</td>
+          <td>{{ staff_member.faculty or 'FST' }}</td>
           <td>
             <div class="actions-container">
-              <a href="/staff_courses/{{ member.id }}" class="action-btn" style="background-color: var(--tertiary-color);">Courses</a>
-              <a href="/edit_staff/{{ member.id }}" class="action-btn" style="background-color: var(--tertiary-color);">Update</a>
-              <button type="button" class="action-btn delete-staff-link" style="background-color: #e74c3c;">Delete</button>
+              <a href="/edit_staff/{{ staff_member.id }}" class="action-btn" style="background-color: #3498db;">Edit</a>
+              <a href="/staff_courses/{{ staff_member.id }}" class="action-btn" style="background-color: #2ecc71;">Courses</a>
+              <button class="action-btn delete-btn" style="background-color: #e74c3c;" data-id="{{ staff_member.id }}" data-name="{{ staff_member.first_name }} {{ staff_member.last_name }}">Delete</button>
             </div>
           </td>
         </tr>
@@ -315,7 +317,7 @@
 <script>
   const staffRows = document.querySelectorAll('.staff-row');
   const modal = document.getElementById('deleteConfirmModal');
-  const deleteButtons = document.querySelectorAll('.delete-staff-link');
+  const deleteButtons = document.querySelectorAll('.delete-btn');
   const cancelBtn = document.querySelector('.cancel-delete-btn');
   const deleteForm = document.getElementById('deleteStaffForm');
   
@@ -325,7 +327,9 @@
       e.stopPropagation();
       const row = this.closest('.staff-row');
       const staffId = row.getAttribute('data-id');
+      const staffName = this.getAttribute('data-name');
       deleteForm.action = `/delete_staff/${staffId}`;
+      document.querySelector('.modal-content p').textContent = `Are you sure you want to delete ${staffName}? This action cannot be undone.`;
       modal.style.display = 'block';
     });
   });

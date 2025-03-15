@@ -18,7 +18,7 @@ def initialize() -> None:
     with open('App/uploads/staff.csv') as staff_file:
          reader = csv.DictReader(staff_file)
          for row in reader:
-              create_staff(row['id'],row['email'], row['password'], row['first_name'], row['last_name'])
+              create_staff(row['id'], row['email'], row['password'], row['first_name'], row['last_name'], row['department'], row['faculty'])
 
     with open('App/uploads/courses.csv') as course_file:
         reader = csv.DictReader(course_file)

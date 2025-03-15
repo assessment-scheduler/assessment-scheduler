@@ -153,12 +153,14 @@ def add_staff_action():
         last_name = request.form.get('lastName')
         email = request.form.get('email')
         password = request.form.get('password')
+        department = request.form.get('department')
+        faculty = request.form.get('faculty')
         
         if not all([staff_id,first_name, last_name, staff_id, email, password]):
             flash('All fields are required', 'error')
             return redirect(url_for('admin_views.get_new_staff_page'))
         
-        if create_staff(staff_id,email,password,first_name,last_name):
+        if create_staff(staff_id, email, password, first_name, last_name, department, faculty):
             flash(f'Staff {first_name} {last_name} added successfully!', 'success')
             return redirect(url_for('admin_views.get_staff_list'))
         else:
@@ -187,9 +189,12 @@ def update_staff_action():
         password = request.form.get('password')
         f_name = request.form.get('firstName')
         l_name = request.form.get('lastName')
+        department = request.form.get('department')
+        faculty = request.form.get('faculty')
 
-        staff = update_staff(staff_id, email, f_name, l_name)
-        change_password(email,password)
+        staff = update_staff(staff_id, email, f_name, l_name, department, faculty)
+        if password:
+            change_password(email, password)
 
         if staff:
             flash('Staff member updated successfully', 'success')

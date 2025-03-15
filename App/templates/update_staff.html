@@ -164,6 +164,23 @@
       <div class="hint-text">Only fill this if you want to change the password</div>
     </div>
     
+    <div class="form-row">
+      <div class="form-col">
+        <div class="form-group">
+          <label for="department">Department</label>
+          <input type="text" id="department" name="department" value="{{ staff.department or 'DCIT' }}">
+          <div class="hint-text">Department (e.g., DCIT)</div>
+        </div>
+      </div>
+      <div class="form-col">
+        <div class="form-group">
+          <label for="faculty">Faculty</label>
+          <input type="text" id="faculty" name="faculty" value="{{ staff.faculty or 'FST' }}">
+          <div class="hint-text">Faculty (e.g., FST)</div>
+        </div>
+      </div>
+    </div>
+    
     <div class="buttons-container">
       <button type="submit" class="btn btn-primary">Update Staff</button>
       <a href="/staff" class="btn btn-secondary">Cancel</a>
