@@ -1,18 +1,15 @@
 var weekCounter = 0;
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("Calendar initialization started");
-  console.log("Initial scheduled assessments:", scheduledAssessments);
-  
   const colors = {
-    Assignment: '#3e2a73',  
-    Quiz: "#37705a", 
-    Project: "#004850", 
-    Exam: "#a03e3e", 
-    Presentation: "#a45e38", 
-    Other: "#9a7502", 
-    Pending: "#757575", 
-    Proctored: '#7678b0'  
+    Assignment: '#3e2a73',
+    Quiz: "#37705a",
+    Project: "#004850",
+    Exam: "#a03e3e",
+    Presentation: "#a45e38",
+    Other: "#9a7502",
+    Pending: "#757575",
+    Proctored: '#7678b0'
   };
 
   function formatDate(dateStr) {
@@ -25,25 +22,11 @@ document.addEventListener("DOMContentLoaded", function () {
     return dateStr;
   }
   
-  console.log("Preparing calendar events from scheduled assessments:", scheduledAssessments.length);
-  if (scheduledAssessments && scheduledAssessments.length > 0) {
-    scheduledAssessments.forEach(assessment => {
-      console.log(`Assessment ${assessment.id}: ${assessment.name}, Date: ${assessment.scheduled}, Type: ${typeof assessment.scheduled}`);
-    });
-  } else {
-    console.warn("No scheduled assessments found!");
-  }
-  
   const calendarEvents = (scheduledAssessments || [])
     .filter(assessment => assessment.scheduled !== null && assessment.scheduled !== undefined)
     .map(assessment => {
       let startDate = formatDate(assessment.scheduled);
-      console.log(`Assessment ID ${assessment.id} mapped to date: ${startDate}`);
-      
-      if (!startDate) {
-        console.warn(`Assessment ID ${assessment.id} has no valid scheduled date:`, assessment.scheduled);
-        return null; 
-      }
+      if (!startDate) return null;
       
       return {
         id: assessment.id,
@@ -62,18 +45,13 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .filter(event => event !== null);
 
-  console.log("Processed calendar events:", calendarEvents.length, calendarEvents);
-
   const levelFilter = document.getElementById("level");
   const courseFilter = document.getElementById("courses");
   const typeFilter = document.getElementById("assignmentType");
   const calendarEl = document.getElementById("calendar");
   const unscheduledList = document.getElementById("unscheduled-list");
 
-  if (!calendarEl) {
-    console.error('Calendar element not found');
-    return;
-  }
+  if (!calendarEl) return;
 
   if (unscheduledList) {
     new FullCalendar.Draggable(unscheduledList, {
@@ -121,8 +99,6 @@ document.addEventListener("DOMContentLoaded", function () {
     droppable: true,
     
     eventDidMount: function(info) {
-      console.log("Event mounted:", info.event.title, "Date:", info.event.start);
-      
       const eventEl = info.el;
       const eventContent = eventEl.querySelector('.fc-event-title');
       
@@ -180,36 +156,25 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   if (calendarEvents && calendarEvents.length > 0) {
-    console.log("Adding events to calendar:", calendarEvents.length);
     calendarEvents.forEach(event => {
       try {
         calendar.addEvent(event);
-        console.log(`Added event ${event.id} to calendar`);
       } catch (e) {
         console.error(`Failed to add event ${event.id}:`, e);
       }
     });
-  } else {
-    console.warn("No calendar events to add");
   }
 
   try {
-    console.log("Rendering calendar with events:", calendarEvents.length);
     calendar.render();
     
-    setTimeout(() => {
-      calendar.refetchEvents();
-      console.log("Calendar events refreshed (first pass)");
-      
-      setTimeout(() => {
-        calendar.refetchEvents();
-        console.log("Calendar events refreshed (second pass)");
-      }, 500);
-    }, 300);
+    // Initial refresh to ensure events are displayed
+    setTimeout(() => calendar.refetchEvents(), 300);
   } catch (error) {
     console.error('Error rendering calendar:', error);
   }
 
+  // Event handlers for filters
   if (levelFilter) {
     levelFilter.addEventListener("change", function () {
       const selectedLevel = levelFilter.value;
@@ -273,11 +238,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .filter(assessment => assessment.scheduled !== null && assessment.scheduled !== undefined)
       .map(assessment => {
         let startDate = formatDate(assessment.scheduled);
-        
-        if (!startDate) {
-          console.warn(`Assessment ID ${assessment.id} has no valid scheduled date in filter update`);
-          return null;
-        }
+        if (!startDate) return null;
         
         return {
           id: assessment.id,
@@ -295,8 +256,6 @@ document.addEventListener("DOMContentLoaded", function () {
         };
       })
       .filter(event => event !== null);
-    
-    console.log("Updating calendar with events:", updatedEvents.length);
     
     updatedEvents.forEach(event => {
       calendar.addEvent(event);
@@ -320,9 +279,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function saveEvent(data, tempEvent = null) {
-    console.log("Saving event with data:", data);
-    
-    // Ensure we have an assessment_date in the data
     if (!data.assessment_date && tempEvent && tempEvent.start) {
       data.assessment_date = tempEvent.start.toISOString().split('T')[0];
     }
@@ -332,25 +288,19 @@ document.addEventListener("DOMContentLoaded", function () {
       method: "POST",
       data: data,
       success: (response) => {
-        console.log("Server response:", response);
-        
         if (response.success) {
-          // Update the scheduledAssessments array with the new data
           const updatedAssessment = response.assessment;
           
-          // Remove from unscheduled if it was there
           const unscheduledIndex = unscheduledAssessments.findIndex(a => a.id.toString() === data.id.toString());
           if (unscheduledIndex > -1) {
             unscheduledAssessments.splice(unscheduledIndex, 1);
             
-            // Remove the draggable element from the UI
             const draggedEl = document.querySelector(`[data-assessment-id="${data.id}"]`);
             if (draggedEl) {
               draggedEl.remove();
             }
           }
           
-          // Update or add to scheduledAssessments
           const scheduledIndex = scheduledAssessments.findIndex(a => a.id.toString() === data.id.toString());
           if (scheduledIndex > -1) {
             scheduledAssessments[scheduledIndex] = updatedAssessment;
@@ -358,19 +308,13 @@ document.addEventListener("DOMContentLoaded", function () {
             scheduledAssessments.push(updatedAssessment);
           }
           
-          // Update the calendar with the latest scheduled assessments
           calendar.removeAllEvents();
           
           const updatedEvents = scheduledAssessments
             .filter(assessment => assessment.scheduled !== null)
             .map(assessment => {
-              // Process the scheduled date
               let startDate = formatDate(assessment.scheduled);
-              
-              if (!startDate) {
-                console.warn(`Assessment ID ${assessment.id} has no valid scheduled date after save`);
-                return null; // Skip assessments without a valid date
-              }
+              if (!startDate) return null;
               
               return {
                 id: assessment.id,
@@ -389,22 +333,16 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .filter(event => event !== null);
           
-          console.log("Refreshing calendar with updated events:", updatedEvents.length);
-          
-          // Add each event individually instead of using addEventSource
           updatedEvents.forEach(event => {
             calendar.addEvent(event);
           });
           
           calendar.refetchEvents();
         } else {
-          // Handle error
           alert(response.message || "Failed to update assessment schedule");
-          // If this was a new event that failed, remove it
           if (tempEvent) {
             tempEvent.remove();
           } else {
-            // If this was an existing event that failed to update, refresh the calendar to restore original position
             calendar.refetchEvents();
           }
         }
@@ -413,7 +351,6 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("Error details:", {xhr, status, error});
         alert("Failed to update assessment schedule. Please try again.");
         
-        // Restore the event to its original position or remove temp event
         if (tempEvent) {
           tempEvent.remove();
         } else {

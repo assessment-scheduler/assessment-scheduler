@@ -250,9 +250,8 @@ def get_calendar_page():
     email = get_jwt_identity()
     user = get_user_by_email(email)
     
-    # CRITICAL SECTION: Retrieve ALL assessments across the system
+    # Retrieve ALL assessments across the system
     all_assessments = get_all_assessments() or []
-    print(f"Total assessments retrieved: {len(all_assessments)}")
     
     # Get user's assessments (for unscheduled list)
     user_assessments = get_assessments_by_lecturer(user.email) or []
@@ -264,7 +263,6 @@ def get_calendar_page():
     
     # Process all assessments for the calendar
     for assessment in all_assessments:
-        # Handle assessments with scheduled dates
         try:
             assessment_dict = {
                 'id': assessment.id,
@@ -286,7 +284,6 @@ def get_calendar_page():
                         assessment_dict['scheduled'] = assessment_dict['scheduled'].split('T')[0]
                 
                 scheduled_assessments.append(assessment_dict)
-                print(f"Added to calendar: {assessment.course_code}-{assessment.name} on {assessment_dict['scheduled']}")
                 
         except Exception as e:
             print(f"Error processing assessment {assessment.id}: {str(e)}")
@@ -327,13 +324,13 @@ def get_calendar_page():
     for course in staff_course_objects:
         try:
             course_dict = {
-                'code': course.code,  # Changed from course.id to course.code
+                'code': course.code,
                 'name': course.name,
-                'level': course.code[4] if len(course.code) > 4 else ''  # Extract level from course code
+                'level': course.code[4] if len(course.code) > 4 else ''
             }
             staff_courses.append(course_dict)
         except Exception as e:
-            print(f"Error processing course {course.code}: {str(e)}")  # Changed from course.id to course.code
+            print(f"Error processing course {course.code}: {str(e)}")
     
     # For backwards compatibility
     courses = staff_courses
@@ -361,18 +358,6 @@ def get_calendar_page():
         if isinstance(semester.get('end_date'), str):
             semester['start_date'].split('T')[0]
             semester['end_date'] = semester['end_date'].split('T')[0]
-    
-    # Important debug information
-    print(f"Calendar: Passing {len(scheduled_assessments)} scheduled assessments to template")
-    for idx, assessment in enumerate(scheduled_assessments[:10]):  # Print first 10
-        print(f"  {idx+1}. ID: {assessment.get('id')}, Name: {assessment.get('name')}, Date: {assessment.get('scheduled')}, Course: {assessment.get('course_code')}")
-    
-    # Write to a debug file to inspect the data
-    with open('calendar_debug.json', 'w') as f:
-        f.write(json.dumps({
-            'scheduled_count': len(scheduled_assessments),
-            'scheduled_sample': scheduled_assessments[:10] if scheduled_assessments else []
-        }, indent=2))
     
     return render_template('calendar.html', 
                           staff_exams=staff_exams,
