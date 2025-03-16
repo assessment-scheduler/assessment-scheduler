@@ -7,10 +7,34 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
+        body {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+        }
+        
         .material-icons {
             font-size: 18px;
             vertical-align: middle;
             margin-right: 5px;
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-on-primary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 1rem;
+            padding: 0.3rem;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        
+        .theme-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
         }
     </style>
     {% block head %}{% endblock %}
@@ -32,6 +56,9 @@
                     <li><a class="myAccount_nav_link nav_link" href="{{ url_for('staff_views.get_account_page') }}"><i class="material-icons">person</i>Account</a></li>
                     <!-- <li><a class="notification_nav_link nav_link" href="#">Notifications</a></li> -->
                     <li><a class="logout_nav_link" href="{{ url_for('auth_views.logout') }}"><i class="material-icons">exit_to_app</i>Logout</a></li>
+                    <li><button id="theme-toggle" class="theme-toggle" title="Toggle dark/light mode">
+                        <span class="material-icons">dark_mode</span>
+                    </button></li>
                 </ul>
             </div>
 
@@ -44,6 +71,9 @@
                     <li><a class="myAccount_nav_link mobile_links" href="{{ url_for('staff_views.get_account_page') }}"><i class="material-icons">person</i>Account</a></li>
                     <!-- <li><a class="notification_nav_link mobile_links" href="#">Notifications</a></li> -->
                     <li class="logout_mobile_container"><a class="logout_nav_link mobile_links" href="{{ url_for('auth_views.logout') }}"><i class="material-icons">exit_to_app</i>Logout</a></li>
+                    <li><button id="theme-toggle-mobile" class="theme-toggle" title="Toggle dark/light mode" style="color: white;">
+                        <span class="material-icons">dark_mode</span>
+                    </button></li>
                 </ul>
                 <div class="exit">
                     <img src="{{ url_for('static', filename='images/exit-btn.svg') }}" alt="">
@@ -84,5 +114,43 @@
             }, 300);
         });
     }, 5000);
+    
+    // Dark mode toggle functionality
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeToggleMobile = document.getElementById('theme-toggle-mobile');
+    const themeIcon = themeToggle.querySelector('.material-icons');
+    const themeIconMobile = themeToggleMobile.querySelector('.material-icons');
+    
+    // Check for saved theme preference or use default
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        themeIcon.textContent = 'light_mode';
+        themeIconMobile.textContent = 'light_mode';
+    }
+    
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('theme', 'dark');
+            themeIcon.textContent = 'light_mode';
+            themeIconMobile.textContent = 'light_mode';
+        } else {
+            localStorage.setItem('theme', 'light');
+            themeIcon.textContent = 'dark_mode';
+            themeIconMobile.textContent = 'dark_mode';
+        }
+        
+        // Dispatch a custom event that other scripts can listen for
+        document.dispatchEvent(new CustomEvent('themeToggled', {
+            detail: { 
+                isDarkMode: document.body.classList.contains('dark-mode') 
+            }
+        }));
+    }
+    
+    themeToggle.addEventListener('click', toggleTheme);
+    themeToggleMobile.addEventListener('click', toggleTheme);
 </script>
 </html>

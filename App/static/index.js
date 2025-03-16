@@ -548,7 +548,7 @@ document.addEventListener("DOMContentLoaded", function () {
   autoscheduleButton.textContent = "Autoschedule ALL";
   autoscheduleButton.className = "btn mb-3";
   autoscheduleButton.style.width = "100%";
-  autoscheduleButton.style.backgroundColor = "#5c46b4";
+  autoscheduleButton.style.backgroundColor = "var(--tertiary-color)";
   autoscheduleButton.style.color = "white";
   autoscheduleButton.style.padding = "12px";
   autoscheduleButton.style.fontWeight = "bold";
@@ -582,7 +582,7 @@ document.addEventListener("DOMContentLoaded", function () {
       modalOverlay.style.zIndex = '9999';
       
       const modalContent = document.createElement('div');
-      modalContent.style.backgroundColor = '#5c46b4';
+      modalContent.style.backgroundColor = 'var(--tertiary-color)';
       modalContent.style.padding = '2rem';
       modalContent.style.borderRadius = '8px';
       modalContent.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
@@ -626,7 +626,7 @@ document.addEventListener("DOMContentLoaded", function () {
       confirmButton.textContent = 'Proceed';
       confirmButton.className = 'btn';
       confirmButton.style.backgroundColor = 'white';
-      confirmButton.style.color = '#5c46b4';
+      confirmButton.style.color = 'var(--tertiary-color)';
       confirmButton.style.border = 'none';
       confirmButton.style.padding = '8px 16px';
       confirmButton.style.borderRadius = '4px';
@@ -650,7 +650,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.removeChild(modalOverlay);
         autoscheduleButton.disabled = true;
         autoscheduleButton.textContent = "Scheduling...";
-        autoscheduleButton.style.backgroundColor = "#5c46b4";
+        autoscheduleButton.style.backgroundColor = "var(--tertiary-color)";
         
         form.submit();
         
@@ -658,7 +658,7 @@ document.addEventListener("DOMContentLoaded", function () {
           if (autoscheduleButton.disabled) {
             autoscheduleButton.disabled = false;
             autoscheduleButton.textContent = "Autoschedule ALL";
-            autoscheduleButton.style.backgroundColor = "#5c46b4";
+            autoscheduleButton.style.backgroundColor = "var(--tertiary-color)";
             alert("The scheduling process is still running in the background. Please refresh the page in a few moments to see the results.");
           }
         }, 60000);
@@ -678,9 +678,9 @@ document.addEventListener("DOMContentLoaded", function () {
     
     const selects = filters.querySelectorAll('select');
     selects.forEach(select => {
-      select.style.backgroundColor = '#5c46b4';
+      select.style.backgroundColor = 'var(--tertiary-color)';
       select.style.color = 'white';
-      select.style.border = '1px solid #5c46b4';
+      select.style.border = '1px solid var(--tertiary-color)';
       select.style.borderRadius = '4px';
       select.style.padding = '8px 12px';
       select.style.margin = '0 8px 8px 0';
@@ -689,7 +689,7 @@ document.addEventListener("DOMContentLoaded", function () {
       
       const options = select.querySelectorAll('option');
       options.forEach(option => {
-        option.style.backgroundColor = '#5c46b4';
+        option.style.backgroundColor = 'var(--tertiary-color)';
       });
     });
   }

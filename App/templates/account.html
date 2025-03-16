@@ -3,24 +3,8 @@
 {% block title %}My Account{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 <style>
-  :root {
-    --primary-color: rgb(92, 70, 180);
-    --secondary-color: rgb(92, 70, 180);
-    --accent-color: #e74c3c;
-    --dark-bg: #2c2f33;
-    --darker-bg: #23272a;
-    --light-text: #ecf0f1;
-    --medium-gray: #36393f;
-    --light-gray: #7f8c8d;
-    --border-radius: 8px;
-    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  }
-
   body {
-    background-color: var(--darker-bg);
-    color: var(--light-text);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -33,13 +17,14 @@
   }
 
   .profile-card {
-    background-color: var(--dark-bg);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
+    background-color: var(--card-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
     position: relative;
     overflow: hidden;
     margin-bottom: 20px;
+    border: 1px solid var(--border-color);
   }
 
   .profile-header {
@@ -54,7 +39,7 @@
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background-color: var(--primary-color);
+    background-color: var(--tertiary-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -69,11 +54,11 @@
     font-weight: 600;
     margin-bottom: 5px;
     text-align: center;
-    color: var(--light-text);
+    color: var(--text-color);
   }
 
   .profile-email {
-    color: var(--light-gray);
+    color: var(--accent-color);
     margin-bottom: 15px;
     text-align: center;
     font-size: 0.9rem;
@@ -89,25 +74,32 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 15px;
-    background-color: var(--medium-gray);
+    background-color: var(--secondary-color);
     border-radius: 6px;
     transition: transform 0.2s, background-color 0.2s;
+    border: 1px solid var(--border-color);
   }
 
   .detail-item:hover {
-    background-color: #3a546e;
+    background-color: var(--tertiary-color);
     transform: translateY(-2px);
+    color: white;
   }
 
   .detail-label {
     font-weight: 600;
-    color: var(--light-gray);
+    color: var(--accent-color);
   }
 
   .detail-value {
-    color: var(--light-text);
+    color: var(--text-color);
     text-align: right;
     font-weight: 500;
+  }
+
+  .detail-item:hover .detail-label,
+  .detail-item:hover .detail-value {
+    color: white;
   }
 
   .stats-container {
@@ -118,12 +110,13 @@
   }
 
   .stat-card {
-    background-color: var(--medium-gray);
-    border-radius: var(--border-radius);
+    background-color: var(--secondary-color);
+    border-radius: 8px;
     padding: 15px;
-    box-shadow: var(--box-shadow);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
     transition: transform 0.2s;
+    border: 1px solid var(--border-color);
   }
 
   .stat-card:hover {
@@ -133,28 +126,29 @@
   .stat-value {
     font-size: 1.8rem;
     font-weight: 700;
-    color: var(--primary-color);
+    color: var(--tertiary-color);
     margin-bottom: 5px;
   }
 
   .stat-label {
     font-size: 0.8rem;
-    color: var(--light-gray);
+    color: var(--accent-color);
   }
 
   .password-section {
-    background-color: var(--dark-bg);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
+    background-color: var(--card-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
     margin-top: 20px;
+    border: 1px solid var(--border-color);
   }
 
   .section-title {
     font-size: 1.2rem;
     font-weight: 600;
     margin-bottom: 20px;
-    color: var(--light-text);
+    color: var(--text-color);
     position: relative;
     padding-bottom: 10px;
   }
@@ -166,7 +160,7 @@
     left: 0;
     width: 50px;
     height: 3px;
-    background-color: var(--primary-color);
+    background-color: var(--tertiary-color);
     border-radius: 2px;
   }
 
@@ -183,22 +177,22 @@
     display: block;
     margin-bottom: 5px;
     font-weight: 500;
-    color: var(--light-gray);
+    color: var(--accent-color);
   }
 
   .form-input {
     width: 100%;
     padding: 10px;
-    border: 1px solid var(--medium-gray);
-    background-color: var(--medium-gray);
-    color: var(--light-text);
+    border: 1px solid var(--border-color);
+    background-color: var(--secondary-color);
+    color: var(--text-color);
     border-radius: 4px;
     font-size: 1rem;
   }
 
   .form-input:focus {
     outline: none;
-    border-color: var(--primary-color);
+    border-color: var(--tertiary-color);
   }
 
   .btn {
@@ -212,12 +206,12 @@
   }
 
   .btn-primary {
-    background-color: var(--primary-color);
+    background-color: var(--tertiary-color);
     color: white;
   }
 
   .btn-primary:hover {
-    background-color: #7c5cff;
+    background-color: var(--accent-color);
     transform: translateY(-2px);
   }
 
@@ -232,14 +226,14 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    color: var(--primary-color);
+    color: var(--tertiary-color);
     text-decoration: none;
     font-weight: 500;
     transition: all 0.2s;
   }
 
   .action-link:hover {
-    color: #7c5cff;
+    color: var(--accent-color);
     transform: translateY(-2px);
   }
 
@@ -248,7 +242,7 @@
   }
 
   a {
-    color: var(--primary-color);
+    color: var(--tertiary-color);
     text-decoration: none;
   }
 
@@ -261,12 +255,23 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background-color: var(--darker-bg);
+    background-color: var(--primary-color);
   }
 
   footer {
     margin-top: auto;
-    background-color: var(--darker-bg);
+    background-color: var(--primary-color);
+  }
+
+  /* Dark mode specific overrides */
+  .dark-mode .profile-card,
+  .dark-mode .password-section {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border-color: var(--border-color);
+  }
+
+  .dark-mode .stat-card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   }
 </style>
 {% endblock %}

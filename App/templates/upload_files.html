@@ -7,6 +7,8 @@
     .upload-page {
         padding: 20px;
         max-width: 100%;
+        background-color: var(--primary-color);
+        min-height: calc(100vh - 60px);
     }
     
     .page-header {
@@ -36,7 +38,7 @@
     }
     
     .page-header p {
-        color: var(--text-muted, #aaa);
+        color: var(--text-muted);
         max-width: 600px;
         margin: 0 auto;
     }
@@ -50,7 +52,7 @@
     }
 
     .upload-card {
-        background: #2c2f33;
+        background: var(--card-color);
         border-radius: 8px;
         padding: 20px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -75,11 +77,11 @@
     }
 
     .upload-card h2 {
-        color: #fff;
+        color: var(--text-color);
         font-size: 1.2rem;
         margin-bottom: 15px;
         text-align: left;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid var(--border-color);
         padding-bottom: 10px;
         display: flex;
         align-items: center;
@@ -148,10 +150,10 @@
     }
 
     .file-name {
-        color: #aaa;
+        color: var(--text-muted);
         font-size: 0.9rem;
         padding: 8px 12px;
-        background: rgba(0, 0, 0, 0.2);
+        background: rgba(0, 0, 0, 0.1);
         border-radius: 4px;
         flex: 2;
         overflow: hidden;
@@ -201,7 +203,7 @@
 
     .format-info {
         display: none;
-        background: rgba(0, 0, 0, 0.2);
+        background: rgba(0, 0, 0, 0.1);
         padding: 15px;
         border-radius: 4px;
         margin-top: 10px;
@@ -210,21 +212,21 @@
     }
 
     .format-info pre {
-        background: rgba(0, 0, 0, 0.3);
+        background: rgba(0, 0, 0, 0.1);
         padding: 10px;
         border-radius: 4px;
         overflow-x: auto;
-        color: #ecf0f1;
+        color: var(--text-color);
         margin: 10px 0;
     }
     
     .format-info p {
         margin: 0 0 10px 0;
-        color: #bbb;
+        color: var(--text-muted);
     }
 
     .error-text {
-        color: var(--danger-color, #e74c3c);
+        color: var(--danger-color);
         font-size: 0.8rem;
         display: none;
     }
@@ -274,6 +276,52 @@
             width: 100%;
             box-sizing: border-box;
         }
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        animation: fadeIn 0.3s;
+    }
+  
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+  
+    .modal-content {
+        background-color: var(--card-color);
+        margin: 15% auto;
+        padding: 25px;
+        border-radius: 8px;
+        width: 400px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        animation: slideIn 0.3s;
+    }
+  
+    @keyframes slideIn {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+  
+    .modal-content h3 {
+        margin-top: 0;
+        color: var(--text-color);
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+  
+    .modal-content p {
+        margin-bottom: 25px;
+        color: var(--text-muted);
+        line-height: 1.5;
     }
 </style>
 {% endblock %}

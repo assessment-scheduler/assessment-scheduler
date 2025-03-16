@@ -3,16 +3,16 @@
 {% block title %}Schedule Assessment{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" href="../static/css/main.css">
     <link rel="stylesheet" href="../static/css/assessments.css">
     <style>
         .schedule-form {
             max-width: 600px;
             margin: 2rem auto;
             padding: 2rem;
-            background-color: var(--primary-color);
+            background-color: var(--card-color);
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
         }
 
         .form-group {
@@ -23,16 +23,16 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
-            color: #fff;
+            color: var(--text-color);
         }
 
         .form-group input[type="date"] {
             width: 100%;
             padding: 0.75rem;
-            border: 1px solid #444;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
-            background-color: #2a2e33;
-            color: #fff;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
             font-size: 1rem;
         }
 
@@ -44,14 +44,15 @@
         .assessment-info {
             margin-bottom: 2rem;
             padding: 1rem;
-            background-color: rgba(52, 152, 219, 0.1);
+            background-color: var(--secondary-color);
             border-left: 4px solid var(--tertiary-color);
             border-radius: 4px;
+            border: 1px solid var(--border-color);
         }
 
         .assessment-info p {
             margin: 0.5rem 0;
-            color: #fff;
+            color: var(--text-color);
         }
 
         .buttons-container {

@@ -4,62 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="../static/css/main.css">
-    <link rel="stylesheet" href="../static/css/adminMain.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/adminMain.css') }}">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #23272a;
-            --secondary-color: #2c2f33;
-            --tertiary-color: #5c46b4;
-            --text-color: #ecf0f1;
-            --accent-color: #9b59b6;
-            --danger-color: #e74c3c;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
-            --info-color: #5c46b4;
-            --background-color: #23272a;
-            --card-color: #2c2f33;
-            --border-color: #444;
-        }
-        
-        .dark-mode {
-            --primary-color: #23272a;
-            --secondary-color: #2c2f33;
-            --background-color: #23272a;
-            --card-color: #2c2f33;
-            --text-color: #f0f0f0;
-            --border-color: #444;
-        }
-        
         body {
-            background-color: var(--background-color);
+            background-color: var(--primary-color);
             color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
             margin: 0;
             padding: 0;
-            min-height: 100vh;
+        }
+        
+        /* Ensure content takes up full height */
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--primary-color);
+        }
+        
+        /* Ensure main content area fills available space */
+        #main-content {
+            flex: 1;
+            background-color: var(--primary-color);
+        }
+        
+        .material-icons {
+            font-size: 18px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-on-primary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 1rem;
+            padding: 0.3rem;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        
+        .theme-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
         }
         
         #layout_nav {
-            background-color: #23272a;
+            background-color: var(--tertiary-color);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             position: sticky;
             top: 0;
             z-index: 1000;
+            color: var(--text-on-primary);
         }
         
         .main_nav_wrapper {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.8rem 2rem;
+            padding: 1rem 2rem;
             max-width: 1400px;
             margin: 0 auto;
         }
         
         .logo_container a {
-            color: var(--text-color);
+            color: var(--text-on-primary);
             text-decoration: none;
             font-size: 1.2rem;
             font-weight: 600;
@@ -72,7 +89,7 @@
             font-family: 'Material Icons';
             margin-right: 10px;
             font-size: 1.4rem;
-            color: var(--tertiary-color);
+            color: var(--text-on-primary);
         }
         
         .links_container {
@@ -92,14 +109,15 @@
         }
         
         .nav_link {
-            color: var(--text-color);
+            color: var(--text-on-primary);
             text-decoration: none;
-            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.5rem 0.8rem;
             border-radius: 4px;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            font-weight: 500;
         }
         
         .nav_link:hover {
@@ -107,8 +125,8 @@
         }
         
         .nav_link.active {
-            background-color: var(--tertiary-color);
-            color: white;
+            background-color: rgba(255, 255, 255, 0.2);
+            font-weight: 600;
         }
         
         .nav_link::before {
@@ -124,21 +142,18 @@
         .calendar_nav_link::before { content: 'calendar_month'; }
         
         .logout_nav_link {
-            color: white;
-            text-decoration: none;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--text-on-primary);
             padding: 0.5rem 1rem;
             border-radius: 4px;
+            text-decoration: none;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            font-weight: 500;
-            margin-left: 1rem;
-            background-color: var(--tertiary-color);
         }
         
         .logout_nav_link:hover {
-            background-color: #4a3a9c;
-            color: white;
+            background-color: rgba(255, 255, 255, 0.25);
         }
         
         .logout_nav_link .material-icons {
@@ -147,65 +162,44 @@
             margin-right: 5px;
         }
         
-        .theme-toggle {
-            background: none;
-            border: none;
-            color: var(--text-color);
-            cursor: pointer;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 1rem;
-            padding: 0.3rem;
-            border-radius: 50%;
-            transition: background-color 0.2s;
-        }
-        
-        .theme-toggle:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-        
         .links_container_mobile {
             display: none;
             position: fixed;
             top: 0;
-            right: -300px;
-            width: 250px;
-            height: 100vh;
-            background-color: #23272a;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--tertiary-color);
             z-index: 1001;
-            transition: right 0.3s ease;
-            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
-            padding: 1rem;
-        }
-        
-        .links_container_mobile.active {
-            right: 0;
-        }
-        
-        #layout_nav_links_mobile {
-            list-style: none;
-            padding: 0;
-            margin: 2rem 0 0 0;
-        }
-        
-        #layout_nav_links_mobile li {
-            margin-bottom: 1rem;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
         }
         
         .mobile_links {
-            color: var(--text-color);
+            color: var(--text-on-primary);
             text-decoration: none;
-            display: block;
-            padding: 0.8rem 1rem;
+            font-size: 1.2rem;
+            padding: 0.8rem 1.5rem;
+            margin: 0.5rem 0;
             border-radius: 4px;
             transition: all 0.2s ease;
-            font-weight: 500;
+            display: flex;
+            align-items: center;
         }
         
         .mobile_links:hover {
             background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .mobile_menu_toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-on-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
         }
         
         .exit {
@@ -320,14 +314,20 @@
             </div>
         </div>
     </nav>
-    <div>
-        {% for message in get_flashed_messages() %}
-        <div class="flash-message">
-            <span>{{ message }}</span>
-            <button class="close-btn" onclick="this.parentElement.style.display = 'none';">&times;</button>
+    <div class="content-wrapper">
+        <div id="main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}" id="flashMsg">
+                            <span class="msgContainer">{{ message }}</span>
+                            <button class="close-btn" onclick="this.parentElement.style.display = 'none';">×</button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
         </div>
-        {% endfor %}
-        {% block content %}{% endblock %}
     </div>
     
     <script>

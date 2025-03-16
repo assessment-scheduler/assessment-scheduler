@@ -3,21 +3,21 @@
 {% block title %}Update Assessment{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="../static/css/main.css">
 <style>
   .form-container {
     max-width: 800px;
     margin: 2rem auto;
     padding: 2rem;
-    background-color: var(--primary-color);
+    background-color: var(--card-color);
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
   }
 
   h2 {
     text-align: center;
     margin-bottom: 1.5rem;
-    color: #fff;
+    color: var(--text-color);
     font-weight: 600;
     position: relative;
     padding-bottom: 10px;
@@ -43,7 +43,7 @@
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
-    color: #ddd;
+    color: var(--text-color);
   }
 
   input[type="text"],
@@ -51,10 +51,10 @@
   select {
     width: 100%;
     padding: 10px 15px;
-    border: 1px solid #444;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    background-color: #2a2e33;
-    color: #fff;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
     font-size: 1rem;
   }
 
@@ -121,20 +121,21 @@
   }
 
   .course-info {
-    background-color: #2a2e33;
+    background-color: var(--secondary-color);
     padding: 15px;
     border-radius: 4px;
     margin-bottom: 1.5rem;
     border-left: 4px solid var(--tertiary-color);
+    border: 1px solid var(--border-color);
   }
 
   .course-info p {
     margin: 5px 0;
-    color: #ddd;
+    color: var(--text-color);
   }
 
   .course-info strong {
-    color: #fff;
+    color: var(--tertiary-color);
   }
   
   /* Flash messages */

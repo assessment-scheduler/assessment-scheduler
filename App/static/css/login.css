@@ -12,9 +12,21 @@ a{
 
 .leftSide{
     min-width: 50%;
+    background-color: var(--primary-color);
+    position: relative;
+}
+
+/* Dark mode specific pattern */
+.dark-mode .leftSide {
     background-color: #23272A;
     opacity: 0.8;
     background-image: radial-gradient(#473157 1.35px, #23272A 1.35px);
+    background-size: 27px 27px;
+}
+
+/* Light mode specific pattern */
+body:not(.dark-mode) .leftSide {
+    background-image: radial-gradient(#d1d8e0 1.35px, var(--primary-color) 1.35px);
     background-size: 27px 27px;
 }
 
@@ -26,7 +38,6 @@ a{
     min-height: 35vh;
     background-size: cover;
     background-position: center;
-    
 }
 
 
@@ -42,6 +53,7 @@ nav{
 .logo{
     font-weight: 600;
     font-size: 16px;
+    color: var(--text-color);
 }
 
 .registerLink{
@@ -66,25 +78,25 @@ nav{
 .content h1{
     font-size: 24px;
     padding-top: 2rem;
+    color: var(--text-color);
 }
 
 /* form styles */
 form{
-    background: var(--secondary-color);
+    background: var(--card-color);
     max-width: 370px;
     margin: 0 auto;
     border-radius: 10px;
     padding: 1.5rem 1rem;
     margin-top: 30px;
-
-    box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
-    -webkit-box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
-    -moz-box-shadow: 8px 10px 37px -12px rgba(0,0,0,0.62);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 form h2{
     font-size: 24px;
     margin-bottom: 25px;
+    color: var(--text-color);
 }
 
 .field_containers{
@@ -100,19 +112,23 @@ form h2{
 }
 
 .field_containers input{
-    background: var(--primary-color);
-    border: none;
+    background: var(--secondary-color);
+    border: 1px solid var(--border-color);
     padding: 0.5rem 0.8rem;
-    color: white;
+    color: var(--text-color);
     border-radius: 6px;
 }
 
 .field_containers input:focus{
-    background-color: #3b4044;
+    border-color: var(--tertiary-color);
+    box-shadow: 0 0 0 2px rgba(92, 70, 180, 0.2);
+    outline: none;
 }
 
 label {
     font-size: 16px;
+    color: var(--text-color);
+    margin-bottom: 5px;
 }
 
 
@@ -138,16 +154,16 @@ label {
 .forgotPassword{
     margin-top: 15px;
     font-size: 12px;
-    color: rgb(129, 128, 128);
+    color: var(--text-muted);
 }
 
 .forgotPassword a{
     text-decoration: underline;
-    color: rgb(129,128,128);
+    color: var(--text-muted);
     transition: 0.25s color ease-in;
 }
 .forgotPassword a:hover{
-    color: rgb(153, 151, 151);
+    color: var(--tertiary-color);
 }
 
 
