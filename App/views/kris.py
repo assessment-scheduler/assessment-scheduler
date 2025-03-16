@@ -117,17 +117,30 @@ def schedule_all_assessments(schedule):
             return False
             
         success = True
+        scheduled_count = 0
+        failed_assessments = []
+        
         for row in schedule:
             try:
                 k, week, day, code, assessment_info = row
                 name = assessment_info.split("-")[0]
                 schedule_date = semester.start_date + timedelta(days=(k - 1))
-                if not schedule_assessment(semester, schedule_date, code, name):
+                if schedule_assessment(semester, schedule_date, code, name):
+                    scheduled_count += 1
+                else:
                     print(f"Failed to schedule assessment: {code}-{name}")
+                    failed_assessments.append(f"{code}-{name}")
                     success = False
             except Exception as row_error:
                 print(f"Error scheduling row {row}: {str(row_error)}")
+                failed_assessments.append(f"{row}")
                 success = False
+        
+        print(f"Scheduled {scheduled_count} out of {len(schedule)} assessments")
+        if failed_assessments:
+            print(f"Failed to schedule {len(failed_assessments)} assessments: {', '.join(failed_assessments[:5])}")
+            if len(failed_assessments) > 5:
+                print(f"... and {len(failed_assessments) - 5} more")
                 
         return success
         

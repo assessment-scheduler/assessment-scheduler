@@ -238,16 +238,16 @@ def update_assessment_schedule():
 
         if not assessment:
             flash("Assessment not found", "error")
-            return redirect(url_for("assessment_views.get_assessments_page"))
+            return redirect(url_for("assessment_views.get_calendar_page"))
 
         if not is_course_lecturer(user.id, assessment.course_code):
             flash("You do not have permission to schedule assessments for this course", "error")
-            return redirect(url_for("assessment_views.get_assessments_page"))
+            return redirect(url_for("assessment_views.get_calendar_page"))
 
         semester = get_active_semester()
         if not semester:
             flash("No active semester found", "error")
-            return redirect(url_for("assessment_views.get_assessments_page"))
+            return redirect(url_for("assessment_views.get_calendar_page"))
 
         days_diff = (assessment_date - semester.start_date).days
         week = (days_diff // 7) + 1
@@ -267,14 +267,14 @@ def update_assessment_schedule():
 
         if result:
             flash("Assessment scheduled successfully", "success")
-            return redirect(url_for("assessment_views.get_assessments_page"))
+            return redirect(url_for("assessment_views.get_calendar_page"))
         else:
             flash("Failed to schedule assessment", "error")
             return redirect(url_for("assessment_views.get_schedule_assessment_page", id=assessment_id))
 
     except Exception as e:
         flash(f"An error occurred: {str(e)}", "error")
-        return redirect(url_for("assessment_views.get_assessments_page"))
+        return redirect(url_for("assessment_views.get_calendar_page"))
 
 
 @assessment_views.route("/schedule_assessment/<string:id>", methods=["GET"])
@@ -450,9 +450,19 @@ def autoschedule_assessments():
         # Check if we have too many assessments for the semester
         semester_weeks = get_semester_duration(active_semester.id)
         max_slots = semester_weeks * 5 * active_semester.max_assessments  # 5 days per week
+        
+        # If there are too many assessments, provide a more helpful error message
         if len(unscheduled) > max_slots:
-            flash(f"Too many assessments ({len(unscheduled)}) for available slots ({max_slots}). Try increasing the maximum assessments per day or reducing the number of assessments.", "error")
+            flash(f"Too many assessments ({len(unscheduled)}) for available slots ({max_slots}).", "error")
+            flash(f"Please try one of the following:", "error")
+            flash(f"1. Increase the maximum assessments per day (currently {active_semester.max_assessments})", "error")
+            flash(f"2. Reduce the number of assessments by scheduling some manually", "error")
+            flash(f"3. Extend the semester duration (currently {semester_weeks} weeks)", "error")
             return redirect(url_for('assessment_views.get_calendar_page'))
+        
+        # If there are more than 100 assessments, warn the user that it might take a while
+        if len(unscheduled) > 100:
+            flash(f"Attempting to schedule {len(unscheduled)} assessments. This may take a while...", "warning")
 
         # Compute the schedule
         schedule = compute_schedule()
@@ -475,7 +485,8 @@ def autoschedule_assessments():
     except Exception as e:
         print(f"Error in autoschedule: {str(e)}")
         traceback.print_exc()
-        flash(f"An unexpected error occurred while scheduling assessments. Please try again or contact support if the problem persists.", "error")
+        flash(f"An unexpected error occurred while scheduling assessments: {str(e)}", "error")
+        flash(f"Please try again with fewer assessments or contact support if the problem persists.", "error")
         return redirect(url_for('assessment_views.get_calendar_page'))
 
 
@@ -489,10 +500,12 @@ def unschedule_assessment():
         assessment = get_assessment_by_id(assessment_id)
 
         if not assessment:
-            return jsonify({"success": False, "message": "Assessment not found"}), 404
+            flash("Assessment not found", "error")
+            return redirect(url_for("assessment_views.get_calendar_page"))
 
         if not is_course_lecturer(user.id, assessment.course_code):
-            return jsonify({"success": False, "message": "Permission denied"}), 403
+            flash("You do not have permission to unschedule assessments for this course", "error")
+            return redirect(url_for("assessment_views.get_calendar_page"))
 
         result = update_assessment(
             assessment_id,
@@ -507,21 +520,67 @@ def unschedule_assessment():
         )
 
         if result:
-            updated_assessment = get_assessment_by_id(assessment_id)
-            return jsonify({
-                "success": True,
-                "message": "Assessment unscheduled successfully",
-                "assessment": {
-                    "id": updated_assessment.id,
-                    "name": updated_assessment.name,
-                    "course_code": updated_assessment.course_code,
-                    "percentage": updated_assessment.percentage,
-                    "scheduled": None,
-                    "proctored": updated_assessment.proctored,
-                }
-            })
+            flash("Assessment unscheduled successfully", "success")
+            return redirect(url_for("assessment_views.get_calendar_page"))
         else:
-            return jsonify({"success": False, "message": "Failed to unschedule assessment"}), 500
+            flash("Failed to unschedule assessment", "error")
+            return redirect(url_for("assessment_views.get_calendar_page"))
 
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+        flash(f"An error occurred: {str(e)}", "error")
+        return redirect(url_for("assessment_views.get_calendar_page"))
+
+
+@assessment_views.route("/unschedule_all_assessments", methods=["POST"])
+@staff_required
+def unschedule_all_assessments():
+    try:
+        email = get_jwt_identity()
+        user = get_user_by_email(email)
+        
+        assessments = get_assessments_by_lecturer(user.email)
+        
+        scheduled_count = 0
+        
+        if isinstance(assessments, dict):
+            for course_code, course_assessments in assessments.items():
+                for assessment in course_assessments:
+                    if assessment.scheduled:
+                        scheduled_count += 1
+                        update_assessment(
+                            assessment.id,
+                            assessment.name,
+                            assessment.percentage,
+                            assessment.start_week,
+                            assessment.start_day,
+                            assessment.end_week,
+                            assessment.end_day,
+                            assessment.proctored,
+                            None
+                        )
+        else:
+            for assessment in assessments:
+                if assessment.scheduled:
+                    scheduled_count += 1
+                    update_assessment(
+                        assessment.id,
+                        assessment.name,
+                        assessment.percentage,
+                        assessment.start_week,
+                        assessment.start_day,
+                        assessment.end_week,
+                        assessment.end_day,
+                        assessment.proctored,
+                        None
+                    )
+        
+        if scheduled_count > 0:
+            flash(f"Successfully unscheduled {scheduled_count} assessments", "success")
+        else:
+            flash("No scheduled assessments found", "info")
+            
+        return redirect(url_for("assessment_views.get_calendar_page"))
+
+    except Exception as e:
+        flash(f"An error occurred: {str(e)}", "error")
+        return redirect(url_for("assessment_views.get_calendar_page"))
