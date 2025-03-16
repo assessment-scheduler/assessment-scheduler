@@ -2,12 +2,12 @@ var weekCounter = 0;
 
 document.addEventListener("DOMContentLoaded", function () {
   const colors = {
-    Assignment: "#3397b9",
-    Quiz: "#499373",
-    Project: "#006064",
-    Exam: "#CC4E4E",
-    Presentation: "#cc7a50",
-    Other: "#C29203",
+    Assignment: "#4a88c7",
+    Quiz: "#4a88c7",
+    Project: "#4a88c7",
+    Exam: "#4a88c7",
+    Presentation: "#4a88c7",
+    Other: "#4a88c7",
     Pending: "#999999",
     Proctored: "#674ECC"
   };
@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const typeFilter = document.getElementById("assignmentType");
   const calendarEl = document.getElementById("calendar");
   const unscheduledList = document.getElementById("unscheduled-list");
+  const scheduledList = document.getElementById("scheduled-list");
 
   if (!calendarEl) return;
 
@@ -73,12 +74,37 @@ document.addEventListener("DOMContentLoaded", function () {
             proctored: eventEl.dataset.proctored === "1",
           }
         };
-      }
+      },
+      mirrorSelector: ".draggable-assessment",
+      dragRevertDuration: 0,
+      droppableScope: 'assessment'
+    });
+  }
+
+  if (scheduledList) {
+    new FullCalendar.Draggable(scheduledList, {
+      itemSelector: ".draggable-assessment",
+      eventData: function(eventEl) {
+        return {
+          id: eventEl.dataset.assessmentId,
+          title: `${eventEl.dataset.courseCode}-${eventEl.dataset.name || eventEl.children[0].innerText.split('-')[1]} (${eventEl.dataset.percentage}%)`,
+          backgroundColor: eventEl.dataset.proctored === "1" ? colors.Proctored : colors.Assignment,
+          textColor: '#fff',
+          extendedProps: {
+            course_code: eventEl.dataset.courseCode,
+            percentage: eventEl.dataset.percentage,
+            proctored: eventEl.dataset.proctored === "1",
+          }
+        };
+      },
+      mirrorSelector: ".draggable-assessment",
+      dragRevertDuration: 0,
+      droppableScope: 'assessment'
     });
   }
 
   const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: "dayGridMonth",
+    initialView: localStorage.getItem('calendarViewType') || "dayGridMonth",
     headerToolbar: {
       left: "prev,next,today",
       center: "title",
@@ -112,6 +138,39 @@ document.addEventListener("DOMContentLoaded", function () {
     droppable: true,
     dayMaxEvents: false,
     
+    // Allow events to be removed by dragging them out of the calendar
+    eventStartEditable: true,
+    eventDurationEditable: false,
+    removable: true,
+    droppableScope: 'assessment',
+    dragRevertDuration: 0,
+    dragScroll: true,
+    dropAccept: '.draggable-assessment',
+    
+    // Set valid date range for the calendar
+    validRange: semester && semester.start_date && semester.end_date ? {
+      start: semester.start_date,
+      end: semester.end_date
+    } : null,
+    
+    // Callback to validate drops
+    eventAllow: function(dropInfo, draggedEvent) {
+      if (!semester || !semester.start_date || !semester.end_date) {
+        return false;
+      }
+      
+      const eventDate = dropInfo.start;
+      const semesterStart = new Date(semester.start_date);
+      const semesterEnd = new Date(semester.end_date);
+      
+      return eventDate >= semesterStart && eventDate <= semesterEnd;
+    },
+    
+    // Save the current view when it changes
+    viewDidMount: function(info) {
+      localStorage.setItem('calendarViewType', info.view.type);
+    },
+    
     eventDidMount: function(info) {
       const eventEl = info.el;
       const eventContent = eventEl.querySelector('.fc-event-title');
@@ -141,7 +200,7 @@ document.addEventListener("DOMContentLoaded", function () {
       eventEl.style.width = '100%';
       
       if (isProctored) {
-        eventEl.style.borderLeft = '4px solid #674ECC';
+        eventEl.style.borderLeft = '4px solid #9C9FE2';
       } else {
         eventEl.style.borderLeft = '4px solid #fff';
       }
@@ -172,13 +231,25 @@ document.addEventListener("DOMContentLoaded", function () {
     },
     
     eventResize: handleEventEdit,
-    eventDrop: handleEventEdit,
+    eventDrop: handleEventDrop,
     drop: handleNewItem,
     eventReceive: function(info) {
       const tempEvent = info.event;
       
       if (!semester || !semester.start_date) {
         console.error('Semester start date not available');
+        tempEvent.remove();
+        alert("Cannot schedule assessment: No active semester found.");
+        return;
+      }
+      
+      const eventDate = tempEvent.start;
+      const semesterStart = new Date(semester.start_date);
+      const semesterEnd = new Date(semester.end_date);
+      
+      if (eventDate < semesterStart || eventDate > semesterEnd) {
+        tempEvent.remove();
+        alert("Cannot schedule assessment: Date is outside the semester range.");
         return;
       }
       
@@ -206,69 +277,19 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (confirm("Are you sure you want to unschedule this assessment?")) {
-          $.ajax({
-            url: "/unschedule_assessment",
-            method: "POST",
-            data: {
-              id: info.event.id
-            },
-            success: (response) => {
-              if (response.success) {
-                console.log('Successfully unscheduled assessment:', response.assessment);
-                const unscheduledAssessment = response.assessment;
-                
-                const scheduledIndex = scheduledAssessments.findIndex(a => a.id.toString() === info.event.id.toString());
-                if (scheduledIndex > -1) {
-                  scheduledAssessments.splice(scheduledIndex, 1);
-                }
-                
-                const existingUnscheduledIndex = unscheduledAssessments.findIndex(a => a.id.toString() === info.event.id.toString());
-                if (existingUnscheduledIndex === -1) {
-                  unscheduledAssessments.push({
-                    ...unscheduledAssessment,
-                    name: info.event.extendedProps.assessmentName || info.event.title.split('-')[1].split(' ')[0]
-                  });
-                }
-                
-                const unscheduledList = document.getElementById("unscheduled-list");
-                const existingElement = unscheduledList.querySelector(`[data-assessment-id="${info.event.id}"]`);
-                
-                if (!existingElement) {
-                  const newAssessmentEl = document.createElement("div");
-                  newAssessmentEl.className = "draggable-assessment";
-                  if (info.event.extendedProps.proctored) {
-                    newAssessmentEl.classList.add("proctored");
-                  }
-                  newAssessmentEl.dataset.assessmentId = unscheduledAssessment.id;
-                  newAssessmentEl.dataset.courseCode = unscheduledAssessment.course_code;
-                  newAssessmentEl.dataset.name = info.event.extendedProps.assessmentName || info.event.title.split('-')[1].split(' ')[0];
-                  newAssessmentEl.dataset.percentage = unscheduledAssessment.percentage;
-                  newAssessmentEl.dataset.proctored = unscheduledAssessment.proctored ? "1" : "0";
-                  
-                  newAssessmentEl.innerHTML = `
-                    <span class="assessment-name">${unscheduledAssessment.course_code}-${newAssessmentEl.dataset.name}</span>
-                    <div class="assessment-details">
-                      Weight: ${unscheduledAssessment.percentage}%
-                      ${unscheduledAssessment.proctored ? '<span class="badge">Proctored</span>' : ''}
-                    </div>
-                  `;
-                  
-                  unscheduledList.appendChild(newAssessmentEl);
-                }
-                
-                info.event.remove();
-              } else {
-                alert(response.message || "Failed to unschedule assessment");
-              }
-            },
-            error: () => {
-              alert("An error occurred while unscheduling the assessment");
-            }
-          });
+          unscheduleEvent(info.event.id);
         } else {
           calendar.addEvent(info.event.toPlainObject());
         }
       }
+    },
+    eventRemove: function(info) {
+      const eventId = info.event.id;
+      unscheduleEvent(eventId);
+    },
+    eventLeave: function(info) {
+      const eventId = info.event.id;
+      unscheduleEvent(eventId);
     }
   });
 
@@ -426,6 +447,21 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  function handleEventDrop(info) {
+    // Check if the new date is within the semester range
+    const eventDate = info.event.start;
+    const semesterStart = new Date(semester.start_date);
+    const semesterEnd = new Date(semester.end_date);
+    
+    if (eventDate < semesterStart || eventDate > semesterEnd) {
+      info.revert();
+      alert("Cannot schedule assessment: Date is outside the semester range.");
+      return;
+    }
+    
+    handleEventEdit(info);
+  }
+
   function handleNewItem(info) {
     return;
   }
@@ -465,60 +501,39 @@ document.addEventListener("DOMContentLoaded", function () {
       end_day: parseInt(data.end_day)
     };
 
-    $.ajax({
-      url: "/update_assessment_schedule",
-      method: "POST",
-      data: formattedData,
-      success: (response) => {
-        if (response.success) {
-          console.log('Successfully updated assessment:', response.assessment);
-          const updatedAssessment = response.assessment;
-          
-          const unscheduledIndex = unscheduledAssessments.findIndex(a => a.id.toString() === data.id.toString());
-          if (unscheduledIndex > -1) {
-            unscheduledAssessments.splice(unscheduledIndex, 1);
-            
-            const draggedEl = document.querySelector(`[data-assessment-id="${data.id}"]`);
-            if (draggedEl) {
-              draggedEl.remove();
-            }
-          }
-          
-          const scheduledIndex = scheduledAssessments.findIndex(a => a.id.toString() === data.id.toString());
-          if (scheduledIndex > -1) {
-            scheduledAssessments[scheduledIndex] = updatedAssessment;
-          } else {
-            scheduledAssessments.push(updatedAssessment);
-          }
-          
-          levelFilter.value = currentLevel;
-          courseFilter.value = currentCourse;
-          typeFilter.value = currentType;
-          
-          const filteredEvents = filterEvents(currentLevel, currentCourse, currentType);
-          updateCalendarEvents(calendar, filteredEvents);
-        } else {
-          alert(response.message || "Failed to update assessment schedule");
-          if (tempEvent) {
-            tempEvent.remove();
-          } else {
-            const filteredEvents = filterEvents(currentLevel, currentCourse, currentType);
-            updateCalendarEvents(calendar, filteredEvents);
-          }
-        }
-      },
-      error: (xhr, status, error) => {
-        console.error("Error details:", {xhr, status, error});
-        alert("Failed to update assessment schedule. Please try again.");
-        
-        if (tempEvent) {
-          tempEvent.remove();
-        } else {
-          const filteredEvents = filterEvents(currentLevel, currentCourse, currentType);
-          updateCalendarEvents(calendar, filteredEvents);
-        }
-      }
-    });
+    // Create a form and submit it
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/update_assessment_schedule';
+    form.style.display = 'none';
+    
+    for (const key in formattedData) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = formattedData[key];
+      form.appendChild(input);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+  }
+
+  function unscheduleEvent(eventId) {
+    // Create a form and submit it to unschedule the assessment
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/unschedule_assessment';
+    form.style.display = 'none';
+    
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'id';
+    input.value = eventId;
+    form.appendChild(input);
+    
+    document.body.appendChild(form);
+    form.submit();
   }
 
   const disclaimerText = document.createElement("div");
@@ -533,7 +548,7 @@ document.addEventListener("DOMContentLoaded", function () {
   autoscheduleButton.textContent = "Autoschedule ALL";
   autoscheduleButton.className = "btn mb-3";
   autoscheduleButton.style.width = "100%";
-  autoscheduleButton.style.backgroundColor = "#674ECC";
+  autoscheduleButton.style.backgroundColor = "#5c46b4";
   autoscheduleButton.style.color = "white";
   autoscheduleButton.style.padding = "12px";
   autoscheduleButton.style.fontWeight = "bold";
@@ -567,7 +582,7 @@ document.addEventListener("DOMContentLoaded", function () {
       modalOverlay.style.zIndex = '9999';
       
       const modalContent = document.createElement('div');
-      modalContent.style.backgroundColor = '#674ECC';
+      modalContent.style.backgroundColor = '#5c46b4';
       modalContent.style.padding = '2rem';
       modalContent.style.borderRadius = '8px';
       modalContent.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
@@ -611,7 +626,7 @@ document.addEventListener("DOMContentLoaded", function () {
       confirmButton.textContent = 'Proceed';
       confirmButton.className = 'btn';
       confirmButton.style.backgroundColor = 'white';
-      confirmButton.style.color = '#674ECC';
+      confirmButton.style.color = '#5c46b4';
       confirmButton.style.border = 'none';
       confirmButton.style.padding = '8px 16px';
       confirmButton.style.borderRadius = '4px';
@@ -635,7 +650,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.removeChild(modalOverlay);
         autoscheduleButton.disabled = true;
         autoscheduleButton.textContent = "Scheduling...";
-        autoscheduleButton.style.backgroundColor = "#674ECC";
+        autoscheduleButton.style.backgroundColor = "#5c46b4";
         
         form.submit();
         
@@ -643,7 +658,7 @@ document.addEventListener("DOMContentLoaded", function () {
           if (autoscheduleButton.disabled) {
             autoscheduleButton.disabled = false;
             autoscheduleButton.textContent = "Autoschedule ALL";
-            autoscheduleButton.style.backgroundColor = "#674ECC";
+            autoscheduleButton.style.backgroundColor = "#5c46b4";
             alert("The scheduling process is still running in the background. Please refresh the page in a few moments to see the results.");
           }
         }, 60000);
@@ -663,9 +678,9 @@ document.addEventListener("DOMContentLoaded", function () {
     
     const selects = filters.querySelectorAll('select');
     selects.forEach(select => {
-      select.style.backgroundColor = '#674ECC';
+      select.style.backgroundColor = '#5c46b4';
       select.style.color = 'white';
-      select.style.border = '1px solid #674ECC';
+      select.style.border = '1px solid #5c46b4';
       select.style.borderRadius = '4px';
       select.style.padding = '8px 12px';
       select.style.margin = '0 8px 8px 0';
@@ -674,7 +689,7 @@ document.addEventListener("DOMContentLoaded", function () {
       
       const options = select.querySelectorAll('option');
       options.forEach(option => {
-        option.style.backgroundColor = '#674ECC';
+        option.style.backgroundColor = '#5c46b4';
       });
     });
   }
