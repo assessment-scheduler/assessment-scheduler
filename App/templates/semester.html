@@ -92,8 +92,13 @@
   }
   
   .selected {
-    background-color: #4a4f52 !important;
+    background-color: #e3f2fd !important; /* Light blue for light mode */
     position: relative;
+  }
+  
+  /* Dark mode specific styling for selected rows */
+  .dark-mode .selected {
+    background-color: #4a4f52 !important; /* Dark gray for dark mode */
   }
   
   .selected td:first-child {

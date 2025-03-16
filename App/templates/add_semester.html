@@ -56,6 +56,29 @@
     color: var(--text-color);
   }
   
+  /* Light mode specific styles for date inputs */
+  input[type="date"] {
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #ced4da;
+  }
+  
+  /* Dark mode specific styles for date inputs */
+  .dark-mode input[type="date"] {
+    background-color: var(--card-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+  }
+  
+  /* Styling for date input calendar dropdown */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+  }
+  
+  .dark-mode input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
+  }
+  
   .buttons_container {
     display: flex;
     justify-content: center;

@@ -31,14 +31,28 @@
             padding: 0.75rem;
             border: 1px solid var(--border-color);
             border-radius: 4px;
+            background-color: #f8f9fa;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .dark-mode .form-group input[type="date"] {
             background-color: var(--secondary-color);
             color: var(--text-color);
-            font-size: 1rem;
         }
 
         .form-group input[type="date"]:focus {
             outline: none;
             border-color: var(--tertiary-color);
+        }
+        
+        /* Styling for date input calendar dropdown */
+        .form-group input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.5);
+        }
+        
+        .dark-mode .form-group input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.8);
         }
 
         .assessment-info {

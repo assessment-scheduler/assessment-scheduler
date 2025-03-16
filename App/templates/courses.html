@@ -91,8 +91,13 @@
   }
 
   .selected {
-    background-color: #4a4f52 !important;
+    background-color: #e3f2fd !important; /* Light blue for light mode */
     position: relative;
+  }
+
+  /* Dark mode specific styling for selected rows */
+  .dark-mode .selected {
+    background-color: #4a4f52 !important; /* Dark gray for dark mode */
   }
 
   .selected td:first-child {
@@ -148,13 +153,18 @@
   }
 
   .modal-content {
-    background-color: #23272a;
+    background-color: #ffffff; /* Light background for light mode */
     margin: 15% auto;
     padding: 25px;
     border-radius: 8px;
     width: 400px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     animation: slideIn 0.3s;
+  }
+
+  /* Dark mode specific styling for modal content */
+  .dark-mode .modal-content {
+    background-color: #23272a; /* Dark background for dark mode */
   }
 
   @keyframes slideIn {
@@ -164,14 +174,14 @@
 
   .modal-content h3 {
     margin-top: 0;
-    color: #fff;
+    color: var(--text-color); /* Use text color variable for better theme support */
     font-size: 1.5rem;
     margin-bottom: 15px;
   }
 
   .modal-content p {
     margin-bottom: 25px;
-    color: #ddd;
+    color: var(--text-muted); /* Use muted text color variable for better theme support */
     line-height: 1.5;
   }
 
