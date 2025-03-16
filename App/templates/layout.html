@@ -127,6 +127,16 @@
         document.body.classList.add('dark-mode');
         themeIcon.textContent = 'light_mode';
         themeIconMobile.textContent = 'light_mode';
+    } else if (savedTheme === 'light') {
+        document.body.classList.remove('dark-mode');
+        themeIcon.textContent = 'dark_mode';
+        themeIconMobile.textContent = 'dark_mode';
+    } else {
+        // Default to dark mode if no preference is saved
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark');
+        themeIcon.textContent = 'light_mode';
+        themeIconMobile.textContent = 'light_mode';
     }
     
     function toggleTheme() {
