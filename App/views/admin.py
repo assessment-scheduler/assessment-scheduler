@@ -287,7 +287,7 @@ def upload_assessments_file():
                 required_columns = ['course_code', 'assessment_name', 'percentage', 'start_week', 'start_day', 'end_week', 'end_day', 'proctored']
                 
                 if not all(col in header for col in required_columns):
-                    message = f'<strong>Error:</strong> CSV file must contain the following columns: {", ".join(required_columns)}'
+                    message = f'Error: CSV file must contain the following columns: {", ".join(required_columns)}'
                     return render_template('upload_files.html', message=message)
             
             assessments_added = 0
@@ -306,10 +306,10 @@ def upload_assessments_file():
                     ):
                         assessments_added += 1
             
-            message = f'<strong>Success!</strong> {assessments_added} assessments have been added to the database.'
+            message = f'Success! {assessments_added} assessments have been added to the database.'
             return render_template('upload_files.html', message=message)
         except Exception as e:
-            message = f'<strong>Error:</strong> {str(e)}'
+            message = f'Error: {str(e)}'
             return render_template('upload_files.html', message=message)
 
 @admin_views.route('/uploadcells', methods=['POST'])
@@ -337,7 +337,7 @@ def upload_cells_file():
                 required_columns = ['course_code', 'course_code2', 'overlap']
                 
                 if not all(col in header for col in required_columns):  
-                    message = f'<strong>Error:</strong> CSV file must contain the following columns: {", ".join(required_columns)}'
+                    message = f'Error: CSV file must contain the following columns: {", ".join(required_columns)}'
                     return render_template('upload_files.html', message=message)
             
             # Process the cells file
@@ -348,10 +348,10 @@ def upload_cells_file():
                     if create_cell(row['course_code'], row['course_code2'], int(row['overlap'])):
                         cells_added += 1
             
-            message = f'<strong>Success!</strong> {cells_added} cells have been added to the database.'
+            message = f'Success! {cells_added} cells have been added to the database.'
             return render_template('upload_files.html', message=message)
         except Exception as e:
-            message = f'<strong>Error:</strong> {str(e)}'
+            message = f'Error: {str(e)}'
             return render_template('upload_files.html', message=message)
 
 @admin_views.route('/uploadsemesters', methods=['POST'])
@@ -379,7 +379,7 @@ def upload_semesters_file():
                 required_columns = ['start_date', 'end_date', 'sem_num', 'max_assessments', 'constraint_value', 'active']
                 
                 if not all(col in header for col in required_columns):
-                    message = f'<strong>Error:</strong> CSV file must contain the following columns: {", ".join(required_columns)}'
+                    message = f'Error: CSV file must contain the following columns: {", ".join(required_columns)}'
                     return render_template('upload_files.html', message=message)
             
             semesters_added = 0
@@ -396,10 +396,10 @@ def upload_semesters_file():
                     ):
                         semesters_added += 1
             
-            message = f'<strong>Success!</strong> {semesters_added} semesters have been added to the database.'
+            message = f'Success! {semesters_added} semesters have been added to the database.'
             return render_template('upload_files.html', message=message)
         except Exception as e:
-            message = f'<strong>Error:</strong> {str(e)}'
+            message = f'Error: {str(e)}'
             return render_template('upload_files.html', message=message)
 
 @admin_views.route('/uploadstaff', methods=['POST'])
@@ -427,7 +427,7 @@ def upload_staff_file():
                 required_columns = ['id', 'email', 'password', 'first_name', 'last_name']
                 
                 if not all(col in header for col in required_columns):
-                    message = f'<strong>Error:</strong> CSV file must contain the following columns: {", ".join(required_columns)}'
+                    message = f'Error: CSV file must contain the following columns: {", ".join(required_columns)}'
                     return render_template('upload_files.html', message=message)
             
             staff_added = 0
@@ -437,10 +437,10 @@ def upload_staff_file():
                     if create_staff(row['id'], row['email'], row['password'], row['first_name'], row['last_name']):
                         staff_added += 1
             
-            message = f'<strong>Success!</strong> {staff_added} staff members have been added to the database.'
+            message = f'Success! {staff_added} staff members have been added to the database.'
             return render_template('upload_files.html', message=message)
         except Exception as e:
-            message = f'<strong>Error:</strong> {str(e)}'
+            message = f'Error: {str(e)}'
             return render_template('upload_files.html', message=message)
 
 @admin_views.route('/uploadlecturerassignments', methods=['POST'])
@@ -468,7 +468,7 @@ def upload_lecturer_assignments_file():
                 required_columns = ['lecturer_id', 'course_code']
                 
                 if not all(col in header for col in required_columns):
-                    message = f'<strong>Error:</strong> CSV file must contain the following columns: {", ".join(required_columns)}'
+                    message = f'Error: CSV file must contain the following columns: {", ".join(required_columns)}'
                     return render_template('upload_files.html', message=message)
             
             assignments_added = 0
@@ -482,10 +482,10 @@ def upload_lecturer_assignments_file():
                         failed_assignments.append(f"{row['lecturer_id']} to {row['course_code']}")
             
             if failed_assignments:
-                message = f'<strong>Partial Success:</strong> {assignments_added} lecturer assignments have been added to the database. Failed to assign: {", ".join(failed_assignments)}'
+                message = f'Partial Success: {assignments_added} lecturer assignments have been added to the database. Failed to assign: {", ".join(failed_assignments)}'
             else:
-                message = f'<strong>Success!</strong> {assignments_added} lecturer assignments have been added to the database.'
+                message = f'Success! {assignments_added} lecturer assignments have been added to the database.'
             return render_template('upload_files.html', message=message)
         except Exception as e:
-            message = f'<strong>Error:</strong> {str(e)}'
+            message = f'Error: {str(e)}'
             return render_template('upload_files.html', message=message)

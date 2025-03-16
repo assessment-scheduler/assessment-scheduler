@@ -51,6 +51,7 @@ def init():
 @app.cli.command("clear", help="Removes all data from the database")
 def drop():
     clear()
+    create_admin(101101, 'admin', 'adminpass')
     print("database cleared")
 
 

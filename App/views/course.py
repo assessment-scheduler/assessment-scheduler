@@ -141,5 +141,5 @@ def upload_course_file():
                 
             if create_course(row['course_code'], row['course_name'], level, credits, semester):
                 courses_added += 1
-        message = f'<strong>Success!</strong> {courses_added} courses have been added to the database.'
+        message = f'Success! {courses_added} courses have been added to the database.'
         return render_template('upload_files.html', message=message)
