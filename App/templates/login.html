@@ -13,9 +13,47 @@
     
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-
+    <style>
+        body {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-on-primary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 100;
+        }
+        
+        .theme-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .theme-toggle .material-icons {
+            font-size: 24px;
+        }
+    </style>
 </head>
 <body>
+    <button id="theme-toggle" class="theme-toggle" title="Toggle dark/light mode">
+        <span class="material-icons">dark_mode</span>
+    </button>
+    
     <!-- div to separate both sides -->
     <div class="pageDiv">
         <div class="leftSide">
@@ -44,5 +82,39 @@
         <div class="rightSide"></div>
     </div>
 
+    <script>
+        // Dark mode toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = themeToggle.querySelector('.material-icons');
+        
+        // Check for saved theme preference or use default
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeIcon.textContent = 'light_mode';
+        } else if (savedTheme === 'light') {
+            document.body.classList.remove('dark-mode');
+            themeIcon.textContent = 'dark_mode';
+        } else {
+            // Default to dark mode if no preference is saved
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+            themeIcon.textContent = 'light_mode';
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                themeIcon.textContent = 'light_mode';
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeIcon.textContent = 'dark_mode';
+            }
+        }
+        
+        themeToggle.addEventListener('click', toggleTheme);
+    </script>
 </body>
 </html>

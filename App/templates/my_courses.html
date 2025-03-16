@@ -3,24 +3,8 @@
 {% block title %}My Courses{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 <style>
-  :root {
-    --primary-color: rgb(92, 70, 180);
-    --secondary-color: rgb(92, 70, 180);
-    --accent-color: #e74c3c;
-    --dark-bg: #2c2f33;
-    --darker-bg: #23272a;
-    --light-text: #ecf0f1;
-    --medium-gray: #36393f;
-    --light-gray: #7f8c8d;
-    --border-radius: 8px;
-    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  }
-
   body {
-    background-color: var(--darker-bg);
-    color: var(--light-text);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -37,7 +21,7 @@
     margin-bottom: 30px;
     font-size: 2rem;
     font-weight: 600;
-    color: var(--light-text);
+    color: var(--text-color);
     position: relative;
     padding-bottom: 10px;
   }
@@ -50,7 +34,7 @@
     transform: translateX(-50%);
     width: 100px;
     height: 3px;
-    background-color: var(--primary-color);
+    background-color: var(--tertiary-color);
     border-radius: 2px;
   }
 
@@ -61,22 +45,24 @@
   }
 
   .course-card {
-    background-color: var(--dark-bg);
-    border-radius: var(--border-radius);
+    background-color: var(--card-color);
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: var(--box-shadow);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid var(--border-color);
   }
 
   .course-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
   }
 
   .course-header {
-    background-color: var(--primary-color);
+    background-color: var(--tertiary-color);
     padding: 15px;
     position: relative;
+    color: white;
   }
 
   .course-code {
@@ -103,16 +89,16 @@
     justify-content: space-between;
     margin-bottom: 8px;
     padding-bottom: 8px;
-    border-bottom: 1px solid var(--medium-gray);
+    border-bottom: 1px solid var(--border-color);
   }
 
   .detail-label {
-    color: var(--light-gray);
-    font-weight: 500;
+    color: var(--tertiary-color);
+    font-weight: 600;
   }
 
   .detail-value {
-    color: var(--light-text);
+    color: var(--text-color);
     font-weight: 500;
   }
 
@@ -124,7 +110,7 @@
     font-size: 1.1rem;
     font-weight: 600;
     margin-bottom: 15px;
-    color: var(--light-text);
+    color: var(--text-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -134,17 +120,30 @@
     max-height: 200px;
     overflow-y: auto;
     margin-bottom: 15px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    background-color: var(--secondary-color);
   }
 
   .assessment-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    background-color: #5c46b4;
-    border-radius: 4px;
-    margin-bottom: 8px;
+    padding: 12px 15px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+    background-color: #5e72e4;
     color: white;
+  }
+  
+  .assessment-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   }
 
   .assessment-info {
@@ -152,13 +151,14 @@
   }
 
   .assessment-name {
-    font-weight: 500;
-    margin-bottom: 3px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 1rem;
   }
 
   .assessment-meta {
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
   }
 
   .assessment-actions {
@@ -167,45 +167,46 @@
   }
 
   .action-btn {
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.5);
     border: none;
     color: white;
     cursor: pointer;
-    padding: 4px 10px;
+    padding: 6px 12px;
     border-radius: 4px;
     transition: all 0.2s;
-    font-size: 0.8rem;
-    font-weight: 500;
+    font-size: 0.85rem;
+    font-weight: 600;
     text-decoration: none;
     display: inline-block;
   }
 
   .action-btn:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.7);
+    transform: translateY(-1px);
   }
 
   .edit-btn {
-    background-color: rgba(52, 152, 219, 0.3);
+    background-color: rgba(52, 152, 219, 0.8);
   }
 
   .edit-btn:hover {
-    background-color: rgba(52, 152, 219, 0.5);
+    background-color: rgba(52, 152, 219, 1);
   }
 
   .schedule-btn {
-    background-color: rgba(46, 204, 113, 0.3);
+    background-color: rgba(46, 204, 113, 0.8);
   }
 
   .schedule-btn:hover {
-    background-color: rgba(46, 204, 113, 0.5);
+    background-color: rgba(46, 204, 113, 1);
   }
 
   .delete-btn {
-    background-color: rgba(231, 76, 60, 0.3);
+    background-color: rgba(231, 76, 60, 0.8);
   }
 
   .delete-btn:hover {
-    background-color: rgba(231, 76, 60, 0.5);
+    background-color: rgba(231, 76, 60, 1);
   }
 
   .course-actions {
@@ -214,7 +215,7 @@
     gap: 10px;
     margin-top: 15px;
     padding-top: 15px;
-    border-top: 1px solid var(--medium-gray);
+    border-top: 1px solid var(--border-color);
   }
 
   .btn {
@@ -230,27 +231,36 @@
   }
 
   .btn-primary {
-    background-color: var(--primary-color);
+    background-color: var(--tertiary-color);
     color: white;
   }
 
   .btn-primary:hover {
-    background-color: #7c5cff;
+    background-color: var(--accent-color);
   }
 
   .btn-secondary {
-    background-color: var(--medium-gray);
-    color: var(--light-text);
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
   }
 
   .btn-secondary:hover {
-    background-color: #4a4d52;
+    background-color: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
   }
 
   .no-courses {
     text-align: center;
     padding: 50px 0;
-    color: var(--light-gray);
+    color: var(--tertiary-color);
+    background-color: var(--card-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    margin: 20px auto;
+    max-width: 600px;
   }
 
   .no-courses p {
@@ -261,16 +271,32 @@
   .empty-state-icon {
     font-size: 3rem;
     margin-bottom: 15px;
-    color: var(--primary-color);
+    color: var(--tertiary-color);
   }
 
   .no-assessments {
     text-align: center;
-    padding: 15px;
-    color: var(--light-gray);
+    padding: 20px;
+    color: var(--text-color);
     font-style: italic;
-    background-color: var(--medium-gray);
-    border-radius: 4px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  .dark-mode .no-assessments {
+    background-color: #2d3748;
+    color: #e2e8f0;
+  }
+
+  /* Dark mode specific overrides */
+  .dark-mode .course-card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  .dark-mode .course-card:hover {
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
   }
 </style>
 {% endblock %}

@@ -1,9 +1,51 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 :root{
-    --primary-color:#23272A;
-    --secondary-color:#2C2F33;
-    --tertiary-color:#674ECC;
+    /* Base colors */
+    --primary-color: #ffffff;
+    --secondary-color: #f0f4f8;
+    --tertiary-color: #3498db;
+    --text-color: #1e293b;
+    --text-muted: #64748b;
+    --accent-color: #2980b9;
+    --text-on-primary: white;
+    
+    /* Background and surface colors */
+    --background-color: #ffffff;
+    --card-color: #f8f9fa;
+    --card-bg: #f8f9fa;
+    --surface: #f0f4f8;
+    --border-color: #e2e8f0;
+    
+    /* Status colors */
+    --success-color: #10b981;
+    --danger-color: #e74c3c;
+    --warning-color: #f39c12;
+    --info-color: #3498db;
+}
+
+.dark-mode {
+    /* Base colors */
+    --primary-color: #23272A;
+    --secondary-color: #2C2F33;
+    --tertiary-color: #5c46b4;
+    --text-color: #ecf0f1;
+    --text-muted: #a0a0a0;
+    --accent-color: #5c46b4;
+    --text-on-primary: white;
+    
+    /* Background and surface colors */
+    --background-color: #23272A;
+    --card-color: #2C2F33;
+    --card-bg: #2C2F33;
+    --surface: #2C2F33;
+    --border-color: #444;
+    
+    /* Status colors */
+    --success-color: #10b981;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+    --info-color: #3b82f6;
 }
 
 *{
@@ -15,22 +57,32 @@
 
 html{
     background-color: var(--primary-color);
-    color: white;
+    color: var(--text-color);
     overflow-x: hidden;
 }
 
 /* styling for main nav for site */
 
+#layout_nav {
+    background-color: var(--tertiary-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    color: var(--text-on-primary);
+}
+
 .main_nav_wrapper{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1rem;
+    padding: 1rem 2rem;
+    background-color: var(--tertiary-color);
 }
 
 .logo_container a{
     text-decoration: none;
-    color: white;
+    color: var(--text-on-primary) !important;
     font-size: 16px;
     font-weight: 600;
 }
@@ -45,7 +97,7 @@ html{
 
 .links_container_mobile{
     /* display: none; */
-    background-color: var(--secondary-color);
+    background-color: var(--tertiary-color);
     position: absolute;
     z-index: 999;
     top: 0;
@@ -78,14 +130,14 @@ html{
 }
 
 .mobile_links{
-    color: white;
+    color: var(--text-on-primary) !important;
     text-decoration: none;
     font-size: 44px;
     transition: all 0.25s ease;
 }
 
 .mobile_links:hover{
-    color: rgb(187, 184, 184);
+    color: rgba(255, 255, 255, 0.8) !important;
 }
 
 .logout_mobile_container{
@@ -97,10 +149,11 @@ html{
     padding: 1rem 2.5rem;
     border-radius: 6px;
     transition:all 0.25s ease-in;
+    color: var(--text-on-primary) !important;
 }
 #layout_nav_links_mobile .logout_nav_link:hover{
-    background-color: #5c46b4;
-    color: white;
+    background-color: var(--accent-color);
+    color: var(--text-on-primary) !important;
 }
 
 .flash-message{
@@ -115,18 +168,18 @@ html{
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border: solid rgb(202, 202, 202) 1px;
+    border: solid var(--border-color) 1px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     min-width: 300px;
     animation: slideIn 0.3s ease-out;
 }
 
 .flash-message.success {
-    background-color: #4CAF50;
+    background-color: var(--success-color);
 }
 
 .flash-message.error {
-    background-color: #f44336;
+    background-color: var(--danger-color);
 }
 
 @keyframes slideIn {
@@ -156,12 +209,12 @@ html{
     border: none;
     cursor: pointer;
     font-size: 1.5rem;
-    color: #ffffff;
+    color: var(--text-color);
     transition: color 0.25s ease-in;
 }
 
 .close-btn:hover{
-    color: #cac7c7;
+    color: var(--accent-color);
 }
 
 @media screen and (min-width: 900px){
@@ -189,14 +242,14 @@ html{
     }
 
     .nav_link{
-        color: white;
+        color: var(--text-on-primary) !important;
         text-decoration: none;
         font-size: 14px;
         font-weight: 500;
         transition: all 0.25s ease;
     }
     .nav_link:hover{
-        color: rgb(172, 167, 167);
+        color: rgba(255, 255, 255, 0.8) !important;
     }
     .logo_container{
         flex: 0.5;
@@ -206,14 +259,15 @@ html{
         background-color: var(--tertiary-color);
         padding: 0.7rem 1.5rem;
         border-radius: 6px;
-        color: white;
+        color: var(--text-on-primary) !important;
         font-size: 14px;
         text-decoration: none;
         transition: background-color 0.25s ease-in;
     }
 
     .logout_nav_link:hover{
-        background-color: #5c46b4;
+        background-color: var(--accent-color);
+        color: var(--text-on-primary) !important;
     }
 
 }
@@ -243,4 +297,52 @@ html{
         flex: 1;
     }
     
+}
+
+/* Fix for white background under tables in dark mode */
+.dark-mode #table_container {
+    background-color: var(--primary-color);
+}
+
+.dark-mode table {
+    background-color: var(--primary-color);
+}
+
+.dark-mode tr {
+    background-color: var(--card-color);
+}
+
+.dark-mode tbody tr {
+    background-color: var(--card-color);
+}
+
+.dark-mode thead tr {
+    background-color: var(--tertiary-color);
+}
+
+.dark-mode td, .dark-mode th {
+    background-color: transparent;
+}
+
+/* Fix for white strip at the bottom of pages */
+html, body {
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+}
+
+/* Ensure content takes up full height */
+#container, .content-wrapper, #courses_list, #staff_list, #semestersList {
+    flex: 1;
+    min-height: calc(100vh - 60px); /* Subtract header height */
+    background-color: var(--primary-color);
 }

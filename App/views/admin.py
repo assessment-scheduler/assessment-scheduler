@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 import os, csv
 from ..database import db
-from ..models import Admin, Staff
+from ..models import Admin, Staff, Course, Assessment
 from ..controllers import (
     change_password,
     create_assessment,
@@ -33,7 +33,36 @@ admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
 @admin_views.route('/dashboard', methods=['GET'])
 @admin_required
 def admin_dashboard():
-    return render_template('admin_dashboard.html')
+    # Gather statistics for the dashboard
+    try:
+        # Get count of all courses
+        courses_count = db.session.query(Course).count()
+        
+        # Get count of all staff
+        staff_count = db.session.query(Staff).count()
+        
+        # Get count of all assessments
+        assessments_count = db.session.query(Assessment).count()
+        
+        # Get count of scheduled assessments
+        scheduled_count = db.session.query(Assessment).filter(Assessment.scheduled.isnot(None)).count()
+        
+        stats = {
+            'courses': courses_count,
+            'staff': staff_count,
+            'assessments': assessments_count,
+            'scheduled': scheduled_count
+        }
+    except Exception as e:
+        print(f"Error gathering dashboard statistics: {str(e)}")
+        stats = {
+            'courses': 0,
+            'staff': 0,
+            'assessments': 0,
+            'scheduled': 0
+        }
+    
+    return render_template('admin_dashboard.html', stats=stats)
 
 @admin_views.route('/semester', methods=['GET'])
 @admin_required

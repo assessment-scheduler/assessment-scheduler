@@ -4,6 +4,7 @@
     margin-left: auto;
     margin-right: auto;
 }
+
 .mainTitle{
     display: flex;
     align-items: center;
@@ -32,7 +33,7 @@
     text-decoration: none;
 }
 #add_assessment_btn:hover{ 
-    background-color: #5d45bd;
+    background-color: var(--accent-color);
 }
 
 
@@ -41,9 +42,9 @@
     background: var(--secondary-color);
     border: none;
     padding: 0.6rem 0.8rem;
-    color: white;
+    color: var(--text-color);
     border-radius: 6px;
-    border: rgb(70, 70, 70) 1px solid;
+    border: 1px solid var(--border-color);
     cursor: pointer;
 }
 
@@ -80,7 +81,7 @@ button{
 }
 
 button:hover{
-    background: #5d45bd;
+    background: var(--accent-color);
 }
 
 .delete_btn{

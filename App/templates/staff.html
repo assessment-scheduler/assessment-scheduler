@@ -11,6 +11,8 @@
     padding: 2rem;
     margin: 0;
     box-sizing: border-box;
+    background-color: var(--primary-color);
+    min-height: calc(100vh - 60px);
   }
   
   h2 {
@@ -38,31 +40,33 @@
     height: 60vh;
     min-height: 400px;
     overflow-y: auto;
+    background-color: var(--primary-color);
   }
   
   #staffTable {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 8px;
+    background-color: var(--primary-color);
   }
   
   #staffTable thead th {
     text-align: left;
     padding: 12px 15px;
     font-weight: 600;
-    color: #fff;
+    color: var(--text-on-primary);
     border-bottom: 2px solid var(--tertiary-color);
     white-space: nowrap;
     position: sticky;
     top: 0;
-    background-color: #1a1d20;  /* Darker than var(--background-color) */
+    background-color: var(--tertiary-color);
     z-index: 10;
   }
   
   .staff-row {
     transition: all 0.2s ease;
     cursor: pointer;
-    background-color: var(--primary-color);
+    background-color: var(--card-color);
   }
   
   .staff-row td {
@@ -116,7 +120,7 @@
   }
   
   .status-lecturer {
-    background-color: #3498db;
+    background-color: var(--tertiary-color);
     color: white;
   }
   
@@ -170,7 +174,7 @@
   }
   
   .modal-content {
-    background-color: var(--primary-color);
+    background-color: #23272a;
     margin: 15% auto;
     padding: 25px;
     border-radius: 8px;
@@ -285,7 +289,7 @@
           <td>{{ staff_member.faculty or 'FST' }}</td>
           <td>
             <div class="actions-container">
-              <a href="/edit_staff/{{ staff_member.id }}" class="action-btn" style="background-color: #3498db;">Edit</a>
+              <a href="/edit_staff/{{ staff_member.id }}" class="action-btn" style="background-color: var(--tertiary-color);">Edit</a>
               <a href="/staff_courses/{{ staff_member.id }}" class="action-btn" style="background-color: #2ecc71;">Courses</a>
               <button class="action-btn delete-btn" style="background-color: #e74c3c;" data-id="{{ staff_member.id }}" data-name="{{ staff_member.first_name }} {{ staff_member.last_name }}">Delete</button>
             </div>

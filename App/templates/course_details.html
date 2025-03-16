@@ -3,78 +3,109 @@
 {% block title %}{{ course.code }} - Course Details{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/course_details.css') }}">
 <style>
-  :root {
-    --primary-color: rgb(92, 70, 180);
-    --secondary-color: rgb(92, 70, 180);
-    --accent-color: #e74c3c;
-    --dark-bg: #2c2f33;
-    --darker-bg: #23272a;
-    --light-text: #ecf0f1;
-    --medium-gray: #36393f;
-    --light-gray: #7f8c8d;
-    --border-radius: 8px;
-    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  }
-
   body {
-    background-color: var(--darker-bg);
-    color: var(--light-text);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
   }
 
   .dashboard-container {
-    background-color: var(--darker-bg);
+    background-color: var(--primary-color);
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
   }
 
   .course-header {
-    background-color: var(--dark-bg);
-    border-radius: var(--border-radius);
+    background-color: var(--card-color);
+    border-radius: 8px;
     padding: 20px;
-    box-shadow: var(--box-shadow);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
   }
 
   .assessments-container {
-    background-color: var(--dark-bg);
-    border-radius: var(--border-radius);
+    background-color: var(--card-color);
+    border-radius: 8px;
     padding: 20px;
     margin-top: 20px;
-    box-shadow: var(--box-shadow);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
   }
 
   .stat-card {
-    background-color: var(--medium-gray);
-    border-radius: var(--border-radius);
+    background-color: var(--secondary-color);
+    border-radius: 8px;
     padding: 15px;
-    box-shadow: var(--box-shadow);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
   }
 
   .assessment-card {
-    background-color: var(--medium-gray);
-    border-radius: var(--border-radius);
+    background-color: var(--secondary-color);
+    border-radius: 8px;
     padding: 15px;
     transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid var(--border-color);
+    margin-bottom: 10px;
   }
 
   .assessment-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-    background-color: #3a546e;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    background-color: var(--tertiary-color);
+    color: white;
+    border-color: var(--tertiary-color);
   }
 
   .stat-value {
-    color: var(--primary-color);
+    color: var(--tertiary-color);
   }
 
   .progress-bar {
-    background-color: var(--primary-color);
+    background-color: var(--tertiary-color);
+  }
+
+  .back-button {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: var(--tertiary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .back-button:hover {
+    color: var(--accent-color);
+  }
+
+  .course-title-container {
+    margin-bottom: 20px;
+  }
+
+  .course-code-display {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--tertiary-color);
+    margin-bottom: 5px;
+  }
+
+  .course-title-display {
+    font-size: 1.2rem;
+    color: var(--text-color);
+  }
+
+  /* Dark mode specific overrides */
+  .dark-mode .course-header,
+  .dark-mode .assessments-container,
+  .dark-mode .stat-card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .dark-mode .assessment-card:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
   }
 </style>
 {% endblock %}

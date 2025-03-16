@@ -11,6 +11,8 @@
     padding: 2rem;
     margin: 0;
     box-sizing: border-box;
+    background-color: var(--primary-color);
+    min-height: calc(100vh - 60px);
   }
 
   h2 {
@@ -38,31 +40,33 @@
     height: 60vh;
     min-height: 400px;
     overflow-y: auto;
+    background-color: var(--primary-color);
   }
 
   #courseTable {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 8px;
+    background-color: var(--primary-color);
   }
 
   #courseTable thead th {
     text-align: left;
     padding: 12px 15px;
     font-weight: 600;
-    color: #fff;
+    color: var(--text-on-primary);
     border-bottom: 2px solid var(--tertiary-color);
     white-space: nowrap;
     position: sticky;
     top: 0;
-    background-color: #1a1d20;  /* Darker than var(--background-color) */
+    background-color: var(--tertiary-color);
     z-index: 10;
   }
 
   .course-row {
     transition: all 0.2s ease;
     cursor: pointer;
-    background-color: var(--primary-color);
+    background-color: var(--card-color);
   }
 
   .course-row td {
@@ -144,7 +148,7 @@
   }
 
   .modal-content {
-    background-color: var(--primary-color);
+    background-color: #23272a;
     margin: 15% auto;
     padding: 25px;
     border-radius: 8px;

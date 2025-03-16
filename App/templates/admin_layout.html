@@ -4,61 +4,383 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="../static/css/main.css">
-    <link rel="stylesheet" href="../static/css/adminMain.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/adminMain.css') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Ensure content takes up full height */
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--primary-color);
+        }
+        
+        /* Ensure main content area fills available space */
+        #main-content {
+            flex: 1;
+            background-color: var(--primary-color);
+        }
+        
+        .material-icons {
+            font-size: 18px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-on-primary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 1rem;
+            padding: 0.3rem;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        
+        .theme-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        #layout_nav {
+            background-color: var(--tertiary-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            color: var(--text-on-primary);
+        }
+        
+        .main_nav_wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .logo_container a {
+            color: var(--text-on-primary);
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo_container a::before {
+            content: 'admin_panel_settings';
+            font-family: 'Material Icons';
+            margin-right: 10px;
+            font-size: 1.4rem;
+            color: var(--text-on-primary);
+        }
+        
+        .links_container {
+            display: flex;
+        }
+        
+        #layout_nav_links {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 1rem;
+        }
+        
+        #layout_nav_links li {
+            position: relative;
+        }
+        
+        .nav_link {
+            color: var(--text-on-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav_link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav_link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+        }
+        
+        .nav_link::before {
+            font-family: 'Material Icons';
+            margin-right: 5px;
+            font-size: 1.2rem;
+        }
+        
+        .dashboard_nav_link::before { content: 'dashboard'; }
+        .chat_nav_link::before { content: 'school'; }
+        .staff_nav_link::before { content: 'people'; }
+        .myAssessments_nav_link::before { content: 'upload_file'; }
+        .calendar_nav_link::before { content: 'calendar_month'; }
+        
+        .logout_nav_link {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--text-on-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logout_nav_link:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+        
+        .logout_nav_link .material-icons {
+            font-size: 18px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+        
+        .links_container_mobile {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--tertiary-color);
+            z-index: 1001;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile_links {
+            color: var(--text-on-primary);
+            text-decoration: none;
+            font-size: 1.2rem;
+            padding: 0.8rem 1.5rem;
+            margin: 0.5rem 0;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .mobile_links:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .mobile_menu_toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-on-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .exit {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            cursor: pointer;
+        }
+        
+        .burger {
+            display: none;
+            cursor: pointer;
+        }
+        
+        .flash-message {
+            background-color: var(--info-color);
+            color: white;
+            padding: 1rem;
+            margin: 1rem auto;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 95%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .links_container {
+                display: none;
+            }
+            
+            .burger {
+                display: block;
+            }
+            
+            .main_nav_wrapper {
+                padding: 0.8rem 1rem;
+            }
+            
+            .logo_container a {
+                font-size: 1rem;
+            }
+        }
+        
+        .logout_mobile_container .mobile_links {
+            background-color: var(--tertiary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .logout_mobile_container .mobile_links:hover {
+            background-color: #4a3a9c;
+        }
+    </style>
     {% block head %}{% endblock %}
 </head>
 <body>
     <nav id="layout_nav">
         <div class="main_nav_wrapper">
             <div class="logo_container">
-                <a href="">DCIT Assessment Scheduler (admin view)</a>
+                <a href="{{ url_for('admin_views.admin_dashboard') }}">Assessment Scheduler Admin</a>
             </div>
             
-
             <div class="links_container">
                 <ul id="layout_nav_links">
-                    <li><a class="chat_nav_link nav_link" href="/courses">Courses</a></li>
-                    <li><a class="staff_nav_link nav_link" href="/staff">Staff</a></li>
-                    <!-- Commenting out clashes link -->
-                    <!-- <li><a class="clashes_nav_link nav_link" href="/clashes">Clashes</a></li> -->
-                    <li><a class="myAssessments_nav_link nav_link" href="/upload_files">Upload Files</a></li>
-                    <li><a class="calendar_nav_link nav_link" href="/semester">Semester</a></li>
-                    <li><a class="logout_nav_link" href="/logout">Logout</a></li>
+                    <li><a class="dashboard_nav_link nav_link" href="{{ url_for('admin_views.admin_dashboard') }}">Dashboard</a></li>
+                    <li><a class="chat_nav_link nav_link" href="{{ url_for('course_views.get_courses') }}">Courses</a></li>
+                    <li><a class="staff_nav_link nav_link" href="{{ url_for('admin_views.get_staff_list') }}">Staff</a></li>
+                    <li><a class="myAssessments_nav_link nav_link" href="{{ url_for('admin_views.get_upload_files_page') }}">Upload Files</a></li>
+                    <li><a class="calendar_nav_link nav_link" href="{{ url_for('admin_views.get_upload_page') }}">Semester</a></li>
                 </ul>
+                <button id="theme-toggle" class="theme-toggle" title="Toggle dark/light mode">
+                    <span class="material-icons">dark_mode</span>
+                </button>
+                <a class="logout_nav_link" href="{{ url_for('auth_views.logout') }}"><span class="material-icons">exit_to_app</span>Logout</a>
             </div>
 
             <div class="links_container_mobile">
                 <ul id="layout_nav_links_mobile">
-                    <li><a class="chat_nav_link mobile_links" href="/courses">Courses</a></li>
-                    <li><a class="staff_nav_link mobile_links" href="/staff">Staff</a></li>
-                    <li><a class="myAssessments_nav_link mobile_links" href="/upload_files">Upload Files</a></li>
-                    <li><a class="calendar_nav_link mobile_links" href="/semester">Semester</a></li>
-                    <li class="logout_mobile_container"><a class="logout_nav_link mobile_links" href="/logout">Logout</a></li>
+                    <li><a class="dashboard_nav_link mobile_links" href="{{ url_for('admin_views.admin_dashboard') }}">Dashboard</a></li>
+                    <li><a class="chat_nav_link mobile_links" href="{{ url_for('course_views.get_courses') }}">Courses</a></li>
+                    <li><a class="staff_nav_link mobile_links" href="{{ url_for('admin_views.get_staff_list') }}">Staff</a></li>
+                    <li><a class="myAssessments_nav_link mobile_links" href="{{ url_for('admin_views.get_upload_files_page') }}">Upload Files</a></li>
+                    <li><a class="calendar_nav_link mobile_links" href="{{ url_for('admin_views.get_upload_page') }}">Semester</a></li>
+                    <li class="logout_mobile_container"><a class="logout_nav_link mobile_links" href="{{ url_for('auth_views.logout') }}"><span class="material-icons">exit_to_app</span> Logout</a></li>
                 </ul>
                 <div class="exit">
-                    <img src="../static/images/exit-btn.svg" alt="">
+                    <span class="material-icons">close</span>
                 </div>
             </div>
 
-
             <div class="burger">
-                <img src="../static/images/burgermenu.svg" alt="">
+                <span class="material-icons">menu</span>
             </div>
         </div>
     </nav>
-    <div>
-        {% for message in get_flashed_messages() %}
-        <div class="flash-message">
-            <span>{{ message }}</span>
-            <button class="close-btn" onclick="this.parentElement.style.display = 'none';">×</button>
+    <div class="content-wrapper">
+        <div id="main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}" id="flashMsg">
+                            <span class="msgContainer">{{ message }}</span>
+                            <button class="close-btn" onclick="this.parentElement.style.display = 'none';">×</button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
         </div>
-        {% endfor %}
-        {% block content %}{% endblock %}
     </div>
     
+    <script>
+        // Set active navigation link based on current URL
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav_link');
+            
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // Dark mode toggle functionality
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = themeToggle.querySelector('.material-icons');
+            
+            // Check for saved theme preference or use default
+            const savedTheme = localStorage.getItem('admin-theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeIcon.textContent = 'light_mode';
+            }
+            
+            themeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                
+                if (document.body.classList.contains('dark-mode')) {
+                    localStorage.setItem('admin-theme', 'dark');
+                    themeIcon.textContent = 'light_mode';
+                } else {
+                    localStorage.setItem('admin-theme', 'light');
+                    themeIcon.textContent = 'dark_mode';
+                }
+            });
+            
+            // Mobile menu functionality
+            const burger = document.querySelector('.burger');
+            const mobileMenu = document.querySelector('.links_container_mobile');
+            const exitBtn = document.querySelector('.exit');
+            
+            burger.addEventListener('click', function() {
+                mobileMenu.classList.add('active');
+            });
+            
+            exitBtn.addEventListener('click', function() {
+                mobileMenu.classList.remove('active');
+            });
+        });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
+    <script src="../static/js/mobileMenu.js"></script>
 </body>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
-<script src="../static/js/mobileMenu.js"></script>
 </html>

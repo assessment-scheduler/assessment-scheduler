@@ -4,47 +4,34 @@
 
 {% block head %}
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
-<link rel="stylesheet" href="../static/css/style.css">
 <style>
-  /* Dark theme colors */
-  :root {
-    --dark-bg: #1e1e2e;
-    --dark-surface: #282838;
-    --dark-card: #2e2e3e;
-    --accent-color: #5c46b4;
-    --text-light: #e6e6e6;
-    --text-muted: #a0a0a0;
-    --assessment-blue: #4a88c7;
-    --assessment-blue-hover: #3a6fa7;
-    --proctored-purple: #674ECC;
-    --proctored-purple-hover: #5c46b4;
-  }
-  
+  /* Calendar-specific styles that don't override global theme variables */
   body {
-    background-color: var(--dark-bg);
-    color: var(--text-light);
+    background-color: var(--primary-color);
+    color: var(--text-color);
   }
   
   /* Enhanced styles for the unscheduled assessments panel */
   #unscheduled-list {
     padding: 10px;
-    background: var(--dark-card);
+    background: var(--card-color);
     border-radius: 5px;
     margin-top: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     max-height: 500px;
     overflow-y: auto;
+    border: 1px solid var(--border-color);
   }
   
   #unscheduled-list h3 {
     margin-top: 0;
     padding-bottom: 10px;
-    border-bottom: 1px solid #444;
-    color: var(--text-light);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
   }
   
   .draggable-assessment {
-    background: var(--assessment-blue);
+    background: var(--tertiary-color);
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 4px;
@@ -52,40 +39,48 @@
     border-left: 4px solid #fff;
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     transition: all 0.2s ease;
-    color: #fff;
+    color: white !important;
   }
   
   .draggable-assessment:hover {
     box-shadow: 0 3px 6px rgba(0,0,0,0.3);
     transform: translateY(-2px);
-    background: var(--assessment-blue-hover);
+    background: var(--accent-color);
   }
   
   .draggable-assessment.proctored {
     border-left: 4px solid #9C9FE2;
-    background: var(--proctored-purple);
+    background: var(--tertiary-color);
   }
   
   .draggable-assessment.proctored:hover {
-    background: var(--proctored-purple-hover);
+    background: var(--accent-color);
   }
   
   .assessment-details {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.8);
-    margin-top: 5px;
+    font-size: 11px;
+    color: var(--text-muted);
   }
   
   .assessment-name {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 5px;
-    color: #fff;
+    font-size: 13px;
+    margin-bottom: 3px;
+    color: var(--text-color);
+  }
+  
+  /* Ensure blue background items have white text */
+  .draggable-assessment .assessment-name {
+    color: white !important;
+  }
+  
+  /* Light mode specific styles for assessment items with white background */
+  body:not(.dark-mode) .assessment-item .assessment-name {
+    color: var(--text-color) !important;
   }
   
   .badge {
-    background: var(--assessment-blue);
-    color: #fff;
+    background: var(--tertiary-color);
+    color: var(--text-on-primary);
     padding: 2px 6px;
     border-radius: 3px;
     font-size: 11px;
@@ -102,10 +97,11 @@
   #calendar {
     flex: 3;
     min-width: 650px;
-    background-color: var(--dark-surface);
+    background-color: var(--secondary-color);
     border-radius: 8px;
     padding: 15px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-color);
   }
   
   #nav {
@@ -120,14 +116,30 @@
     margin: 2px !important;
     padding: 5px !important;
     box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
+    color: white !important;
+  }
+  
+  /* Ensure all event content has white text */
+  .fc-event-main {
+    padding: 3px 5px !important;
+    color: white !important;
+  }
+  
+  .fc-event-time {
+    color: white !important;
+  }
+  
+  /* Make sure all elements inside events have white text */
+  .fc-event * {
+    color: white !important;
   }
   
   .fc-daygrid-event {
     white-space: normal !important;
     align-items: flex-start !important;
     overflow: hidden;
-    background-color: var(--assessment-blue);
-    color: white;
+    background-color: var(--tertiary-color);
+    color: white !important;
   }
   
   .fc-daygrid-day-events {
@@ -142,10 +154,6 @@
     white-space: normal !important;
     font-weight: normal !important;
     color: white !important;
-  }
-  
-  .fc-event-main {
-    padding: 3px 5px !important;
   }
   
   /* Better appearance for small screens */
@@ -164,31 +172,40 @@
   
   /* Calendar header styling */
   .fc-col-header-cell {
-    background-color: var(--accent-color) !important;
+    background-color: var(--tertiary-color) !important;
   }
   
   .fc-col-header-cell-cushion {
-    color: #fff !important;
+    color: var(--text-on-primary) !important;
     font-weight: 600 !important;
     padding: 8px !important;
   }
   
   /* Calendar toolbar styling */
   .fc-toolbar-title {
-    color: var(--text-light) !important;
+    color: var(--text-color) !important;
   }
   
   .fc-button-primary {
-    background-color: var(--dark-card) !important;
-    border-color: #444 !important;
+    background-color: var(--card-color) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
   }
   
   .fc-button-primary:hover {
-    background-color: var(--accent-color) !important;
+    background-color: var(--tertiary-color) !important;
+    color: white !important;
   }
   
   .fc-button-active {
-    background-color: var(--accent-color) !important;
+    background-color: var(--tertiary-color) !important;
+    color: white !important;
+  }
+  
+  .dark-mode .fc-button-primary {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: #444 !important;
+    color: rgba(255, 255, 255, 0.9) !important;
   }
   
   /* Button styles */
@@ -196,7 +213,7 @@
     display: inline-block;
     padding: 8px 16px;
     background-color: var(--tertiary-color);
-    color: white;
+    color: var(--text-on-primary);
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -209,58 +226,68 @@
   }
   
   .action-btn:hover {
-    background-color: #503b9a;
+    background-color: var(--accent-color);
     transform: translateY(-2px);
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   }
   
   .action-btn.danger {
-    background-color: #e74c3c;
+    background-color: var(--danger-color);
   }
   
   .action-btn.danger:hover {
-    background-color: #c0392b;
+    background-color: #b03a2e;
   }
   
   /* Drag instructions */
   .drag-instructions {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.05);
     padding: 10px;
     border-radius: 4px;
     margin-top: 15px;
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-color);
     text-align: center;
+  }
+  
+  .dark-mode .drag-instructions {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
   }
   
   .drag-instructions i {
     display: block;
     font-size: 1.5rem;
     margin-bottom: 5px;
-    color: white;
+    color: var(--tertiary-color);
   }
   
   .date-range-info {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.05);
     padding: 10px;
     border-radius: 4px;
     margin-top: 10px;
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-color);
     display: flex;
     align-items: flex-start;
     gap: 10px;
   }
   
+  .dark-mode .date-range-info {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
   .date-range-info i {
     font-size: 1.5rem;
-    color: white;
+    color: var(--tertiary-color);
   }
   
   .date-range-info small {
     display: block;
     margin-top: 5px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-muted, #64748b);
     font-style: italic;
   }
   
@@ -305,14 +332,15 @@
     opacity: 0;
   }
   
+  /* Show more/less button styling with theme adaptation */
   #show-more-btn, #show-less-btn {
     margin-top: 10px;
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: var(--tertiary-color);
     color: white;
   }
   
   #show-more-btn:hover, #show-less-btn:hover {
-    background-color: rgba(255, 255, 255, 0.25);
+    background-color: var(--accent-color);
   }
   
   /* Responsive styles */
@@ -335,23 +363,25 @@
   /* Filter styles */
   #filters {
     display: flex;
-    gap: 15px;
-    margin-bottom: 20px;
-    background-color: var(--dark-surface);
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
   }
   
   #filters select {
     padding: 8px 12px;
-    border: 1px solid #444;
     border-radius: 4px;
-    background-color: var(--dark-bg);
-    color: var(--text-light);
-    flex: 1;
-    min-width: 120px;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+    color: var(--text-color);
     font-size: 14px;
+    flex-grow: 1;
+    min-width: 150px;
+  }
+  
+  .dark-mode #filters select {
+    color: var(--text-color);
+    border-color: var(--border-color);
   }
   
   #filters select:focus {
@@ -364,55 +394,103 @@
   .assessment-item, .draggable-assessment {
     padding: 8px;
     margin-bottom: 8px;
+    background-color: var(--card-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: grab;
+    transition: all 0.2s ease;
+    color: var(--text-color);
   }
   
-  .assessment-details {
-    font-size: 11px;
-    line-height: 1.3;
+  /* Specific styling for scheduled assessment items in light mode */
+  body:not(.dark-mode) .assessment-item {
+    color: var(--text-color);
   }
   
-  .assessment-name {
-    font-size: 13px;
-    margin-bottom: 3px;
+  body:not(.dark-mode) .assessment-item .assessment-name {
+    color: var(--text-color);
   }
   
-  /* Calendar styling for dark theme */
+  body:not(.dark-mode) .assessment-item .assessment-details {
+    color: var(--text-muted);
+  }
+  
+  /* Specific styling for unscheduled assessment items (always blue) */
+  .draggable-assessment {
+    background-color: var(--tertiary-color);
+    color: white !important;
+  }
+  
+  .draggable-assessment .assessment-name {
+    color: white !important;
+  }
+  
+  .draggable-assessment .assessment-details {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+  
+  /* Fix for assessment items that are also draggable but should have white bg in scheduled list */
+  body:not(.dark-mode) .assessment-item.draggable-assessment:not(.blue-bg) {
+    background-color: var(--card-color);
+    color: var(--text-color) !important;
+  }
+  
+  body:not(.dark-mode) .assessment-item.draggable-assessment:not(.blue-bg) .assessment-name {
+    color: var(--text-color) !important;
+  }
+  
+  body:not(.dark-mode) .assessment-item.draggable-assessment:not(.blue-bg) .assessment-details {
+    color: var(--text-muted) !important;
+  }
+  
+  /* Ensure blue background items have white course code */
+  .draggable-assessment .course-code {
+    color: white !important;
+  }
+  
+  /* Light mode specific styles for assessment items with white background */
+  body:not(.dark-mode) .assessment-item .course-code {
+    color: var(--text-color) !important;
+  }
+  
+  /* Calendar styling for light and dark themes */
   .fc-theme-standard .fc-scrollgrid {
-    border-color: #444;
+    border-color: var(--border-color);
   }
   
   .fc-theme-standard td, .fc-theme-standard th {
-    border-color: #444;
+    border-color: var(--border-color);
   }
   
   .fc-daygrid-day {
-    background-color: var(--dark-surface);
+    background-color: var(--secondary-color);
   }
   
   .fc-daygrid-day-number {
-    color: var(--text-light) !important;
+    color: var(--text-color) !important;
   }
   
   /* Scheduled Assessments Panel */
   #scheduled-list {
     padding: 10px;
-    background: var(--dark-card);
+    background: var(--card-color);
     border-radius: 5px;
     margin-top: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-color);
   }
   
   #scheduled-list h3 {
     margin-top: 0;
     padding-bottom: 10px;
-    border-bottom: 1px solid #444;
-    color: var(--text-light);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
   }
   
   /* Count badge styling */
   .count-badge {
-    background-color: var(--accent-color);
-    color: white;
+    background-color: var(--tertiary-color);
+    color: var(--text-on-primary);
     padding: 2px 8px;
     border-radius: 12px;
     font-size: 12px;
@@ -428,8 +506,8 @@
   .tooltip .tooltiptext {
     visibility: hidden;
     width: 120px;
-    background-color: var(--dark-bg);
-    color: var(--text-light);
+    background-color: var(--primary-color);
+    color: var(--text-color);
     text-align: center;
     border-radius: 6px;
     padding: 5px;
@@ -441,12 +519,93 @@
     opacity: 0;
     transition: opacity 0.3s;
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    border: 1px solid #444;
+    border: 1px solid var(--border-color);
   }
   
   .tooltip:hover .tooltiptext {
     visibility: visible;
     opacity: 1;
+  }
+  
+  /* Ensure blue background items have white details text */
+  .assessment-item.blue-bg .assessment-details,
+  .draggable-assessment.blue-bg .assessment-details,
+  .assessment-item[style*="background-color: var(--tertiary-color)"] .assessment-details,
+  .draggable-assessment[style*="background-color: var(--tertiary-color)"] .assessment-details,
+  .assessment-item[style*="background-color: #5e72e4"] .assessment-details,
+  .draggable-assessment[style*="background-color: #5e72e4"] .assessment-details {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+  
+  /* Hover effects for assessment items */
+  .assessment-item:hover, .draggable-assessment:hover {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+  
+  .dark-mode .assessment-item:hover, .dark-mode .draggable-assessment:hover {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Text styling for assessment items */
+  .assessment-item h4, .draggable-assessment h4 {
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
+    color: var(--text-color);
+  }
+  
+  .assessment-item p, .draggable-assessment p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  
+  .assessment-item .course-code, .draggable-assessment .course-code {
+    font-weight: bold;
+    color: var(--text-color);
+  }
+  
+  /* Ensure blue background items always have white text */
+  .assessment-item.blue-bg,
+  .draggable-assessment.blue-bg,
+  .assessment-item[style*="background-color: var(--tertiary-color)"],
+  .draggable-assessment[style*="background-color: var(--tertiary-color)"],
+  .assessment-item[style*="background-color: #5e72e4"],
+  .draggable-assessment[style*="background-color: #5e72e4"] {
+    color: white !important;
+  }
+  
+  .assessment-item.blue-bg h4,
+  .draggable-assessment.blue-bg h4,
+  .assessment-item.blue-bg .course-code,
+  .draggable-assessment.blue-bg .course-code,
+  .assessment-item[style*="background-color: var(--tertiary-color)"] h4,
+  .draggable-assessment[style*="background-color: var(--tertiary-color)"] h4,
+  .assessment-item[style*="background-color: var(--tertiary-color)"] .course-code,
+  .draggable-assessment[style*="background-color: var(--tertiary-color)"] .course-code,
+  .assessment-item[style*="background-color: #5e72e4"] h4,
+  .draggable-assessment[style*="background-color: #5e72e4"] h4,
+  .assessment-item[style*="background-color: #5e72e4"] .course-code,
+  .draggable-assessment[style*="background-color: #5e72e4"] .course-code {
+    color: white !important;
+  }
+  
+  /* Specific styling for scheduled assessment items */
+  .assessment-item.draggable-assessment {
+    background-color: var(--tertiary-color);
+    color: white !important;
+  }
+  
+  .assessment-item.draggable-assessment .assessment-name {
+    color: white !important;
+  }
+  
+  .assessment-item.draggable-assessment .assessment-details {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+  
+  .assessment-item.draggable-assessment .course-code {
+    color: white !important;
   }
 </style>
 {% endblock %}
@@ -586,12 +745,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
 <script>
   // Essential variables for calendar functionality
-  var staff_exams = {{ staff_exams | tojson }};
-  var myCourses = {{ staff_courses | tojson }};
-  var semester = {{ semester | tojson }};
-  var otherExams = {{ other_exams | tojson }};
-  var scheduledAssessments = {{ scheduled_assessments | tojson }};
-  var unscheduledAssessments = {{ unscheduled_assessments | tojson }};
+  // These variables are populated by the server-side template
+  var staff_exams = JSON.parse('{{ staff_exams | tojson | safe }}');
+  var myCourses = JSON.parse('{{ staff_courses | tojson | safe }}');
+  var semester = JSON.parse('{{ semester | tojson | safe }}');
+  var otherExams = JSON.parse('{{ other_exams | tojson | safe }}');
+  var scheduledAssessments = JSON.parse('{{ scheduled_assessments | tojson | safe }}');
+  var unscheduledAssessments = JSON.parse('{{ unscheduled_assessments | tojson | safe }}');
   
   // Calculate semester duration in weeks
   var semesterWeeks = 15;  // Default if semester dates not available
@@ -633,6 +793,42 @@
       });
     }
   });
+
+  // Function to apply blue-bg class to blue background elements
+  function applyBlueBackgroundClass() {
+    // Get all assessment items
+    const assessmentItems = document.querySelectorAll('.assessment-item, .draggable-assessment');
+    
+    // Check each item's background color
+    assessmentItems.forEach(item => {
+      const style = window.getComputedStyle(item);
+      const bgColor = style.backgroundColor;
+      
+      // Check if the background is blue (tertiary color)
+      // This checks for RGB values that are likely blue
+      if (bgColor.includes('rgb(92, 70, 180)') || 
+          bgColor.includes('rgb(94, 114, 228)') || 
+          bgColor.includes('rgb(52, 152, 219)') ||
+          item.style.backgroundColor === 'var(--tertiary-color)' ||
+          item.style.backgroundColor === '#5e72e4') {
+        item.classList.add('blue-bg');
+      } else {
+        item.classList.remove('blue-bg');
+      }
+    });
+  }
+  
+  // Run when DOM is loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initial application
+    applyBlueBackgroundClass();
+    
+    // Run again after a short delay to catch dynamically created elements
+    setTimeout(applyBlueBackgroundClass, 1000);
+  });
+  
+  // Also run when theme is toggled
+  document.addEventListener('themeToggled', applyBlueBackgroundClass);
 </script>
 <script src="{{url_for('static', filename='index.js')}}"></script>
 <script src="{{url_for('static', filename='js/mobileMenu.js')}}"></script>
