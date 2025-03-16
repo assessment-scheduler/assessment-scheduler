@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 import os, csv
 from ..database import db
 from ..models import Admin, Staff, Course, Assessment
+from ..views.assessment import assessment_views
 from ..controllers import (
     change_password,
     create_assessment,
@@ -24,7 +25,9 @@ from ..controllers import (
     get_semester,
     create_semester,
     set_active,
-    parse_date
+    parse_date,
+    get_all_assessments,
+    update_assessment
 )
 from ..controllers.auth import admin_required
 
@@ -33,18 +36,13 @@ admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
 @admin_views.route('/dashboard', methods=['GET'])
 @admin_required
 def admin_dashboard():
-    # Gather statistics for the dashboard
     try:
-        # Get count of all courses
         courses_count = db.session.query(Course).count()
         
-        # Get count of all staff
         staff_count = db.session.query(Staff).count()
         
-        # Get count of all assessments
         assessments_count = db.session.query(Assessment).count()
         
-        # Get count of scheduled assessments
         scheduled_count = db.session.query(Assessment).filter(Assessment.scheduled.isnot(None)).count()
         
         stats = {

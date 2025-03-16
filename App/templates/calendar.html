@@ -736,6 +736,10 @@
         {% else %}
           <p>No scheduled assessments found.</p>
         {% endif %}
+        
+        <form id="unschedule-all-system-form" action="/unschedule_all_system_assessments" method="POST" onsubmit="return confirm('WARNING: This will unschedule ALL assessments in the system for ALL staff members. Are you sure you want to proceed?');">
+          <button type="submit" class="action-btn danger" style="margin-top: 10px;">Unschedule All</button>
+        </form>
       </div>
     </div>
   </div>

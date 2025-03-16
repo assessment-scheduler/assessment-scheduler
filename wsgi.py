@@ -1,5 +1,6 @@
 from datetime import date
 from typing import List
+from App.models.admin import Admin
 import click, pytest, sys
 from flask import Flask
 from flask.cli import AppGroup

@@ -425,7 +425,7 @@ def get_calendar_page():
         courses=courses,
         semester=semester,
         scheduled_assessments=scheduled_assessments,
-        unscheduled_assessments=unscheduled_assessments,
+        unscheduled_assessments=unscheduled_assessments
     )
 
 
@@ -578,6 +578,40 @@ def unschedule_all_assessments():
             flash(f"Successfully unscheduled {scheduled_count} assessments", "success")
         else:
             flash("No scheduled assessments found", "info")
+            
+        return redirect(url_for("assessment_views.get_calendar_page"))
+
+    except Exception as e:
+        flash(f"An error occurred: {str(e)}", "error")
+        return redirect(url_for("assessment_views.get_calendar_page"))
+
+
+@assessment_views.route("/unschedule_all_system_assessments", methods=["POST"])
+@staff_required
+def unschedule_all_system_assessments():
+    try:
+        assessments = get_all_assessments()
+        scheduled_count = 0
+        
+        for assessment in assessments:
+            if assessment.scheduled:
+                scheduled_count += 1
+                update_assessment(
+                    assessment.id,
+                    assessment.name,
+                    assessment.percentage,
+                    assessment.start_week,
+                    assessment.start_day,
+                    assessment.end_week,
+                    assessment.end_day,
+                    assessment.proctored,
+                    None
+                )
+        
+        if scheduled_count > 0:
+            flash(f"Successfully unscheduled {scheduled_count} assessments across all courses", "success")
+        else:
+            flash("No scheduled assessments found in the system", "info")
             
         return redirect(url_for("assessment_views.get_calendar_page"))
 
