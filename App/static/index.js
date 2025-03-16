@@ -311,11 +311,57 @@ document.addEventListener("DOMContentLoaded", function () {
     console.error('Error rendering calendar:', error);
   }
 
+  // Load saved filter values from localStorage
+  function loadSavedFilters() {
+    if (levelFilter && localStorage.getItem('calendarLevelFilter')) {
+      levelFilter.value = localStorage.getItem('calendarLevelFilter');
+    }
+    
+    if (courseFilter && localStorage.getItem('calendarCourseFilter')) {
+      // Check if the saved course still exists in the dropdown
+      const savedCourse = localStorage.getItem('calendarCourseFilter');
+      const courseExists = Array.from(courseFilter.options).some(option => option.value === savedCourse);
+      
+      if (courseExists) {
+        courseFilter.value = savedCourse;
+      }
+    }
+    
+    if (typeFilter && localStorage.getItem('calendarTypeFilter')) {
+      typeFilter.value = localStorage.getItem('calendarTypeFilter');
+    }
+    
+    // Apply the filters if any were loaded
+    if (levelFilter && courseFilter && typeFilter) {
+      const selectedLevel = levelFilter.value;
+      const selectedCourse = courseFilter.value;
+      const selectedType = typeFilter.value;
+      
+      // Only apply filters if at least one is not the default value
+      if (selectedLevel !== "0" || selectedCourse !== "all" || selectedType !== "all") {
+        const filteredEvents = filterEvents(selectedLevel, selectedCourse, selectedType);
+        // We need to wait for the calendar to be initialized
+        setTimeout(() => {
+          if (calendar) {
+            updateCalendarEvents(calendar, filteredEvents);
+          }
+        }, 500);
+      }
+    }
+  }
+
+  // Call this function when the page loads
+  setTimeout(loadSavedFilters, 300);
+
   if (levelFilter) {
     levelFilter.addEventListener("change", function () {
       const selectedLevel = levelFilter.value;
       const selectedCourse = courseFilter.value;
       const selectedType = typeFilter.value;
+      
+      // Save the selection to localStorage
+      localStorage.setItem('calendarLevelFilter', selectedLevel);
+      
       const filteredEvents = filterEvents(selectedLevel, selectedCourse, selectedType);
       updateCalendarEvents(calendar, filteredEvents);
     });
@@ -326,6 +372,10 @@ document.addEventListener("DOMContentLoaded", function () {
       const selectedLevel = levelFilter.value;
       const selectedCourse = courseFilter.value;
       const selectedType = typeFilter.value;
+      
+      // Save the selection to localStorage
+      localStorage.setItem('calendarCourseFilter', selectedCourse);
+      
       const filteredEvents = filterEvents(selectedLevel, selectedCourse, selectedType);
       updateCalendarEvents(calendar, filteredEvents);
     });
@@ -336,6 +386,10 @@ document.addEventListener("DOMContentLoaded", function () {
       const selectedLevel = levelFilter.value;
       const selectedCourse = courseFilter.value;
       const selectedType = typeFilter.value;
+      
+      // Save the selection to localStorage
+      localStorage.setItem('calendarTypeFilter', selectedType);
+      
       const filteredEvents = filterEvents(selectedLevel, selectedCourse, selectedType);
       updateCalendarEvents(calendar, filteredEvents);
     });
