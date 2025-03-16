@@ -8,47 +8,107 @@
         padding: 20px;
         max-width: 100%;
     }
+    
+    .page-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .page-header h1 {
+        font-size: 1.8rem;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+        position: relative;
+        display: inline-block;
+        padding-bottom: 10px;
+    }
+    
+    .page-header h1:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 3px;
+        background-color: var(--tertiary-color);
+        border-radius: 2px;
+    }
+    
+    .page-header p {
+        color: var(--text-muted, #aaa);
+        max-width: 600px;
+        margin: 0 auto;
+    }
 
     .upload-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 25px;
         margin: 0 auto;
         max-width: 1200px;
     }
 
     .upload-card {
-        background: var(--secondary-color);
+        background: #2c2f33;
         border-radius: 8px;
-        padding: 15px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .upload-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .upload-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background-color: var(--tertiary-color);
     }
 
     .upload-card h2 {
         color: #fff;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         margin-bottom: 15px;
         text-align: left;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding-bottom: 8px;
+        padding-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .upload-card h2::before {
+        font-family: 'Material Icons';
+        content: 'upload_file';
+        margin-right: 10px;
+        color: var(--tertiary-color);
     }
 
     .upload-form {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 15px;
     }
 
     .file-input-group {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 15px;
         flex-wrap: wrap;
     }
 
     .file-input-wrapper {
         position: relative;
         overflow: hidden;
+        flex: 1;
     }
 
     .file-input-wrapper input[type="file"] {
@@ -59,22 +119,41 @@
         cursor: pointer;
         width: 100%;
         height: 100%;
+        z-index: 2;
     }
 
     .file-button {
-        background: #333;
+        background: var(--tertiary-color);
         color: #fff;
-        padding: 6px 12px;
+        padding: 10px 15px;
         border-radius: 4px;
-        border: 1px solid #555;
+        border: none;
         cursor: pointer;
         font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    
+    .file-button:hover {
+        background: #4a3a9c;
+    }
+    
+    .file-button::before {
+        font-family: 'Material Icons';
+        content: 'attach_file';
+        margin-right: 5px;
     }
 
     .file-name {
         color: #aaa;
         font-size: 0.9rem;
-        flex: 1;
+        padding: 8px 12px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+        flex: 2;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -84,57 +163,97 @@
         background: var(--tertiary-color);
         color: white;
         border: none;
-        padding: 6px 12px;
+        padding: 10px 15px;
         border-radius: 4px;
         cursor: pointer;
-        transition: background-color 0.2s;
+        transition: background-color 0.2s, transform 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .upload-btn:hover {
-        background: #5740b3;
+        background: #4a3a9c;
+        transform: translateY(-2px);
+    }
+    
+    .upload-btn::before {
+        font-family: 'Material Icons';
+        content: 'cloud_upload';
+        margin-right: 5px;
     }
 
     .format-toggle {
-        color: #3498db;
+        color: var(--tertiary-color);
         cursor: pointer;
-        font-size: 0.8rem;
-        text-decoration: underline;
+        font-size: 0.85rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+    }
+    
+    .format-toggle::before {
+        font-family: 'Material Icons';
+        content: 'info';
+        margin-right: 5px;
+        font-size: 1rem;
     }
 
     .format-info {
         display: none;
-        background: #2c3e50;
-        padding: 10px;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 15px;
         border-radius: 4px;
         margin-top: 10px;
         font-size: 0.85rem;
+        border-left: 3px solid var(--tertiary-color);
     }
 
     .format-info pre {
-        background: #1c2833;
-        padding: 8px;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 10px;
         border-radius: 4px;
         overflow-x: auto;
         color: #ecf0f1;
-        margin: 5px 0;
+        margin: 10px 0;
+    }
+    
+    .format-info p {
+        margin: 0 0 10px 0;
+        color: #bbb;
     }
 
     .error-text {
-        color: #e74c3c;
+        color: var(--danger-color, #e74c3c);
         font-size: 0.8rem;
         display: none;
     }
 
     .message {
         text-align: center;
-        padding: 10px;
+        padding: 15px;
         border-radius: 4px;
         margin: 20px auto;
         max-width: 600px;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
-    .success { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
-    .error { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+    .success { 
+        background: rgba(46, 204, 113, 0.2); 
+        color: #2ecc71; 
+        border-left: 4px solid #2ecc71;
+    }
+    
+    .error { 
+        background: rgba(231, 76, 60, 0.2); 
+        color: #e74c3c; 
+        border-left: 4px solid #e74c3c;
+    }
 
     @media (max-width: 768px) {
         .upload-grid {
@@ -150,12 +269,28 @@
             width: 100%;
             text-align: center;
         }
+        
+        .file-name {
+            width: 100%;
+            box-sizing: border-box;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="upload-page">
+    <div class="page-header">
+        <h1>Bulk Data Upload</h1>
+        <p>Upload CSV files to import data in bulk. Make sure your files follow the required format.</p>
+    </div>
+    
+    {% if message %}
+    <div class="message {% if 'success' in message.lower() %}success{% else %}error{% endif %}">
+        {{ message }}
+    </div>
+    {% endif %}
+    
     <div class="upload-grid">
         <!-- Courses -->
         <div class="upload-card">
@@ -163,14 +298,15 @@
             <form class="upload-form" action="/upload_course" method="POST" enctype="multipart/form-data">
                 <div class="file-input-group">
                     <div class="file-input-wrapper">
-                        <button type="button" class="file-button">Choose CSV</button>
+                        <button type="button" class="file-button">Choose CSV File</button>
                         <input type="file" name="file" accept=".csv" onchange="updateFileName(this, 'courseFileName')">
                     </div>
-                    <span id="courseFileName" class="file-name">No file chosen</span>
-                    <button type="submit" class="upload-btn">Upload</button>
+                    <span id="courseFileName" class="file-name">No file selected</span>
                 </div>
-                <span class="format-toggle" onclick="toggleFormat('courseFormat')">View Format</span>
+                <button type="submit" class="upload-btn">Upload Courses</button>
+                <span class="format-toggle" onclick="toggleFormat('courseFormat')">View Required Format</span>
                 <div id="courseFormat" class="format-info">
+                    <p>Your CSV file should have the following columns:</p>
                     <pre>course_code,course_name
 COMP1600,Introduction to Computing
 COMP1601,Programming I</pre>
@@ -184,16 +320,18 @@ COMP1601,Programming I</pre>
             <form class="upload-form" action="/uploadassessments" method="POST" enctype="multipart/form-data">
                 <div class="file-input-group">
                     <div class="file-input-wrapper">
-                        <button type="button" class="file-button">Choose CSV</button>
+                        <button type="button" class="file-button">Choose CSV File</button>
                         <input type="file" name="file" accept=".csv" onchange="updateFileName(this, 'assessFileName')">
                     </div>
-                    <span id="assessFileName" class="file-name">No file chosen</span>
-                    <button type="submit" class="upload-btn">Upload</button>
+                    <span id="assessFileName" class="file-name">No file selected</span>
                 </div>
-                <span class="format-toggle" onclick="toggleFormat('assessFormat')">View Format</span>
+                <button type="submit" class="upload-btn">Upload Assessments</button>
+                <span class="format-toggle" onclick="toggleFormat('assessFormat')">View Required Format</span>
                 <div id="assessFormat" class="format-info">
+                    <p>Your CSV file should have the following columns:</p>
                     <pre>course_code,assessment_name,percentage,start_week,start_day,end_week,end_day,proctored
 COMP1600,Midterm,30,5,1,5,1,1</pre>
+                    <p>For proctored: 1 = Yes, 0 = No</p>
                 </div>
             </form>
         </div>
@@ -204,17 +342,19 @@ COMP1600,Midterm,30,5,1,5,1,1</pre>
             <form class="upload-form" action="/uploadcells" method="POST" enctype="multipart/form-data">
                 <div class="file-input-group">
                     <div class="file-input-wrapper">
-                        <button type="button" class="file-button">Choose CSV</button>
+                        <button type="button" class="file-button">Choose CSV File</button>
                         <input type="file" name="file" accept=".csv" onchange="updateFileName(this, 'cellsFileName')">
                     </div>
-                    <span id="cellsFileName" class="file-name">No file chosen</span>
-                    <button type="submit" class="upload-btn">Upload</button>
+                    <span id="cellsFileName" class="file-name">No file selected</span>
                 </div>
-                <span class="format-toggle" onclick="toggleFormat('cellsFormat')">View Format</span>
+                <button type="submit" class="upload-btn">Upload Cells</button>
+                <span class="format-toggle" onclick="toggleFormat('cellsFormat')">View Required Format</span>
                 <div id="cellsFormat" class="format-info">
+                    <p>Your CSV file should have the following columns:</p>
                     <pre>course_code,course_code2,overlap
 COMP1600,COMP1600,300
 COMP1600,COMP1601,300</pre>
+                    <p>Overlap is the number of students in both courses</p>
                 </div>
             </form>
         </div>
@@ -225,16 +365,18 @@ COMP1600,COMP1601,300</pre>
             <form class="upload-form" action="/uploadsemesters" method="POST" enctype="multipart/form-data">
                 <div class="file-input-group">
                     <div class="file-input-wrapper">
-                        <button type="button" class="file-button">Choose CSV</button>
+                        <button type="button" class="file-button">Choose CSV File</button>
                         <input type="file" name="file" accept=".csv" onchange="updateFileName(this, 'semesterFileName')">
                     </div>
-                    <span id="semesterFileName" class="file-name">No file chosen</span>
-                    <button type="submit" class="upload-btn">Upload</button>
+                    <span id="semesterFileName" class="file-name">No file selected</span>
                 </div>
-                <span class="format-toggle" onclick="toggleFormat('semesterFormat')">View Format</span>
+                <button type="submit" class="upload-btn">Upload Semesters</button>
+                <span class="format-toggle" onclick="toggleFormat('semesterFormat')">View Required Format</span>
                 <div id="semesterFormat" class="format-info">
+                    <p>Your CSV file should have the following columns:</p>
                     <pre>start_date,end_date,sem_num,max_assessments,constraint_value,active
 2025-01-15,2025-05-15,1,3,1000,1</pre>
+                    <p>For active: 1 = Yes, 0 = No</p>
                 </div>
             </form>
         </div>
@@ -245,58 +387,63 @@ COMP1600,COMP1601,300</pre>
             <form class="upload-form" action="/uploadstaff" method="POST" enctype="multipart/form-data">
                 <div class="file-input-group">
                     <div class="file-input-wrapper">
-                        <button type="button" class="file-button">Choose CSV</button>
+                        <button type="button" class="file-button">Choose CSV File</button>
                         <input type="file" name="file" accept=".csv" onchange="updateFileName(this, 'staffFileName')">
                     </div>
-                    <span id="staffFileName" class="file-name">No file chosen</span>
-                    <button type="submit" class="upload-btn">Upload</button>
+                    <span id="staffFileName" class="file-name">No file selected</span>
                 </div>
-                <span class="format-toggle" onclick="toggleFormat('staffFormat')">View Format</span>
+                <button type="submit" class="upload-btn">Upload Staff</button>
+                <span class="format-toggle" onclick="toggleFormat('staffFormat')">View Required Format</span>
                 <div id="staffFormat" class="format-info">
-                    <pre>id,email,password,first_name,last_name
-1,john.doe@example.com,pass123,John,Doe</pre>
+                    <p>Your CSV file should have the following columns:</p>
+                    <pre>staff_id,email,password,first_name,last_name,department,faculty
+1001,john.doe@example.com,password123,John,Doe,Computer Science,Science</pre>
                 </div>
             </form>
         </div>
-
+        
         <!-- Lecturer Assignments -->
         <div class="upload-card">
             <h2>Upload Lecturer Assignments</h2>
             <form class="upload-form" action="/uploadlecturerassignments" method="POST" enctype="multipart/form-data">
                 <div class="file-input-group">
                     <div class="file-input-wrapper">
-                        <button type="button" class="file-button">Choose CSV</button>
-                        <input type="file" name="file" accept=".csv" onchange="updateFileName(this, 'lecturerFileName')">
+                        <button type="button" class="file-button">Choose CSV File</button>
+                        <input type="file" name="file" accept=".csv" onchange="updateFileName(this, 'assignmentsFileName')">
                     </div>
-                    <span id="lecturerFileName" class="file-name">No file chosen</span>
-                    <button type="submit" class="upload-btn">Upload</button>
+                    <span id="assignmentsFileName" class="file-name">No file selected</span>
                 </div>
-                <span class="format-toggle" onclick="toggleFormat('lecturerFormat')">View Format</span>
-                <div id="lecturerFormat" class="format-info">
-                    <pre>lecturer_id,course_code
-3000001,COMP3602
-3000002,COMP3606</pre>
+                <button type="submit" class="upload-btn">Upload Assignments</button>
+                <span class="format-toggle" onclick="toggleFormat('assignmentsFormat')">View Required Format</span>
+                <div id="assignmentsFormat" class="format-info">
+                    <p>Your CSV file should have the following columns:</p>
+                    <pre>staff_id,course_code
+1001,COMP1600
+1002,COMP1601</pre>
                 </div>
             </form>
         </div>
     </div>
-
-    {% if message %}
-    <div class="message {% if 'success' in message %}success{% else %}error{% endif %}">
-        {{ message | safe }}
-    </div>
-    {% endif %}
 </div>
 
 <script>
-function updateFileName(input, outputId) {
-    const fileName = input.files.length > 0 ? input.files[0].name : "No file chosen";
-    document.getElementById(outputId).textContent = fileName;
-}
-
-function toggleFormat(formatId) {
-    const formatElement = document.getElementById(formatId);
-    formatElement.style.display = formatElement.style.display === 'block' ? 'none' : 'block';
-}
+    function updateFileName(input, targetId) {
+        const fileName = input.files.length > 0 ? input.files[0].name : 'No file selected';
+        document.getElementById(targetId).textContent = fileName;
+    }
+    
+    function toggleFormat(formatId) {
+        const formatElement = document.getElementById(formatId);
+        if (formatElement.style.display === 'block') {
+            formatElement.style.display = 'none';
+        } else {
+            // Hide all other format info elements
+            const allFormatInfos = document.querySelectorAll('.format-info');
+            allFormatInfos.forEach(el => el.style.display = 'none');
+            
+            // Show the clicked one
+            formatElement.style.display = 'block';
+        }
+    }
 </script>
 {% endblock %}

@@ -5,10 +5,10 @@
 {% block head %}
 <style>
     .dashboard-container {
-        max-width: 90%;
+        max-width: 95%;
         margin: 2rem auto;
         padding: 1.5rem;
-        background-color: var(--primary-color);
+        background-color: #23272a;
         border-radius: 8px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         display: flex;
@@ -38,18 +38,62 @@
         border-radius: 2px;
     }
     
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        width: 100%;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background-color: #2c2f33;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background-color: var(--tertiary-color);
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        color: #aaa;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
     .dashboard-cards {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
         gap: 20px;
-        margin-top: 20px;
         width: 100%;
-        max-width: 1000px;
+        max-width: 1200px;
         justify-content: center;
     }
     
     .card {
-        background-color: var(--secondary-color);
+        background-color: #2c2f33;
         border-radius: 8px;
         padding: 20px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -58,6 +102,18 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background-color: var(--tertiary-color);
     }
     
     .card:hover {
@@ -92,14 +148,63 @@
     }
     
     .btn:hover {
-        background-color: #5740b3;
+        background-color: #4a3a9c;
         transform: translateY(-2px);
+    }
+    
+    .quick-actions {
+        width: 100%;
+        margin-bottom: 30px;
+    }
+    
+    .quick-actions h2 {
+        color: #fff;
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+        font-weight: 500;
+        text-align: left;
+    }
+    
+    .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .action-btn {
+        background-color: #2c2f33;
+        color: white;
+        padding: 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-btn:hover {
+        background-color: var(--tertiary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
     
     @media (max-width: 768px) {
         .dashboard-cards {
             grid-template-columns: 1fr;
             max-width: 400px;
+        }
+        
+        .stats-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .stats-container {
+            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -108,25 +213,58 @@
 {% block content %}
 <div class="dashboard-container">
     <h1>Admin Dashboard</h1>
+    
+    <!-- Statistics Section -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.courses|default(0) }}</div>
+            <div class="stat-label">Total Courses</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.staff|default(0) }}</div>
+            <div class="stat-label">Staff Members</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.assessments|default(0) }}</div>
+            <div class="stat-label">Assessments</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.scheduled|default(0) }}</div>
+            <div class="stat-label">Scheduled</div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions Section -->
+    <div class="quick-actions">
+        <h2>Quick Actions</h2>
+        <div class="actions-grid">
+            <a href="{{ url_for('admin_views.get_new_semester_form') }}" class="action-btn">Add New Semester</a>
+            <a href="{{ url_for('admin_views.get_new_staff_page') }}" class="action-btn">Add New Staff</a>
+            <a href="{{ url_for('course_views.get_new_course') }}" class="action-btn">Add New Course</a>
+            <a href="{{ url_for('admin_views.get_upload_files_page') }}" class="action-btn">Bulk Upload</a>
+        </div>
+    </div>
+    
+    <!-- Main Navigation Cards -->
     <div class="dashboard-cards">
         <div class="card">
             <h2>Semester Management</h2>
-            <p>Set up and manage semester details</p>
+            <p>Set up and manage semester details, dates, and constraints</p>
             <a href="{{ url_for('admin_views.get_upload_page') }}" class="btn">Manage Semesters</a>
         </div>
         <div class="card">
             <h2>File Uploads</h2>
-            <p>Upload course and staff data</p>
+            <p>Upload course, staff, assessment, and semester data in bulk</p>
             <a href="{{ url_for('admin_views.get_upload_files_page') }}" class="btn">Upload Files</a>
         </div>
         <div class="card">
             <h2>Course Management</h2>
-            <p>View and manage courses</p>
+            <p>View, add, edit, and delete courses and their assessments</p>
             <a href="{{ url_for('course_views.get_courses') }}" class="btn">Manage Courses</a>
         </div>
         <div class="card">
             <h2>Staff Management</h2>
-            <p>View and manage staff</p>
+            <p>View, add, edit, and delete staff members and their assignments</p>
             <a href="{{ url_for('admin_views.get_staff_list') }}" class="btn">Manage Staff</a>
         </div>
     </div>
