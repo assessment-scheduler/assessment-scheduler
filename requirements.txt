@@ -26,3 +26,4 @@ Werkzeug==2.2.3
 # mysqlclient==2.1.1
 Flask-Admin==1.6.1
 ortools>=9.8
+prettytable
