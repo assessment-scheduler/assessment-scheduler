@@ -159,21 +159,4 @@ kris_views = Blueprint("kris", __name__, template_folder="../templates")
 def get_schedule_action():
     schedule = compute_schedule()
     schedule_all_assessments(schedule)
-    return redirect(url_for("assessment.assessments"))
-
-
-@kris_views.route("/solve", methods=["GET", "POST"])
-@staff_required
-def solve_schedule():
-    schedule = compute_schedule()
-    if schedule:
-        return redirect(url_for("kris.solve_done", schedule_data="solved"))
-    else:
-        return redirect(url_for("admin_views.get_admin_dashboard_page"))
-
-
-@kris_views.route("/solve-done", methods=["GET", "POST"])
-@staff_required
-def solve_done():
-    flash("Schedule solved successfully", "success")
-    return redirect(url_for("admin_views.get_admin_dashboard_page"))
+    return redirect(url_for("assessment_views.get_assessments_page"))

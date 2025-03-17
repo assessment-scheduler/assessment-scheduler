@@ -172,8 +172,8 @@
     }
     
     .action-btn {
-        background-color: var(--card-color);
-        color: var(--text-color);
+        background-color: #5642a9;
+        color: white;
         padding: 12px;
         border-radius: 6px;
         text-decoration: none;
@@ -182,12 +182,11 @@
         justify-content: center;
         transition: all 0.2s ease;
         font-weight: 500;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px rgba(86, 66, 169, 0.2);
     }
     
     .action-btn:hover {
-        background-color: var(--tertiary-color);
-        color: var(--text-on-primary);
+        box-shadow: 0 4px 8px rgba(86, 66, 169, 0.3);
         transform: translateY(-2px);
     }
     
@@ -242,6 +241,7 @@
             <a href="{{ url_for('admin_views.get_new_staff_page') }}" class="action-btn">Add New Staff</a>
             <a href="{{ url_for('course_views.get_new_course') }}" class="action-btn">Add New Course</a>
             <a href="{{ url_for('admin_views.get_upload_files_page') }}" class="action-btn">Bulk Upload</a>
+            <a href="{{ url_for('index_views.init_page') }}" class="action-btn">Database Initialization</a>
         </div>
     </div>
     
@@ -266,6 +266,11 @@
             <h2>Staff Management</h2>
             <p>View, add, edit, and delete staff members and their assignments</p>
             <a href="{{ url_for('admin_views.get_staff_list') }}" class="btn">Manage Staff</a>
+        </div>
+        <div class="card">
+            <h2>Database Initialization</h2>
+            <p>Reset and reinitialize the database with default data</p>
+            <a href="{{ url_for('index_views.init_page') }}" class="btn">Database Tools</a>
         </div>
     </div>
 </div>

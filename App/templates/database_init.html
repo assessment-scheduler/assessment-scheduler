@@ -1,0 +1,197 @@
+{% extends 'admin_layout.html' %}
+
+{% block title %}Database Initialization{% endblock %}
+
+{% block head %}
+<style>
+    .dashboard-container {
+        max-width: 95%;
+        margin: 2rem auto;
+        padding: 1.5rem;
+        background-color: var(--card-color);
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        color: var(--text-color);
+        text-align: center;
+        font-size: 1.5rem;
+        position: relative;
+        padding-bottom: 10px;
+    }
+    
+    h1:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 3px;
+        background-color: var(--tertiary-color);
+        border-radius: 2px;
+    }
+
+    .warning-card {
+        background-color: rgba(255, 193, 7, 0.1);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid #ffc107;
+    }
+
+    .warning-card h5 {
+        color: #856404;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .warning-card p {
+        color: #666;
+        margin-bottom: 0.5rem;
+    }
+
+    .files-section {
+        background-color: var(--card-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+    }
+
+    .files-section h6 {
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .file-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .file-item {
+        background-color: var(--card-color);
+        padding: 1rem;
+        border-radius: 6px;
+        border: 1px solid rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .file-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .file-item i {
+        color: var(--tertiary-color);
+        font-size: 1.2rem;
+    }
+
+    .file-item span {
+        color: var(--text-color);
+        font-size: 0.9rem;
+    }
+
+    .action-section {
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .btn-initialize {
+        background: linear-gradient(to right, #dc3545, #c82333);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 6px;
+        border: none;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-initialize:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-initialize i {
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1>Database Initialization</h1>
+    
+    <div class="warning-card">
+        <h5>
+            <i class="fas fa-exclamation-triangle"></i>
+            Important Warning
+        </h5>
+        <p>This action will <strong>delete all existing data</strong> in the database and reinitialize it with default configuration stored in App/uploads.</p>
+        <p><strong>This action cannot be undone!</strong></p>
+    </div>
+    
+    <div class="files-section">
+        <h6>
+            <i class="fas fa-folder-open"></i>
+            Required Configuration Files
+        </h6>
+        <p class="text-muted mb-3">The following files must be present in the App/uploads directory:</p>
+        
+        <div class="file-list">
+            <div class="file-item">
+                <i class="fas fa-file-csv"></i>
+                <span>staff.csv</span>
+            </div>
+            <div class="file-item">
+                <i class="fas fa-file-csv"></i>
+                <span>courses.csv</span>
+            </div>
+            <div class="file-item">
+                <i class="fas fa-file-csv"></i>
+                <span>lecturerassignments.csv</span>
+            </div>
+            <div class="file-item">
+                <i class="fas fa-file-csv"></i>
+                <span>assessments.csv</span>
+            </div>
+            <div class="file-item">
+                <i class="fas fa-file-csv"></i>
+                <span>cells.csv</span>
+            </div>
+            <div class="file-item">
+                <i class="fas fa-file-csv"></i>
+                <span>semesters.csv</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="action-section">
+        <form action="{{ url_for('index_views.init') }}" method="GET" onsubmit="return confirm('Are you absolutely sure you want to initialize the database? All existing data will be lost!');">
+            <button type="submit" class="btn-initialize">
+                <i class="fas fa-database"></i>
+                Initialize Database
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %} 
