@@ -210,12 +210,6 @@ def delete_assessment_command(id):
     else:
         print("Failed to delete assessment")
 
-
-
-# @assessment_cli.command("compile", help = "creates a large structure containing all assessments for all courses")
-# def compile_assessments():
-#     print(compile_course_data())
-
 app.cli.add_command(assessment_cli)
 
 overlap_cli = AppGroup("overlap", help="Course Overlap related functionality")
@@ -229,11 +223,11 @@ def list_overlaps():
         "Course Code 1",
         "Course Code 2",
         "Overlap",
-    ]  # Adjust fields as necessary
+    ]
     for overlap in overlaps:
         table.add_row(
             [overlap.code1, overlap.code2, overlap.student_count]
-        )  # Fixed attribute names
+        )
     print(table)
 
 
@@ -356,7 +350,6 @@ def kris_solve():
     try:
         print("\n=== Starting Kris Model Data Preparation ===")
         
-        # Get all assessments and courses
         courses = compile_course_data()
         print(f"\nTotal courses with assessments: {len(courses)}")
         print("\nCourse and assessment details:")
@@ -368,14 +361,12 @@ def kris_solve():
                 print(f"    End: Week {assessment['end_week']}, Day {assessment['end_day']}")
                 print(f"    Proctored: {'Yes' if assessment['proctored'] else 'No'}")
         
-        # Get course matrix and phi matrix
         matrix = compile_class_matrix()
         phi_matrix = get_phi_matrix(matrix)
         print("\nCourse overlap matrix:")
         for row in matrix:
             print(row)
         
-        # Get semester details
         semester = get_active_semester()
         if semester is None:
             print("No active semester found")
@@ -392,12 +383,10 @@ def kris_solve():
         
         print("\n=== Starting Kris Model Solving ===")
         
-        # Solve Stage 1
         print("\nSolving Stage 1...")
         U_star, solver, x = solve_stage1(courses, matrix, k, M)
         print(f"Stage 1 solved with U* = {U_star}")
         
-        # Solve Stage 2
         print("\nSolving Stage 2...")
         schedule, Y_star, probability = solve_stage2(courses, matrix, phi_matrix, U_star, k, d, M)
         print(f"Stage 2 solved with Y* = {Y_star}")
@@ -504,11 +493,9 @@ def test_list_courses_for_lecturer(lecturer_id):
     
     print(f"Courses for lecturer {staff.first_name} {staff.last_name}:")
     
-    # Use PrettyTable for consistent formatting
     table = PrettyTable()
     table.field_names = ["Code", "Name", "Level", "Credits", "Semester"]
     
-    # Add each assignment as a row in the table
     for assignment in assignments:
         table.add_row([
             assignment['course_code'],

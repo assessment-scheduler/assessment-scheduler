@@ -68,6 +68,43 @@ def assign_lecturer(lecturer_id: str, course_code: str) -> bool:
         db.session.rollback()
         return False
 
+def assign_multiple_lecturers(lecturer_ids: List[str], course_code: str) -> bool:
+    course = get_course(course_code)
+    if course is None:
+        print(f"Course {course_code} not found")
+        return False
+    
+    try:
+        existing_assignments = CourseLecturer.query.filter_by(course_code=course_code).all()
+        for assignment in existing_assignments:
+            if str(assignment.staff_id) not in lecturer_ids:
+                db.session.delete(assignment)
+        
+        for lecturer_id in lecturer_ids:
+            if not lecturer_id:  
+                continue
+                
+            lecturer = Staff.query.filter_by(id=lecturer_id).first()
+            if not lecturer:
+                print(f"Lecturer {lecturer_id} not found")
+                continue
+                
+            existing = CourseLecturer.query.filter_by(
+                course_code=course_code, 
+                staff_id=lecturer_id
+            ).first()
+            
+            if not existing:
+                new_assignment = CourseLecturer(course_code=course_code, staff_id=lecturer_id)
+                db.session.add(new_assignment)
+        
+        db.session.commit()
+        return True
+    except Exception as e:
+        print(f"Error assigning lecturers to course: {str(e)}")
+        db.session.rollback()
+        return False
+
 def get_course_lecturers(course_code: str) -> list[Staff]:
     course = Course.query.filter_by(code=course_code).first()
     if course is None:
