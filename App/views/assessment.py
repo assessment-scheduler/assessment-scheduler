@@ -1,6 +1,12 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from werkzeug.utils import secure_filename
+from datetime import timedelta, datetime
+from typing import List
+import traceback
 from ..controllers import (
+    get_active_semester,
+    get_semester_duration,
     get_staff_by_email,
     get_staff_courses,
     is_course_lecturer,
@@ -12,16 +18,10 @@ from ..controllers import (
     get_assessments_by_lecturer,
     get_assessments_by_course,
     get_course,
-    get_active_semester,
-    get_num_assessments,
     get_all_assessments,
-    get_semester_duration,
     staff_required
 )
-from ..views import compute_schedule, schedule_all_assessments
-from datetime import datetime
-import json
-import traceback
+from .kris import compute_schedule, schedule_all_assessments
 
 assessment_views = Blueprint(
     "assessment_views", __name__, template_folder="../templates"

@@ -101,6 +101,34 @@
         margin-top: 5px;
         color: #aaa;
     }
+
+    .multiselect-container {
+        margin-bottom: 15px;
+    }
+    
+    .lecturer-chip {
+        display: inline-flex;
+        align-items: center;
+        background-color: var(--tertiary-color);
+        border-radius: 16px;
+        padding: 5px 12px;
+        margin: 5px;
+        color: white;
+    }
+    
+    .lecturer-chip .remove-lecturer {
+        margin-left: 6px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    #selected-lecturers {
+        margin-top: 10px;
+        min-height: 40px;
+        padding: 5px;
+        border-radius: 6px;
+        background-color: rgba(255, 255, 255, 0.05);
+    }
 </style>
 {% endblock %}
 
@@ -173,16 +201,28 @@
         </div>
 
         <div class="formInputContainer normalLabel">
-            <label class="mainLabel" for="lecturer_id">Lecturer</label>
-            <select name="lecturer_id" id="lecturer_id">
-                <option value="">-- Select Lecturer --</option>
+            <label class="mainLabel" for="lecturer_select">Lecturers</label>
+            <select id="lecturer_select">
+                <option value="">-- Select Lecturers --</option>
                 {% for staff in staff_list %}
                 <option value="{{ staff.id }}" 
-                    {% if course.lecturer_id and course.lecturer_id == staff.id %}selected{% endif %}>
+                    data-name="{{ staff.first_name }} {{ staff.last_name }}"
+                    {% if staff.id|string in current_lecturer_ids %}disabled{% endif %}>
                     {{ staff.first_name }} {{ staff.last_name }}
                 </option>
                 {% endfor %}
             </select>
+            <span class="hint-text">You can assign multiple lecturers to this course</span>
+            
+            <div id="selected-lecturers">
+                {% for lecturer in current_lecturers %}
+                <div class="lecturer-chip" data-id="{{ lecturer.id }}">
+                    {{ lecturer.first_name }} {{ lecturer.last_name }}
+                    <span class="remove-lecturer" onclick="removeLecturer('{{ lecturer.id }}')">×</span>
+                    <input type="hidden" name="lecturer_ids" value="{{ lecturer.id }}">
+                </div>
+                {% endfor %}
+            </div>
         </div>
 
         <div class="formButtonContainer">
@@ -193,6 +233,53 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const lecturerSelect = document.getElementById('lecturer_select');
+    lecturerSelect.addEventListener('change', function() {
+        if (this.value) {
+            const selectedOption = this.options[this.selectedIndex];
+            addLecturer(this.value, selectedOption.dataset.name);
+            this.selectedIndex = 0; 
+        }
+    });
+});
+
+function addLecturer(id, name) {
+    const selectedLecturers = document.getElementById('selected-lecturers');
+    
+    if (document.querySelector(`.lecturer-chip[data-id="${id}"]`)) {
+        return;
+    }
+    
+    const chip = document.createElement('div');
+    chip.className = 'lecturer-chip';
+    chip.dataset.id = id;
+    chip.innerHTML = `
+        ${name}
+        <span class="remove-lecturer" onclick="removeLecturer('${id}')">×</span>
+        <input type="hidden" name="lecturer_ids" value="${id}">
+    `;
+    
+    selectedLecturers.appendChild(chip);
+    
+    const option = document.querySelector(`#lecturer_select option[value="${id}"]`);
+    if (option) {
+        option.disabled = true;
+    }
+}
+
+function removeLecturer(id) {
+    const chip = document.querySelector(`.lecturer-chip[data-id="${id}"]`);
+    if (chip) {
+        chip.remove();
+        
+        const option = document.querySelector(`#lecturer_select option[value="${id}"]`);
+        if (option) {
+            option.disabled = false;
+        }
+    }
+}
+
 document.getElementById('modifyCourseForm').addEventListener('submit', function(e) {
     const newCourseCode = document.getElementById('new_course_code').value.trim();
     const title = document.getElementById('title').value.trim();

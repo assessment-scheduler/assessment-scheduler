@@ -1,13 +1,14 @@
 from ..database import db
 from .user import User
-from sqlalchemy.orm import Mapped,mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 class Staff(User):
     id: Mapped[int] = mapped_column(db.ForeignKey("user.id"), primary_key = True)
     first_name = mapped_column(db.String(25), nullable = False, unique = False)
     last_name = mapped_column(db.String(25), nullable = False, unique = False)
     department = mapped_column(db.String(50), nullable = True, unique = False)
     faculty = mapped_column(db.String(50), nullable = True, unique = False)
-    courses = db.relationship("Course", back_populates = "lecturer", lazy="dynamic")
+    course_assignments = relationship("CourseLecturer", back_populates="lecturer", cascade="all, delete-orphan")
 
     def __init__(self, id:str, email: str, password: str, first_name: str, last_name: str, department: str = None, faculty: str = None):
         super().__init__(id,email,password)
@@ -24,7 +25,7 @@ class Staff(User):
             "email": self.email,
             "department": self.department,
             "faculty": self.faculty,
-            "courses": [course.code for course in self.courses]
+            "courses": [assignment.course.code for assignment in self.course_assignments]
         }
 
     def __repr__(self):

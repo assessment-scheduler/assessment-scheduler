@@ -243,7 +243,7 @@
           <th>Level</th>
           <th>Credits</th>
           <th>Semester</th>
-          <th>Lecturer</th>
+          <th>Lecturers</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -255,7 +255,17 @@
           <td>{{ course.level or '-' }}</td>
           <td>{{ course.credits or '-' }}</td>
           <td>{{ course.semester or '-' }}</td>
-          <td>{{ course.lecturer.email if course.lecturer else 'No Lecturer Assigned' }}</td>
+          <td>
+            {% if course.lecturer_assignments %}
+              {% for assignment in course.lecturer_assignments %}
+                {% if assignment.lecturer %}
+                  {{ assignment.lecturer.first_name }} {{ assignment.lecturer.last_name }}{% if not loop.last %}, {% endif %}
+                {% endif %}
+              {% endfor %}
+            {% else %}
+              No Lecturers Assigned
+            {% endif %}
+          </td>
           <td>
             <a href="/update_course/{{ course.code }}" class="action-btn update-btn">Update</a>
             <a href="#" class="action-btn delete-btn" data-code="{{ course.code }}">Delete</a>
@@ -269,7 +279,6 @@
       <a href="/new_course" class="formBtn">Create Course</a>
   </div>
   
-  <!-- Confirmation Modal -->
   <div id="deleteConfirmModal" class="modal">
     <div class="modal-content">
       <h3>Confirm Deletion</h3>
@@ -290,7 +299,6 @@
   const cancelBtn = document.querySelector('.cancel-delete-btn');
   const deleteForm = document.getElementById('deleteCourseForm');
   
-  // Delete button click handlers
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -301,7 +309,6 @@
     });
   });
 
-  // Row click handler to highlight the selected row
   courseRows.forEach(row => {
     row.addEventListener('click', function handleClick() {
       courseRows.forEach(row => row.classList.remove('selected'));
@@ -309,12 +316,10 @@
     });
   });
 
-  // Hide modal when cancel button is clicked
   cancelBtn.addEventListener('click', function() {
     modal.style.display = 'none';
   });
 
-  // Close modal when clicking outside of it
   window.addEventListener('click', function(event) {
     if (event.target === modal) {
       modal.style.display = 'none';
