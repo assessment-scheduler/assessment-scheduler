@@ -1,6 +1,7 @@
 from typing import List, Optional
 from ..models import Staff, Course
 from ..database import db
+from ..models.course_lecturer import CourseLecturer
 
 def create_staff(id: str, email: str, password: str, first_name: str, last_name: str, department: str = None, faculty: str = None) -> bool:
     staff: Optional[Staff] = get_staff_by_email(email)
@@ -46,19 +47,35 @@ def delete_staff(id: str) -> bool:
     db.session.commit()
     return True
 
-def get_staff_courses(staff_email: str) -> List[Course]:
-    staff: Optional[Staff] = get_staff(staff_email)
+def get_staff_courses(staff_id_or_email: str) -> List[Course]:
+    staff: Optional[Staff] = get_staff(staff_id_or_email)
     if not staff:
-        print(f"Could not get staff courses, staff {staff_email} not found")
+        staff = get_staff_by_id(staff_id_or_email)
+    if not staff:
+        print(f"Could not get staff courses, staff {staff_id_or_email} not found")
         return []
-    return staff.courses.all()
+    
+    courses = []
+    for assignment in staff.course_assignments:
+        try:
+            course = assignment.course
+            if course:
+                courses.append(course)
+                print(f"Added course: {course.code}, {course.name}")
+            else:
+                print(f"Course is None for assignment: {assignment.course_code}, {assignment.staff_id}")
+        except Exception as e:
+            print(f"Error retrieving course: {str(e)}")
+    
+    return courses
 
 def is_course_lecturer(staff_id: str, course_code: str) -> bool:
-    staff: Optional[Staff] = get_staff_by_id(staff_id)
-    if not staff:
-        return False
-    staff_courses: List[Course] = get_staff_courses(staff.email)
-    return course_code in [course.code for course in staff_courses]
+    assignment = CourseLecturer.query.filter_by(
+        staff_id=staff_id,
+        course_code=course_code
+    ).first()
+    
+    return assignment is not None
 
 def validate_staff(email: str, password: str) -> bool:
     staff: Optional[Staff] = get_staff_by_email(email)

@@ -1,4 +1,4 @@
-from .kris import *
+from .kris import kris_views
 from .staff import staff_views
 from .index import index_views
 from .auth import auth_views
