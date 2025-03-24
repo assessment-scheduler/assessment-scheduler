@@ -226,10 +226,13 @@
     cursor: pointer;
     font-weight: 500;
     transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   }
   
   .confirm-delete-btn:hover {
     background-color: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
   }
   
   .cancel-delete-btn {
@@ -241,10 +244,13 @@
     cursor: pointer;
     font-weight: 500;
     transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   }
   
   .cancel-delete-btn:hover {
     background-color: #95a5a6;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
   }
 
   .actions-container {
@@ -262,6 +268,39 @@
     text-decoration: none;
     transition: all 0.2s ease;
     display: inline-block;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  }
+  
+  .action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+  }
+  
+  .action-btn.edit-btn {
+    background-color: var(--tertiary-color);
+  }
+  
+  .action-btn.courses-btn {
+    background-color: #2ecc71;
+  }
+  
+  .action-btn.delete-btn {
+    background-color: #e74c3c;
+  }
+  
+  .action-btn.edit-btn:hover {
+    background-color: #5a6acf;
+  }
+  
+  .action-btn.courses-btn:hover {
+    background-color: #27ae60;
+  }
+  
+  .action-btn.delete-btn:hover {
+    background-color: #c0392b;
   }
   
   #buttons_container {
@@ -299,9 +338,9 @@
           <td>{{ staff_member.faculty or 'FST' }}</td>
           <td>
             <div class="actions-container">
-              <a href="/edit_staff/{{ staff_member.id }}" class="action-btn" style="background-color: var(--tertiary-color);">Edit</a>
-              <a href="/staff_courses/{{ staff_member.id }}" class="action-btn" style="background-color: #2ecc71;">Courses</a>
-              <button class="action-btn delete-btn" style="background-color: #e74c3c;" data-id="{{ staff_member.id }}" data-name="{{ staff_member.first_name }} {{ staff_member.last_name }}">Delete</button>
+              <a href="/edit_staff/{{ staff_member.id }}" class="action-btn edit-btn">Edit</a>
+              <a href="/staff_courses/{{ staff_member.id }}" class="action-btn courses-btn">Courses</a>
+              <button class="action-btn delete-btn" data-id="{{ staff_member.id }}" data-name="{{ staff_member.first_name }} {{ staff_member.last_name }}">Delete</button>
             </div>
           </td>
         </tr>
