@@ -5,13 +5,11 @@
 {% block head %}
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
 <style>
-  /* Calendar-specific styles that don't override global theme variables */
   body {
     background-color: var(--primary-color);
     color: var(--text-color);
   }
   
-  /* Enhanced styles for the unscheduled assessments panel */
   #unscheduled-list {
     padding: 10px;
     background: var(--card-color);
@@ -68,12 +66,10 @@
     color: var(--text-color);
   }
   
-  /* Ensure blue background items have white text */
   .draggable-assessment .assessment-name {
     color: white !important;
   }
   
-  /* Light mode specific styles for assessment items with white background */
   body:not(.dark-mode) .assessment-item .assessment-name {
     color: var(--text-color) !important;
   }
@@ -87,7 +83,6 @@
     margin-left: 5px;
   }
   
-  /* Layout adjustments */
   #main {
     display: flex;
     flex-wrap: wrap;
@@ -110,7 +105,6 @@
     min-width: 250px;
   }
   
-  /* Fix for calendar event tiles */
   .fc-event {
     border: none !important;
     margin: 2px !important;
@@ -119,7 +113,6 @@
     color: white !important;
   }
   
-  /* Ensure all event content has white text */
   .fc-event-main {
     padding: 3px 5px !important;
     color: white !important;
@@ -129,7 +122,6 @@
     color: white !important;
   }
   
-  /* Make sure all elements inside events have white text */
   .fc-event * {
     color: white !important;
   }
@@ -146,7 +138,6 @@
     padding: 2px !important;
   }
   
-  /* Fix for event content */
   .fc-event-title {
     padding: 0 !important;
     overflow: hidden !important;
@@ -156,7 +147,6 @@
     color: white !important;
   }
   
-  /* Better appearance for small screens */
   .fc-daygrid-day-frame {
     min-height: 80px !important;
   }
@@ -165,12 +155,10 @@
     background-color: rgba(92, 70, 180, 0.2) !important;
   }
   
-  /* Make sure custom assessment styles override FullCalendar defaults */
   .fc .fc-daygrid-day.fc-day-today {
     background-color: rgba(92, 70, 180, 0.2) !important;
   }
   
-  /* Calendar header styling */
   .fc-col-header-cell {
     background-color: var(--tertiary-color) !important;
   }
@@ -181,7 +169,6 @@
     padding: 8px !important;
   }
   
-  /* Calendar toolbar styling */
   .fc-toolbar-title {
     color: var(--text-color) !important;
   }
@@ -208,7 +195,6 @@
     color: rgba(255, 255, 255, 0.9) !important;
   }
   
-  /* Button styles */
   .action-btn {
     display: inline-block;
     padding: 8px 16px;
@@ -239,7 +225,6 @@
     background-color: #b03a2e;
   }
   
-  /* Drag instructions */
   .drag-instructions {
     background-color: rgba(0, 0, 0, 0.05);
     padding: 10px;
@@ -291,7 +276,6 @@
     font-style: italic;
   }
   
-  /* Collapsible panel styles */
   .collapsible-header {
     cursor: pointer;
     display: flex;
@@ -318,7 +302,6 @@
     overflow: hidden;
   }
   
-  /* Show more/less functionality */
   .all-assessments {
     margin-top: 10px;
     transition: max-height 0.3s ease, opacity 0.3s ease;
@@ -332,7 +315,6 @@
     opacity: 0;
   }
   
-  /* Show more/less button styling with theme adaptation */
   #show-more-btn, #show-less-btn {
     margin-top: 10px;
     background-color: var(--tertiary-color);
@@ -343,7 +325,6 @@
     background-color: var(--accent-color);
   }
   
-  /* Responsive styles */
   @media (max-width: 992px) {
     #main {
       flex-direction: column;
@@ -360,7 +341,6 @@
     }
   }
   
-  /* Filter styles */
   #filters {
     display: flex;
     gap: 10px;
@@ -390,7 +370,6 @@
     box-shadow: 0 0 0 2px rgba(92, 70, 180, 0.3);
   }
   
-  /* Make assessment items more compact */
   .assessment-item, .draggable-assessment {
     padding: 8px;
     margin-bottom: 8px;
@@ -402,7 +381,6 @@
     color: var(--text-color);
   }
   
-  /* Specific styling for scheduled assessment items in light mode */
   body:not(.dark-mode) .assessment-item {
     color: var(--text-color);
   }
@@ -415,7 +393,6 @@
     color: var(--text-muted);
   }
   
-  /* Specific styling for unscheduled assessment items (always blue) */
   .draggable-assessment {
     background-color: var(--tertiary-color);
     color: white !important;
@@ -429,7 +406,6 @@
     color: rgba(255, 255, 255, 0.8) !important;
   }
   
-  /* Fix for assessment items that are also draggable but should have white bg in scheduled list */
   body:not(.dark-mode) .assessment-item.draggable-assessment:not(.blue-bg) {
     background-color: var(--card-color);
     color: var(--text-color) !important;
@@ -443,17 +419,14 @@
     color: var(--text-muted) !important;
   }
   
-  /* Ensure blue background items have white course code */
   .draggable-assessment .course-code {
     color: white !important;
   }
   
-  /* Light mode specific styles for assessment items with white background */
   body:not(.dark-mode) .assessment-item .course-code {
     color: var(--text-color) !important;
   }
   
-  /* Calendar styling for light and dark themes */
   .fc-theme-standard .fc-scrollgrid {
     border-color: var(--border-color);
   }
@@ -470,7 +443,6 @@
     color: var(--text-color) !important;
   }
   
-  /* Scheduled Assessments Panel */
   #scheduled-list {
     padding: 10px;
     background: var(--card-color);
@@ -487,7 +459,6 @@
     color: var(--text-color);
   }
   
-  /* Count badge styling */
   .count-badge {
     background-color: var(--tertiary-color);
     color: var(--text-on-primary);
@@ -497,7 +468,6 @@
     font-weight: bold;
   }
   
-  /* Tooltip styling */
   .tooltip {
     position: relative;
     display: inline-block;
@@ -527,7 +497,6 @@
     opacity: 1;
   }
   
-  /* Ensure blue background items have white details text */
   .assessment-item.blue-bg .assessment-details,
   .draggable-assessment.blue-bg .assessment-details,
   .assessment-item[style*="background-color: var(--tertiary-color)"] .assessment-details,
@@ -537,7 +506,6 @@
     color: rgba(255, 255, 255, 0.8) !important;
   }
   
-  /* Hover effects for assessment items */
   .assessment-item:hover, .draggable-assessment:hover {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
@@ -547,7 +515,6 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
   }
   
-  /* Text styling for assessment items */
   .assessment-item h4, .draggable-assessment h4 {
     margin: 0 0 5px 0;
     font-size: 0.9rem;
@@ -565,7 +532,6 @@
     color: var(--text-color);
   }
   
-  /* Ensure blue background items always have white text */
   .assessment-item.blue-bg,
   .draggable-assessment.blue-bg,
   .assessment-item[style*="background-color: var(--tertiary-color)"],
@@ -590,7 +556,6 @@
     color: white !important;
   }
   
-  /* Specific styling for scheduled assessment items */
   .assessment-item.draggable-assessment {
     background-color: var(--tertiary-color);
     color: white !important;
@@ -638,7 +603,6 @@
   <div id="main">
     <div id="calendar"></div>
     <div id="nav">
-      <!-- Unscheduled Assessments Panel -->
       <div id="unscheduled-list">
         <h3>Unscheduled Assessments</h3>
         {% if unscheduled_assessments %}
@@ -677,7 +641,6 @@
         {% endif %}
       </div>
 
-      <!-- Scheduled Assessments Panel -->
       <div id="scheduled-list">
         <h3>
           (All) Scheduled Assessments <span class="count-badge">{{ scheduled_assessments|length }}</span>
@@ -748,8 +711,6 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
 <script>
-  // Essential variables for calendar functionality
-  // These variables are populated by the server-side template
   var staff_exams = JSON.parse('{{ staff_exams | tojson | safe }}');
   var myCourses = JSON.parse('{{ staff_courses | tojson | safe }}');
   var semester = JSON.parse('{{ semester | tojson | safe }}');
@@ -757,8 +718,7 @@
   var scheduledAssessments = JSON.parse('{{ scheduled_assessments | tojson | safe }}');
   var unscheduledAssessments = JSON.parse('{{ unscheduled_assessments | tojson | safe }}');
   
-  // Calculate semester duration in weeks
-  var semesterWeeks = 15;  // Default if semester dates not available
+  var semesterWeeks = 15;
   if (semester && semester.start_date && semester.end_date) {
     const startDate = new Date(semester.start_date);
     const endDate = new Date(semester.end_date);
@@ -766,7 +726,6 @@
     semesterWeeks = Math.ceil(daysDiff / 7);
   }
   
-  // Initialize collapsible panels
   document.addEventListener('DOMContentLoaded', function() {
     const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
     
@@ -778,7 +737,6 @@
       });
     });
     
-    // Show more/less functionality
     const showMoreBtn = document.getElementById('show-more-btn');
     const showLessBtn = document.getElementById('show-less-btn');
     const allAssessments = document.getElementById('all-assessments');
@@ -798,18 +756,13 @@
     }
   });
 
-  // Function to apply blue-bg class to blue background elements
   function applyBlueBackgroundClass() {
-    // Get all assessment items
     const assessmentItems = document.querySelectorAll('.assessment-item, .draggable-assessment');
     
-    // Check each item's background color
     assessmentItems.forEach(item => {
       const style = window.getComputedStyle(item);
       const bgColor = style.backgroundColor;
       
-      // Check if the background is blue (tertiary color)
-      // This checks for RGB values that are likely blue
       if (bgColor.includes('rgb(92, 70, 180)') || 
           bgColor.includes('rgb(94, 114, 228)') || 
           bgColor.includes('rgb(52, 152, 219)') ||
@@ -822,16 +775,12 @@
     });
   }
   
-  // Run when DOM is loaded
   document.addEventListener('DOMContentLoaded', function() {
-    // Initial application
     applyBlueBackgroundClass();
     
-    // Run again after a short delay to catch dynamically created elements
     setTimeout(applyBlueBackgroundClass, 1000);
   });
   
-  // Also run when theme is toggled
   document.addEventListener('themeToggled', applyBlueBackgroundClass);
 </script>
 <script src="{{url_for('static', filename='index.js')}}"></script>

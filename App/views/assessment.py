@@ -433,13 +433,11 @@ def get_calendar_page():
 @staff_required
 def autoschedule_assessments():
     try:
-        # Get the active semester
         active_semester = get_active_semester()
         if not active_semester:
             flash("No active semester found. Please set an active semester first.", "error")
             return redirect(url_for('assessment_views.get_calendar_page'))
 
-        # Get all unscheduled assessments
         all_assessments = get_all_assessments()
         unscheduled = [a for a in all_assessments if not a.scheduled]
         
@@ -447,11 +445,9 @@ def autoschedule_assessments():
             flash("No unscheduled assessments found to schedule.", "info")
             return redirect(url_for('assessment_views.get_calendar_page'))
 
-        # Check if we have too many assessments for the semester
         semester_weeks = get_semester_duration(active_semester.id)
-        max_slots = semester_weeks * 5 * active_semester.max_assessments  # 5 days per week
+        max_slots = semester_weeks * 5 * active_semester.max_assessments
         
-        # If there are too many assessments, provide a more helpful error message
         if len(unscheduled) > max_slots:
             flash(f"Too many assessments ({len(unscheduled)}) for available slots ({max_slots}).", "error")
             flash(f"Please try one of the following:", "error")
@@ -460,11 +456,9 @@ def autoschedule_assessments():
             flash(f"3. Extend the semester duration (currently {semester_weeks} weeks)", "error")
             return redirect(url_for('assessment_views.get_calendar_page'))
         
-        # If there are more than 100 assessments, warn the user that it might take a while
         if len(unscheduled) > 100:
             flash(f"Attempting to schedule {len(unscheduled)} assessments. This may take a while...", "warning")
 
-        # Compute the schedule
         schedule = compute_schedule()
         if not schedule:
             flash("Could not find a valid schedule. This could be due to:", "error")
@@ -474,7 +468,6 @@ def autoschedule_assessments():
             flash("Try adjusting these parameters or reducing the number of assessments.", "error")
             return redirect(url_for('assessment_views.get_calendar_page'))
 
-        # Apply the schedule
         if schedule_all_assessments(schedule):
             flash("Successfully scheduled all assessments! The calendar has been updated.", "success")
         else:

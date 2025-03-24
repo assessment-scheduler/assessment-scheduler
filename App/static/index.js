@@ -1,6 +1,8 @@
 var weekCounter = 0;
 
 document.addEventListener("DOMContentLoaded", function () {
+  let eventsLoaded = false;
+  
   const colors = {
     Assignment: "#4a88c7",
     Quiz: "#4a88c7",
@@ -138,7 +140,6 @@ document.addEventListener("DOMContentLoaded", function () {
     droppable: true,
     dayMaxEvents: false,
     
-    // Allow events to be removed by dragging them out of the calendar
     eventStartEditable: true,
     eventDurationEditable: false,
     removable: true,
@@ -147,13 +148,11 @@ document.addEventListener("DOMContentLoaded", function () {
     dragScroll: true,
     dropAccept: '.draggable-assessment',
     
-    // Set valid date range for the calendar
     validRange: semester && semester.start_date && semester.end_date ? {
       start: semester.start_date,
       end: semester.end_date
     } : null,
     
-    // Callback to validate drops
     eventAllow: function(dropInfo, draggedEvent) {
       if (!semester || !semester.start_date || !semester.end_date) {
         return false;
@@ -166,7 +165,6 @@ document.addEventListener("DOMContentLoaded", function () {
       return eventDate >= semesterStart && eventDate <= semesterEnd;
     },
     
-    // Save the current view when it changes
     viewDidMount: function(info) {
       localStorage.setItem('calendarViewType', info.view.type);
     },
@@ -301,24 +299,25 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error(`Failed to add event ${event.id}:`, e);
       }
     });
+    eventsLoaded = true;
   }
 
   try {
     calendar.render();
     
-    setTimeout(() => calendar.refetchEvents(), 300);
+    if (eventsLoaded) {
+      setTimeout(() => calendar.refetchEvents(), 300);
+    }
   } catch (error) {
     console.error('Error rendering calendar:', error);
   }
 
-  // Load saved filter values from localStorage
   function loadSavedFilters() {
     if (levelFilter && localStorage.getItem('calendarLevelFilter')) {
       levelFilter.value = localStorage.getItem('calendarLevelFilter');
     }
     
     if (courseFilter && localStorage.getItem('calendarCourseFilter')) {
-      // Check if the saved course still exists in the dropdown
       const savedCourse = localStorage.getItem('calendarCourseFilter');
       const courseExists = Array.from(courseFilter.options).some(option => option.value === savedCourse);
       
@@ -331,26 +330,22 @@ document.addEventListener("DOMContentLoaded", function () {
       typeFilter.value = localStorage.getItem('calendarTypeFilter');
     }
     
-    // Apply the filters if any were loaded
     if (levelFilter && courseFilter && typeFilter) {
       const selectedLevel = levelFilter.value;
       const selectedCourse = courseFilter.value;
       const selectedType = typeFilter.value;
       
-      // Only apply filters if at least one is not the default value
       if (selectedLevel !== "0" || selectedCourse !== "all" || selectedType !== "all") {
         const filteredEvents = filterEvents(selectedLevel, selectedCourse, selectedType);
-        // We need to wait for the calendar to be initialized
         setTimeout(() => {
           if (calendar) {
-            updateCalendarEvents(calendar, filteredEvents);
+            updateCalendarEvents(calendar, filteredEvents, false);
           }
         }, 500);
       }
     }
   }
 
-  // Call this function when the page loads
   setTimeout(loadSavedFilters, 300);
 
   if (levelFilter) {
@@ -359,7 +354,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const selectedCourse = courseFilter.value;
       const selectedType = typeFilter.value;
       
-      // Save the selection to localStorage
       localStorage.setItem('calendarLevelFilter', selectedLevel);
       
       const filteredEvents = filterEvents(selectedLevel, selectedCourse, selectedType);
@@ -373,7 +367,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const selectedCourse = courseFilter.value;
       const selectedType = typeFilter.value;
       
-      // Save the selection to localStorage
       localStorage.setItem('calendarCourseFilter', selectedCourse);
       
       const filteredEvents = filterEvents(selectedLevel, selectedCourse, selectedType);
@@ -387,7 +380,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const selectedCourse = courseFilter.value;
       const selectedType = typeFilter.value;
       
-      // Save the selection to localStorage
       localStorage.setItem('calendarTypeFilter', selectedType);
       
       const filteredEvents = filterEvents(selectedLevel, selectedCourse, selectedType);
@@ -421,8 +413,10 @@ document.addEventListener("DOMContentLoaded", function () {
     return filteredEvents;
   }
 
-  function updateCalendarEvents(calendar, newEvents) {
-    calendar.removeAllEvents();
+  function updateCalendarEvents(calendar, newEvents, removeExisting = true) {
+    if (removeExisting) {
+      calendar.removeAllEvents();
+    }
     
     const updatedEvents = newEvents
       .filter(assessment => assessment.scheduled !== null && assessment.scheduled !== undefined)
@@ -452,11 +446,16 @@ document.addEventListener("DOMContentLoaded", function () {
       })
       .filter(event => event !== null);
     
-    updatedEvents.forEach(event => {
-      calendar.addEvent(event);
-    });
-    
-    calendar.refetchEvents();
+    setTimeout(() => {
+      updatedEvents.forEach(event => {
+        const existingEvent = calendar.getEventById(event.id);
+        if (!existingEvent) {
+          calendar.addEvent(event);
+        }
+      });
+      
+      calendar.refetchEvents();
+    }, 50);
   }
 
   function calculateWeekAndDayOffsets(date, semesterStartDate) {
@@ -502,7 +501,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function handleEventDrop(info) {
-    // Check if the new date is within the semester range
     const eventDate = info.event.start;
     const semesterStart = new Date(semester.start_date);
     const semesterEnd = new Date(semester.end_date);
@@ -524,6 +522,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const currentLevel = levelFilter.value;
     const currentCourse = courseFilter.value;
     const currentType = typeFilter.value;
+    
+    if (calendar) {
+      localStorage.setItem('calendarViewType', calendar.view.type);
+    }
 
     if (!data.assessment_date && tempEvent && tempEvent.start) {
       data.assessment_date = tempEvent.start.toISOString().split('T')[0];
@@ -555,7 +557,6 @@ document.addEventListener("DOMContentLoaded", function () {
       end_day: parseInt(data.end_day)
     };
 
-    // Create a form and submit it
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '/update_assessment_schedule';
@@ -574,7 +575,10 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function unscheduleEvent(eventId) {
-    // Create a form and submit it to unschedule the assessment
+    if (calendar) {
+      localStorage.setItem('calendarViewType', calendar.view.type);
+    }
+    
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '/unschedule_assessment';
