@@ -24,3 +24,4 @@ def validate_admin(email:str,password:str) -> bool:
     if admin and admin.check_password(password):
         return True
     return False    
+    

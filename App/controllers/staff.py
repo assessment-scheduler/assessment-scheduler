@@ -101,3 +101,30 @@ def assign_course_to_staff(staff_id: str, course_code: str) -> bool:
         db.session.rollback()
         return False
 
+def associate_with_semester(staff_id, semester_id, active=True):
+    """Associate staff member with a specific semester and set participation status"""
+    from ..models.staff import Staff, staff_semester
+    from ..models.semester import Semester
+    from ..database import db
+    
+    staff = Staff.query.get(staff_id)
+    semester = Semester.query.get(semester_id)
+    
+    if not staff or not semester:
+        return False
+        
+    exists = any(s.id == semester_id for s in staff.semesters)
+    
+    if not exists:
+        staff.semesters.append(semester)
+        
+    db.session.execute(
+        staff_semester.update().
+        where(staff_semester.c.staff_id == staff_id).
+        where(staff_semester.c.semester_id == semester_id).
+        values(active=active)
+    )
+    
+    db.session.commit()
+    return True
+

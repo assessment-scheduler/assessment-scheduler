@@ -1,6 +1,6 @@
 {% extends "admin_layout.html" %}
 
-{% block title %}Add Semester{% endblock %}
+{% block title %}{{ 'Update Semester' if semester else 'Add Semester' }}{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="../static/css/admin1.css">
@@ -114,38 +114,124 @@
   .cancelBtn:hover {
     background-color: #5a6268;
   }
+
+  .multi-select-container {
+    margin-bottom: 1rem;
+  }
+
+  .multi-select-container select {
+    width: 100%;
+    height: 120px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-color);
+    color: var(--text-color);
+  }
+
+  .hint-text {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: var(--hint-color);
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <div id="semesterForm">
-  <h2>Add Semester</h2>
+  <h2>{{ 'Update Semester' if semester else 'Add Semester' }}</h2>
   
-  <form action="/add_semester" method="POST">
+  <form action="{{ url_for('admin_views.update_semester_action', semester_id=semester.id) if semester else url_for('admin_views.add_semester_action') }}" method="POST">
     <div class="field_containers">
       <label for="start_date" class="input-label">Start Date</label>
-      <input type="date" id="start_date" name="start_date" required>
+      <input type="date" id="start_date" name="start_date" required value="{{ semester.start_date.strftime('%Y-%m-%d') if semester else '' }}">
     </div>
     
     <div class="field_containers">
       <label for="end_date" class="input-label">End Date</label>
-      <input type="date" id="end_date" name="end_date" required>
+      <input type="date" id="end_date" name="end_date" required value="{{ semester.end_date.strftime('%Y-%m-%d') if semester else '' }}">
+    </div>
+    
+    <div class="field_containers">
+      <label for="sem_num" class="input-label">Semester Number</label>
+      <input type="number" id="sem_num" name="sem_num" value="{{ semester.sem_num if semester else 1 }}" min="1" required>
     </div>
     
     <div class="field_containers">
       <label for="max_assessments" class="input-label">Maximum Weekly Assessments</label>
-      <input type="number" id="max_assessments" name="max_assessments" value="3" min="1" required>
+      <input type="number" id="max_assessments" name="max_assessments" value="{{ semester.max_assessments if semester else 3 }}" min="1" required>
     </div>
     
     <div class="field_containers">
       <label for="constraint_value" class="input-label">Constraint Value (M)</label>
-      <input type="number" id="constraint_value" name="constraint_value" value="1000" min="1" required>
+      <input type="number" id="constraint_value" name="constraint_value" value="{{ semester.constraint_value if semester else 1000 }}" min="1" required>
+      <span class="hint-text">Higher values allow more flexibility but may result in heavier assessment loads</span>
     </div>
     
+    <div class="field_containers">
+      <label for="solver_type" class="input-label">Solver Type</label>
+      <select id="solver_type" name="solver_type" required>
+        <option value="kris" {% if semester and semester.solver_type == 'kris' %}selected{% endif %}>Kris Solver</option>
+        <!-- Add more solver options as they become available -->
+      </select>
+      <span class="hint-text">Algorithm used for scheduling assessments</span>
+    </div>
+    
+    <div class="field_containers">
+      <label for="courses" class="input-label">Courses in Semester</label>
+      <div class="multi-select-container">
+        <select id="courses" name="courses" multiple>
+          {% for course in all_courses %}
+            <option value="{{ course.code }}" 
+              {% if semester and course.code in semester.course_assignments|map(attribute='course_code')|list %}selected{% endif %}>
+              {{ course.code }}: {{ course.name }}
+            </option>
+          {% endfor %}
+        </select>
+        <span class="hint-text">Hold Ctrl/Cmd to select multiple courses</span>
+      </div>
+    </div>
+    
+    {% if semester %}
+    <div class="field_containers">
+      <label for="active" class="input-label">
+        <input type="checkbox" id="active" name="active" {% if semester and semester.active %}checked{% endif %}>
+        Set as Active Semester
+      </label>
+      <span class="hint-text">Only one semester can be active at a time</span>
+    </div>
+    {% endif %}
+    
     <div class="buttons_container">
-      <button type="submit" class="formBtn">Add Semester</button>
+      <button type="submit" class="formBtn">{{ 'Update Semester' if semester else 'Add Semester' }}</button>
       <a href="/semester" class="formBtn cancelBtn">Cancel</a>
     </div>
   </form>
 </div>
+
+<script>
+  // Form validation
+  document.querySelector('form').addEventListener('submit', function(e) {
+    const startDate = new Date(document.getElementById('start_date').value);
+    const endDate = new Date(document.getElementById('end_date').value);
+    
+    if (endDate <= startDate) {
+      e.preventDefault();
+      alert('End date must be after start date.');
+      return false;
+    }
+    
+    // Ensure at least one course is selected
+    const coursesSelect = document.getElementById('courses');
+    const selectedCourses = Array.from(coursesSelect.selectedOptions);
+    if (selectedCourses.length === 0) {
+      e.preventDefault();
+      alert('Please select at least one course for this semester.');
+      return false;
+    }
+    
+    return true;
+  });
+</script>
 {% endblock %} 

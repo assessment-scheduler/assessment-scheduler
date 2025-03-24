@@ -1,0 +1,344 @@
+{% extends "admin_layout.html" %}
+
+{% block title %}Update Semester{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/admin1.css">
+<style>
+  #updateSemesterForm {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: var(--card-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  
+  h2 {
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    text-align: center;
+    position: relative;
+    padding-bottom: 10px;
+  }
+  
+  h2:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background-color: var(--tertiary-color);
+    border-radius: 2px;
+  }
+  
+  h3 {
+    margin: 1.5rem 0 1rem;
+    color: var(--text-color);
+    border-left: 4px solid var(--tertiary-color);
+    padding-left: 10px;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    font-weight: 500;
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+  
+  .form-control:focus {
+    border-color: var(--tertiary-color);
+    outline: none;
+  }
+  
+  .btn-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+  }
+  
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .btn-primary {
+    background-color: var(--tertiary-color);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #5c44cc;
+    transform: translateY(-2px);
+  }
+  
+  .btn-secondary {
+    background-color: #7f8c8d;
+    color: white;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #95a5a6;
+    transform: translateY(-2px);
+  }
+  
+  .course-management {
+    margin-top: 2rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+  }
+  
+  .course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 1rem;
+  }
+  
+  .course-card {
+    background-color: var(--primary-color);
+    border-radius: 8px;
+    padding: 15px;
+    position: relative;
+    transition: all 0.2s;
+    border: 1px solid var(--border-color);
+  }
+  
+  .course-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  .course-card.assigned {
+    border-left: 4px solid #4CAF50;
+  }
+  
+  .course-card.unassigned {
+    border-left: 4px solid #9e9e9e;
+  }
+  
+  .course-code {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--text-color);
+  }
+  
+  .course-name {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .course-action {
+    text-align: right;
+  }
+  
+  .btn-action {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .btn-add {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .btn-add:hover {
+    background-color: #43a047;
+  }
+  
+  .btn-remove {
+    background-color: #F44336;
+    color: white;
+  }
+  
+  .btn-remove:hover {
+    background-color: #e53935;
+  }
+  
+  .course-search {
+    margin-bottom: 15px;
+  }
+  
+  #courseFilter {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background-color: var(--input-bg);
+    color: var(--text-color);
+  }
+  
+  .search-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+  }
+  
+  .courses-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .badge {
+    background-color: var(--tertiary-color);
+    color: white;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="updateSemesterForm">
+  <h2>Update Semester</h2>
+  <form action="/update_semester/{{ semester.id }}" method="POST">
+    <div class="form-group">
+      <label for="sem_num">Semester Number:</label>
+      <input type="number" id="sem_num" name="sem_num" class="form-control" value="{{ semester.sem_num }}" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="start_date">Start Date:</label>
+      <input type="date" id="start_date" name="start_date" class="form-control" value="{{ semester.start_date|string }}" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="end_date">End Date:</label>
+      <input type="date" id="end_date" name="end_date" class="form-control" value="{{ semester.end_date|string }}" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="max_assessments">Maximum Assessments Per Day:</label>
+      <input type="number" id="max_assessments" name="max_assessments" class="form-control" value="{{ semester.max_assessments }}" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="constraint_value">Constraint Value:</label>
+      <input type="number" id="constraint_value" name="constraint_value" class="form-control" value="{{ semester.constraint_value }}" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="solver_type">Solver Type:</label>
+      <select id="solver_type" name="solver_type" class="form-control" required>
+        <option value="kris" {% if semester.solver_type == 'kris' %}selected{% endif %}>Kris (Default)</option>
+        <option value="basic" {% if semester.solver_type == 'basic' %}selected{% endif %}>Basic</option>
+        <option value="advanced" {% if semester.solver_type == 'advanced' %}selected{% endif %}>Advanced</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="active">Status:</label>
+      <select id="active" name="active" class="form-control">
+        <option value="1" {% if semester.active %}selected{% endif %}>Active</option>
+        <option value="0" {% if not semester.active %}selected{% endif %}>Inactive</option>
+      </select>
+    </div>
+    
+    <!-- Hidden field to store selected courses -->
+    <input type="hidden" id="selected_courses" name="selected_courses" value="{{ semester.course_assignments|map(attribute='course_code')|list|join(',') }}">
+    
+    <div class="btn-container">
+      <a href="/semester" class="btn btn-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary">Update Semester</button>
+    </div>
+  </form>
+  
+  <!-- Course Management Section -->
+  <div class="course-management">
+    <h3>Manage Courses</h3>
+    
+    <div class="courses-heading">
+      <div class="course-search">
+        <input type="text" id="courseFilter" placeholder="Search courses..." onkeyup="filterCourses()">
+      </div>
+      <span class="badge">{{ semester.course_assignments|length }} Courses Selected</span>
+    </div>
+    
+    <div class="course-grid">
+      {% for course in all_courses %}
+        {% set is_assigned = false %}
+        {% for assignment in semester.course_assignments %}
+          {% if assignment.course_code == course.code %}
+            {% set is_assigned = true %}
+          {% endif %}
+        {% endfor %}
+        
+        <div class="course-card {{ 'assigned' if is_assigned else 'unassigned' }}" data-code="{{ course.code }}">
+          <div class="course-code">{{ course.code }}</div>
+          <div class="course-name" title="{{ course.name }}">{{ course.name }}</div>
+          <div class="course-action">
+            {% if is_assigned %}
+              <form action="/remove_course_from_semester/{{ semester.id }}/{{ course.code }}" method="POST">
+                <button type="submit" class="btn-action btn-remove">Remove</button>
+              </form>
+            {% else %}
+              <form action="/add_course_to_semester/{{ semester.id }}/{{ course.code }}" method="POST">
+                <button type="submit" class="btn-action btn-add">Add</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+  function filterCourses() {
+    var input = document.getElementById("courseFilter");
+    var filter = input.value.toUpperCase();
+    var courseCards = document.getElementsByClassName("course-card");
+    
+    for (var i = 0; i < courseCards.length; i++) {
+      var code = courseCards[i].getAttribute("data-code");
+      var name = courseCards[i].getElementsByClassName("course-name")[0].textContent;
+      
+      if (code.toUpperCase().indexOf(filter) > -1 || name.toUpperCase().indexOf(filter) > -1) {
+        courseCards[i].style.display = "";
+      } else {
+        courseCards[i].style.display = "none";
+      }
+    }
+  }
+</script>
+{% endblock %} 

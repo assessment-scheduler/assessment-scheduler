@@ -1,0 +1,522 @@
+{% extends "admin_layout.html" %}
+
+{% block title %}Semester Courses{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/admin1.css">
+<style>
+  #semesterCourses {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: var(--card-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  
+  h2 {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    text-align: center;
+  }
+  
+  .semester-info {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+  }
+  
+  .semester-info strong {
+    color: var(--text-color);
+  }
+  
+  .course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 2rem;
+  }
+  
+  .course-card {
+    background-color: var(--primary-color);
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    transition: all 0.3s;
+    border-left: 4px solid var(--tertiary-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+  
+  .course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  }
+  
+  .course-code {
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    color: var(--text-color);
+  }
+  
+  .course-name {
+    color: var(--text-muted);
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+  
+  .course-details {
+    margin-top: 15px;
+    font-size: 0.85rem;
+    color: var(--text-color);
+  }
+  
+  .course-details div {
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .course-details strong {
+    color: var(--text-color);
+  }
+  
+  .course-details span {
+    color: var(--text-muted);
+  }
+  
+  .actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+    gap: 15px;
+  }
+  
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+  }
+  
+  .btn-primary {
+    background-color: var(--tertiary-color);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--tertiary-color-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+  
+  .btn-secondary {
+    background-color: var(--secondary-btn-color, #e0e0e0);
+    color: var(--secondary-btn-text, #333);
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  
+  .btn-secondary:hover {
+    background-color: var(--secondary-btn-hover, #d0d0d0);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  .dark-mode .btn-secondary {
+    background-color: var(--secondary-btn-color, #505050);
+    color: white;
+  }
+  
+  .dark-mode .btn-secondary:hover {
+    background-color: var(--secondary-btn-hover, #606060);
+  }
+  
+  .btn-danger {
+    background-color: var(--danger-color);
+    color: white;
+    font-size: 0.8rem;
+    padding: 5px 10px;
+  }
+  
+  .btn-danger:hover {
+    background-color: var(--danger-color-hover);
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    background-color: var(--primary-color);
+    border-radius: 8px;
+    margin-top: 2rem;
+    border: 1px dashed var(--border-color);
+  }
+  
+  .empty-state h3 {
+    margin-bottom: 1rem;
+    color: var(--text-color);
+    font-weight: 500;
+  }
+  
+  .empty-state p {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .section-title {
+    margin: 2rem 0 1rem;
+    font-weight: 500;
+    color: var(--text-color);
+    border-left: 4px solid var(--tertiary-color);
+    padding-left: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .filters {
+    margin: 1.5rem 0;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  .search-box {
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 10px 15px;
+    padding-right: 40px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    font-size: 0.95rem;
+  }
+  
+  .search-input:focus {
+    border-color: var(--tertiary-color);
+    outline: none;
+  }
+  
+  .search-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+  }
+  
+  .filter-select {
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    min-width: 150px;
+  }
+  
+  .filter-select:focus {
+    border-color: var(--tertiary-color);
+    outline: none;
+  }
+  
+  .count-badge {
+    background-color: var(--tertiary-color);
+    color: white;
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-left: 10px;
+  }
+  
+  .add-course-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    background-color: var(--tertiary-color);
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  
+  .add-course-btn:hover {
+    background-color: var(--tertiary-color-hover);
+    transform: translateY(-2px);
+  }
+  
+  .add-course-btn i {
+    font-size: 1rem;
+  }
+  
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+    animation: fadeIn 0.3s;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .modal-content {
+    background-color: var(--card-color);
+    margin: 10% auto;
+    padding: 2rem;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s;
+  }
+  
+  @keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  .modal h3 {
+    margin-top: 0;
+    color: var(--text-color);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+  
+  .modal-form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .modal-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    font-weight: 500;
+  }
+  
+  .modal-form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    font-weight: normal;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23131313%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    padding-right: 30px;
+  }
+  
+  .dark-mode .modal-form-group select {
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  }
+  
+  .modal-form-group select:focus {
+    border-color: var(--tertiary-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(92, 68, 204, 0.2);
+  }
+  
+  .modal-form-group select option {
+    background-color: var(--card-color);
+    color: var(--text-color);
+    padding: 10px;
+  }
+  
+  .modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 2rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="semesterCourses">
+  <h2>Semester Courses</h2>
+  <div class="semester-info">
+    <strong>{{ semester.sem_num }}</strong> | <strong>{{ semester.start_date.strftime('%Y-%m-%d') }}</strong> to <strong>{{ semester.end_date.strftime('%Y-%m-%d') }}</strong>
+    {% if semester.active %}
+    <span class="count-badge">Active</span>
+    {% endif %}
+  </div>
+  
+  <div class="filters">
+    <div class="search-box">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search courses..." onkeyup="filterCourses()">
+      <i class="fas fa-search search-icon"></i>
+    </div>
+    
+    <select id="sortSelect" class="filter-select" onchange="sortCourses()">
+      <option value="code">Sort by Code</option>
+      <option value="name">Sort by Name</option>
+    </select>
+  </div>
+  
+  <div class="section-title">
+    <div>Courses <span class="count-badge">{{ semester.course_assignments|length }}</span></div>
+    <a href="#" class="add-course-btn" onclick="openAddCourseModal()">
+      <i class="fas fa-plus"></i> Add Course
+    </a>
+  </div>
+  
+  {% if semester.course_assignments|length > 0 %}
+  <div class="course-grid" id="courseGrid">
+    {% for assignment in semester.course_assignments %}
+    <div class="course-card" data-code="{{ assignment.course_code }}" data-name="{{ assignment.course.name }}">
+      <div class="course-code">{{ assignment.course_code }}</div>
+      <div class="course-name">{{ assignment.course.name }}</div>
+      <div class="course-details">
+        {% if assignment.course.level %}
+        <div><strong>Level:</strong> <span>{{ assignment.course.level }}</span></div>
+        {% endif %}
+        {% if assignment.course.credits %}
+        <div><strong>Credits:</strong> <span>{{ assignment.course.credits }}</span></div>
+        {% endif %}
+        <div>
+          <form action="/remove_course_from_semester/{{ semester.id }}/{{ assignment.course_code }}" method="POST">
+            <button type="submit" class="btn btn-danger">Remove</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <h3>No courses assigned to this semester</h3>
+    <p>Add courses to this semester by clicking the button below or updating the semester details.</p>
+    <button class="btn btn-primary" onclick="openAddCourseModal()">Add Courses</button>
+  </div>
+  {% endif %}
+  
+  <div class="actions">
+    <a href="/update_semester/{{ semester.id }}" class="btn btn-primary">Edit Semester</a>
+    <a href="/semester" class="btn btn-secondary">Back to Semesters</a>
+  </div>
+  
+  <div id="addCourseModal" class="modal">
+    <div class="modal-content">
+      <h3>Add Course to Semester</h3>
+      <form action="/add_course_to_semester/{{ semester.id }}" method="POST" id="addCourseForm">
+        <div class="modal-form-group">
+          <label for="course_select">Select Course:</label>
+          <select id="course_select" name="course_code" class="form-control" required>
+            <option value="">-- Select a course --</option>
+            {% for course in all_courses %}
+              {% if course.code not in semester.course_assignments|map(attribute='course_code')|list %}
+                <option value="{{ course.code }}">{{ course.code }} - {{ course.name }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="btn btn-secondary" onclick="closeAddCourseModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Course</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function filterCourses() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toUpperCase();
+    const grid = document.getElementById('courseGrid');
+    const cards = grid.getElementsByClassName('course-card');
+    
+    for (let i = 0; i < cards.length; i++) {
+      const code = cards[i].getAttribute('data-code');
+      const name = cards[i].getAttribute('data-name');
+      
+      if (code.toUpperCase().indexOf(filter) > -1 || name.toUpperCase().indexOf(filter) > -1) {
+        cards[i].style.display = "";
+      } else {
+        cards[i].style.display = "none";
+      }
+    }
+  }
+  
+  function sortCourses() {
+    const grid = document.getElementById('courseGrid');
+    const cards = Array.from(grid.getElementsByClassName('course-card'));
+    const sortBy = document.getElementById('sortSelect').value;
+    
+    cards.sort(function(a, b) {
+      const valueA = a.getAttribute('data-' + sortBy).toUpperCase();
+      const valueB = b.getAttribute('data-' + sortBy).toUpperCase();
+      
+      if (valueA < valueB) return -1;
+      if (valueA > valueB) return 1;
+      return 0;
+    });
+    
+    for (let card of cards) {
+      grid.appendChild(card);
+    }
+  }
+  
+  function openAddCourseModal() {
+    document.getElementById('addCourseModal').style.display = 'block';
+  }
+  
+  function closeAddCourseModal() {
+    document.getElementById('addCourseModal').style.display = 'none';
+  }
+  
+  window.onclick = function(event) {
+    const modal = document.getElementById('addCourseModal');
+    if (event.target === modal) {
+      closeAddCourseModal();
+    }
+  }
+  
+  document.getElementById('addCourseForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const courseSelect = document.getElementById('course_select');
+    if (courseSelect.value) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/add_course_to_semester/{{ semester.id }}/' + courseSelect.value;
+      document.body.appendChild(form);
+      form.submit();
+    }
+  });
+</script>
+{% endblock %} 
