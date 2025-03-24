@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Scheduler | Register</title>
+
+    <link rel="stylesheet" href="../static/css/main.css">
+    <link rel="stylesheet" href="../static/css/login.css">
+    
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-on-primary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 100;
+        }
+        
+        .theme-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .theme-toggle .material-icons {
+            font-size: 24px;
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.95rem;
+            position: relative;
+            padding-top: 15px;
+        }
+        
+        .login-link:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 25%;
+            width: 50%;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .login-link a {
+            color: var(--tertiary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            padding-bottom: 2px;
+            border-bottom: 1px dashed transparent;
+        }
+        
+        .login-link a:hover {
+            opacity: 0.9;
+            border-bottom-color: var(--tertiary-color);
+        }
+        
+        form {
+            max-width: 520px !important; 
+            width: 92% !important;
+            max-height: 650px;
+            overflow-y: auto;
+            padding: 2rem 1.5rem !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .dark-mode form {
+            background: linear-gradient(145deg, #2C2F33, #23272A) !important;
+            border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        }
+        
+        form:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25) !important;
+        }
+        
+        form h2 {
+            margin-bottom: 1.5rem !important;
+            font-size: 1.8rem !important;
+            text-align: center;
+            position: relative;
+            padding-bottom: 12px;
+        }
+        
+        form h2:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background-color: var(--tertiary-color);
+            border-radius: 3px;
+        }
+        
+        .field_containers {
+            width: auto !important;
+            max-width: 100% !important;
+            margin-bottom: 20px;
+        }
+        
+        .field_containers label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: var(--text-color);
+        }
+        
+        .field_containers input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 15px !important;
+            border-radius: 8px !important;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+        
+        .field_containers input:focus {
+            border-color: var(--tertiary-color) !important;
+            box-shadow: 0 0 0 3px rgba(103, 78, 204, 0.2) !important;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .field_containers {
+            flex: 1;
+        }
+        
+        .field_hint {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            transition: opacity 0.2s ease;
+        }
+        
+        .field_containers:focus-within .field_hint {
+            opacity: 0.9;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            margin-top: 5px;
+            font-size: 0.85rem;
+            display: none;
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+            40%, 60% { transform: translate3d(3px, 0, 0); }
+        }
+        
+        .flash-message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            position: relative;
+            animation: slideDown 0.3s ease-out forwards;
+            display: flex;
+            align-items: center;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .flash-message::before {
+            font-family: 'Material Icons';
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .flash-error {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-left: 4px solid #e74c3c;
+            color: #e74c3c;
+        }
+        
+        .flash-error::before {
+            content: "error";
+        }
+        
+        .flash-success {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-left: 4px solid #2ecc71;
+            color: #2ecc71;
+        }
+        
+        .flash-success::before {
+            content: "check_circle";
+        }
+        
+        .flash-warning {
+            background-color: rgba(241, 196, 15, 0.1);
+            border-left: 4px solid #f1c40f;
+            color: #f1c40f;
+        }
+        
+        .flash-warning::before {
+            content: "warning";
+        }
+        
+        #register_btn {
+            background: var(--tertiary-color);
+            color: white;
+            border: none;
+            padding: 13px 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #register_btn:hover {
+            background: #5d45bd;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(103, 78, 204, 0.3);
+        }
+        
+        #register_btn:active {
+            transform: translateY(0);
+        }
+        
+        #register_btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(100, 100);
+                opacity: 0;
+            }
+        }
+        
+        #register_btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        /* Improve leftSide background pattern */
+        .dark-mode .leftSide {
+            background-color: #23272A;
+            background-image: 
+                radial-gradient(rgba(103, 78, 204, 0.1) 1.5px, transparent 1.5px),
+                radial-gradient(rgba(103, 78, 204, 0.1) 1.5px, #23272A 1.5px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+        
+        /* Adjust content */
+        .content {
+            padding: 0 2rem;
+        }
+        
+        @media screen and (min-width: 900px) {
+            .content {
+                max-width: 650px;
+                margin: 0 auto;
+            }
+            
+            .content h1 {
+                font-size: 2rem;
+                margin-bottom: 2rem;
+            }
+        }
+        
+        @media screen and (max-width: 600px) {
+            .form-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            form {
+                padding: 1.5rem 1rem !important;
+            }
+            
+            .content h1 {
+                font-size: 1.5rem;
+                padding: 1.5rem 1rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button id="theme-toggle" class="theme-toggle" title="Toggle dark/light mode">
+        <span class="material-icons">dark_mode</span>
+    </button>
+    
+    <div class="pageDiv">
+        <div class="leftSide">
+            <header>
+                <nav>
+                    <p class="logo">DCIT Assessment Scheduler</p>
+                </nav>
+            </header>
+            <div class="content">
+                <h1>Register as a Lecturer or Instructor</h1>
+                <form action="/register" method="POST" id="registerForm">
+                    <h2>Registration</h2>
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                    {% endwith %}
+                    
+                    <div class="field_containers">
+                        <label for="staff_id">Staff ID</label>
+                        <input type="text" id="staff_id" name="staff_id" required placeholder="Enter your staff ID">
+                        <div class="field_hint">Enter your official staff ID (required)</div>
+                        <div class="error-message" id="staff_id_error"></div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="field_containers">
+                            <label for="first_name">First Name</label>
+                            <input type="text" id="first_name" name="first_name" required placeholder="Your first name">
+                            <div class="error-message" id="first_name_error"></div>
+                        </div>
+                        
+                        <div class="field_containers">
+                            <label for="last_name">Last Name</label>
+                            <input type="text" id="last_name" name="last_name" required placeholder="Your last name">
+                            <div class="error-message" id="last_name_error"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="field_containers">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required placeholder="your.email@institution.edu">
+                        <div class="field_hint">Use your institutional email address</div>
+                        <div class="error-message" id="email_error"></div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="field_containers">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" required placeholder="Create a password">
+                            <div class="error-message" id="password_error"></div>
+                        </div>
+                        
+                        <div class="field_containers">
+                            <label for="confirm_password">Confirm Password</label>
+                            <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm your password">
+                            <div class="error-message" id="confirm_password_error"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="field_containers">
+                        <label for="department">Department</label>
+                        <input type="text" id="department" name="department" placeholder="e.g., Computer Science">
+                        <div class="field_hint">E.g., Computer Science, Math, etc.</div>
+                    </div>
+                    
+                    <div class="field_containers">
+                        <label for="faculty">Faculty</label>
+                        <input type="text" id="faculty" name="faculty" placeholder="e.g., Science and Technology">
+                        <div class="field_hint">E.g., Science and Technology, Engineering, etc.</div>
+                    </div>
+                    
+                    <button id="register_btn">Register Account</button>
+                    <p class="login-link">Already have an account? <a href="/login">Login</a></p>
+                </form>
+            </div>
+        </div>
+        <div class="rightSide"></div>
+    </div>
+
+    <script>
+        const registerForm = document.getElementById('registerForm');
+        const staffId = document.getElementById('staff_id');
+        const firstName = document.getElementById('first_name');
+        const lastName = document.getElementById('last_name');
+        const email = document.getElementById('email');
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirm_password');
+        
+        const staffIdError = document.getElementById('staff_id_error');
+        const firstNameError = document.getElementById('first_name_error');
+        const lastNameError = document.getElementById('last_name_error');
+        const emailError = document.getElementById('email_error');
+        const passwordError = document.getElementById('password_error');
+        const confirmPasswordError = document.getElementById('confirm_password_error');
+        
+        // Add focus animations to inputs
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', () => {
+                input.parentElement.classList.remove('focused');
+            });
+        });
+        
+        registerForm.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            [staffIdError, firstNameError, lastNameError, emailError, passwordError, confirmPasswordError]
+                .forEach(el => el.style.display = 'none');
+            
+            if (!staffId.value.trim()) {
+                staffIdError.textContent = 'Staff ID is required';
+                staffIdError.style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!firstName.value.trim()) {
+                firstNameError.textContent = 'First name is required';
+                firstNameError.style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!lastName.value.trim()) {
+                lastNameError.textContent = 'Last name is required';
+                lastNameError.style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!email.value.trim()) {
+                emailError.textContent = 'Email is required';
+                emailError.style.display = 'block';
+                isValid = false;
+            } else if (!isValidEmail(email.value.trim())) {
+                emailError.textContent = 'Please enter a valid email address';
+                emailError.style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!password.value) {
+                passwordError.textContent = 'Password is required';
+                passwordError.style.display = 'block';
+                isValid = false;
+            } else if (password.value.length < 6) {
+                passwordError.textContent = 'Password must be at least 6 characters';
+                passwordError.style.display = 'block';
+                isValid = false;
+            }
+            
+            if (password.value !== confirmPassword.value) {
+                confirmPasswordError.textContent = 'Passwords do not match';
+                confirmPasswordError.style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+                // Scroll to the first error
+                const firstError = document.querySelector('.error-message[style="display: block"]');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+        
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = themeToggle.querySelector('.material-icons');
+        
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeIcon.textContent = 'light_mode';
+        } else if (savedTheme === 'light') {
+            document.body.classList.remove('dark-mode');
+            themeIcon.textContent = 'dark_mode';
+        } else {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+            themeIcon.textContent = 'light_mode';
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                themeIcon.textContent = 'light_mode';
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeIcon.textContent = 'dark_mode';
+            }
+        }
+        
+        themeToggle.addEventListener('click', toggleTheme);
+    </script>
+</body>
+</html> 
