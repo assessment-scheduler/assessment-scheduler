@@ -273,6 +273,48 @@
   .dark-mode .stat-card {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   }
+
+  .default-password-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background-color: rgba(231, 76, 60, 0.1);
+    border-left: 4px solid #e74c3c;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    animation: pulse 2s infinite;
+  }
+
+  .default-password-alert .material-icons {
+    color: #e74c3c;
+    font-size: 24px;
+  }
+
+  .default-password-alert strong {
+    display: block;
+    color: #e74c3c;
+    margin-bottom: 5px;
+    font-size: 1rem;
+  }
+
+  .default-password-alert p {
+    margin: 0;
+    color: var(--text-color);
+    line-height: 1.4;
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+    }
+  }
 </style>
 {% endblock %}
 
@@ -345,9 +387,17 @@
     {% endif %}
   </div>
 
-  <!-- Password Change Section -->
   <div class="password-section">
     <h3 class="section-title">Change Password</h3>
+    {% if staff and staff.check_password('default') %}
+    <div class="default-password-alert">
+      <span class="material-icons">security</span>
+      <div>
+        <strong>Security Alert!</strong>
+        <p>Your account is currently using the default password. Please change it immediately to protect your account.</p>
+      </div>
+    </div>
+    {% endif %}
     <form action="/change_password" method="POST" class="password-form">
       <div class="form-group">
         <label for="current_password" class="form-label">Current Password</label>
