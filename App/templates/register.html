@@ -390,30 +390,26 @@
                         <div class="error-message" id="email_error"></div>
                     </div>
                     
-                    <div class="form-row">
-                        <div class="field_containers">
-                            <label for="password">Password</label>
-                            <input type="password" id="password" name="password" required placeholder="Create a password">
-                            <div class="error-message" id="password_error"></div>
-                        </div>
-                        
-                        <div class="field_containers">
-                            <label for="confirm_password">Confirm Password</label>
-                            <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm your password">
-                            <div class="error-message" id="confirm_password_error"></div>
+                    <div class="field_containers password-note">
+                        <div class="info-message">
+                            <span class="material-icons">info</span>
+                            <div>
+                                <strong>Default Password</strong>
+                                <p>A default password ('default') will be assigned to your account. You will be prompted to change it after your first login for security reasons.</p>
+                            </div>
                         </div>
                     </div>
                     
                     <div class="field_containers">
                         <label for="department">Department</label>
-                        <input type="text" id="department" name="department" placeholder="e.g., Computer Science">
-                        <div class="field_hint">E.g., Computer Science, Math, etc.</div>
+                        <input type="text" id="department" name="department" placeholder="e.g., DCIT">
+                        <div class="field_hint">E.g., DCIT, DMS, etc.</div>
                     </div>
                     
                     <div class="field_containers">
                         <label for="faculty">Faculty</label>
-                        <input type="text" id="faculty" name="faculty" placeholder="e.g., Science and Technology">
-                        <div class="field_hint">E.g., Science and Technology, Engineering, etc.</div>
+                        <input type="text" id="faculty" name="faculty" placeholder="e.g., FST">
+                        <div class="field_hint">E.g., FST, FMS, etc.</div>
                     </div>
                     
                     <button id="register_btn">Register Account</button>
@@ -430,17 +426,12 @@
         const firstName = document.getElementById('first_name');
         const lastName = document.getElementById('last_name');
         const email = document.getElementById('email');
-        const password = document.getElementById('password');
-        const confirmPassword = document.getElementById('confirm_password');
         
         const staffIdError = document.getElementById('staff_id_error');
         const firstNameError = document.getElementById('first_name_error');
         const lastNameError = document.getElementById('last_name_error');
         const emailError = document.getElementById('email_error');
-        const passwordError = document.getElementById('password_error');
-        const confirmPasswordError = document.getElementById('confirm_password_error');
         
-        // Add focus animations to inputs
         const inputs = document.querySelectorAll('input');
         inputs.forEach(input => {
             input.addEventListener('focus', () => {
@@ -455,7 +446,7 @@
         registerForm.addEventListener('submit', function(e) {
             let isValid = true;
             
-            [staffIdError, firstNameError, lastNameError, emailError, passwordError, confirmPasswordError]
+            [staffIdError, firstNameError, lastNameError, emailError]
                 .forEach(el => el.style.display = 'none');
             
             if (!staffId.value.trim()) {
@@ -486,25 +477,8 @@
                 isValid = false;
             }
             
-            if (!password.value) {
-                passwordError.textContent = 'Password is required';
-                passwordError.style.display = 'block';
-                isValid = false;
-            } else if (password.value.length < 6) {
-                passwordError.textContent = 'Password must be at least 6 characters';
-                passwordError.style.display = 'block';
-                isValid = false;
-            }
-            
-            if (password.value !== confirmPassword.value) {
-                confirmPasswordError.textContent = 'Passwords do not match';
-                confirmPasswordError.style.display = 'block';
-                isValid = false;
-            }
-            
             if (!isValid) {
                 e.preventDefault();
-                // Scroll to the first error
                 const firstError = document.querySelector('.error-message[style="display: block"]');
                 if (firstError) {
                     firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
