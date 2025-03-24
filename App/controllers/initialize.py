@@ -7,7 +7,7 @@ from .staff import create_staff
 from .course import create_course, assign_lecturer
 from .assessment import create_assessment
 from .courseoverlap import create_cell
-from .semester import create_semester
+from .semester import create_semester, add_course_to_semester
 
 def initialize() -> None:
     db.drop_all()
@@ -27,7 +27,6 @@ def initialize() -> None:
             credits = row.get('credits')
             semester = row.get('semester')
             
-            # Convert credits to integer if provided
             if credits and credits.isdigit():
                 credits = int(credits)
             else:
@@ -55,6 +54,11 @@ def initialize() -> None:
         reader = csv.DictReader(semester_file)
         for row in reader:
              create_semester(row['start_date'], row['end_date'], row['sem_num'], row['max_assessments'], row['constraint_value'], bool(row['active']))
+
+    with open('App/uploads/semester_courses.csv') as semester_courses_file:
+        reader = csv.DictReader(semester_courses_file)
+        for row in reader:
+            add_course_to_semester(int(row['semester_id']), row['course_code'])
 
 
 def clear() -> None:

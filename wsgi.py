@@ -10,7 +10,7 @@ from App.controllers import *
 from App.views import *
 from App.controllers.kris import solve_stage1, solve_stage2
 from App.controllers.courseoverlap import get_phi_matrix
-from App.views.kris import compile_course_data, compile_class_matrix
+from App.models.solvers.kris import KrisSolver
 
 app = create_app()
 
@@ -349,19 +349,12 @@ def kris_solve():
     """Solve the assessment scheduling problem using the Kris model."""
     try:
         print("\n=== Starting Kris Model Data Preparation ===")
-        
-        courses = compile_course_data()
+        solver = KrisSolver()
+        courses = solver.compile_course_data()
         print(f"\nTotal courses with assessments: {len(courses)}")
         print("\nCourse and assessment details:")
-        for course in courses:
-            print(f"\n{course['code']}:")
-            for assessment in course['assessments']:
-                print(f"  - {assessment['name']} ({assessment['percentage']}%)")
-                print(f"    Start: Week {assessment['start_week']}, Day {assessment['start_day']}")
-                print(f"    End: Week {assessment['end_week']}, Day {assessment['end_day']}")
-                print(f"    Proctored: {'Yes' if assessment['proctored'] else 'No'}")
         
-        matrix = compile_class_matrix()
+        matrix = solver.compile_class_matrix()
         phi_matrix = get_phi_matrix(matrix)
         print("\nCourse overlap matrix:")
         for row in matrix:
@@ -383,22 +376,14 @@ def kris_solve():
         
         print("\n=== Starting Kris Model Solving ===")
         
-        print("\nSolving Stage 1...")
-        U_star, solver, x = solve_stage1(courses, matrix, k, M)
-        print(f"Stage 1 solved with U* = {U_star}")
+        schedule = solver._run_solver_algorithm(courses, matrix, phi_matrix, k, d, M)
         
-        print("\nSolving Stage 2...")
-        schedule, Y_star, probability = solve_stage2(courses, matrix, phi_matrix, U_star, k, d, M)
-        print(f"Stage 2 solved with Y* = {Y_star}")
-        print(f"Probability: {probability:.3f}")
-        
+        if not schedule:
+            print("Failed to generate a valid schedule")
+            return None
+            
         print("\n=== Kris Model Solution ===")
         print(f"Total assessments scheduled: {len(schedule)}")
-        print(f"Maximum assessments per day: {d}")
-        print(f"Total weeks: {k // 7}")
-        print(f"First stage utility (U*): {U_star}")
-        print(f"Second stage utility (Y*): {Y_star}")
-        print(f"Probability: {probability:.3f}")
         
         print("\nDetailed schedule:")
         for entry in schedule:
@@ -409,7 +394,9 @@ def kris_solve():
         
     except Exception as e:
         print(f"Error in Kris model: {str(e)}")
-        raise
+        import traceback
+        traceback.print_exc()
+        return None
 
 
 app.cli.add_command(kris_cli)

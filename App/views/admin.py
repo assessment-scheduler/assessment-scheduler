@@ -27,7 +27,8 @@ from ..controllers import (
     set_active,
     parse_date,
     get_all_assessments,
-    update_assessment
+    update_assessment,
+    update_semester
 )
 from ..controllers.auth import admin_required
 
@@ -76,17 +77,22 @@ def get_upload_files_page():
 @admin_views.route('/new_semester', methods=['GET'])
 @admin_required
 def get_new_semester_form():
-    return render_template('add_semester.html')
+    courses = get_all_courses()
+    return render_template('add_semester.html', all_courses=courses)
 
 @admin_views.route('/add_semester', methods=['POST'])
 @admin_required
-def add_new_semester():
-    if request.method == 'POST':
+def add_semester_action():
+    try:
         start_date = request.form.get('start_date')
         end_date = request.form.get('end_date')
         sem_num = int(request.form.get('sem_num'))
         max_assessments = int(request.form.get('max_assessments'))
         constraint_value = int(request.form.get('constraint_value'))
+        solver_type = request.form.get('solver_type')
+        
+        # Get selected courses (multi-select field)
+        courses = request.form.getlist('courses')
         
         start_date = parse_date(start_date)
         end_date = parse_date(end_date)
@@ -99,7 +105,16 @@ def add_new_semester():
             flash('Start date must be before end date', 'error')
             return redirect(url_for('admin_views.get_new_semester_form'))
         
-        result = create_semester(start_date, end_date, sem_num, max_assessments, constraint_value)
+        result = create_semester(
+            start_date, 
+            end_date, 
+            sem_num, 
+            max_assessments, 
+            constraint_value,
+            False,  # Not active by default
+            solver_type,
+            courses
+        )
         
         if result:
             flash('Semester added successfully', 'success')
@@ -107,6 +122,9 @@ def add_new_semester():
             flash('Failed to add semester', 'error')
         
         return redirect(url_for('admin_views.get_upload_page'))
+    except Exception as e:
+        flash(f'Error adding semester: {str(e)}', 'error')
+        return redirect(url_for('admin_views.get_new_semester_form'))
 
 @admin_views.route('/update_semester/<int:semester_id>', methods=['GET'])
 @admin_required
@@ -116,7 +134,50 @@ def get_update_semester(semester_id):
         flash('Semester not found', 'error')
         return redirect(url_for('admin_views.get_upload_page'))
     
-    return render_template('add_semester.html', semester=semester)
+    courses = get_all_courses()
+    return render_template('add_semester.html', semester=semester, all_courses=courses)
+
+@admin_views.route('/update_semester/<int:semester_id>', methods=['POST'])
+@admin_required
+def update_semester_action(semester_id):
+    try:
+        semester = get_semester(semester_id)
+        if not semester:
+            flash('Semester not found', 'error')
+            return redirect(url_for('admin_views.get_upload_page'))
+            
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+        sem_num = int(request.form.get('sem_num'))
+        max_assessments = int(request.form.get('max_assessments'))
+        constraint_value = int(request.form.get('constraint_value'))
+        solver_type = request.form.get('solver_type')
+        active = 'active' in request.form
+        
+        # Get selected courses (multi-select field)
+        courses = request.form.getlist('courses')
+        
+        result = update_semester(
+            semester_id,
+            start_date, 
+            end_date, 
+            sem_num, 
+            max_assessments, 
+            constraint_value,
+            active,
+            solver_type,
+            courses
+        )
+        
+        if result:
+            flash('Semester updated successfully', 'success')
+        else:
+            flash('Failed to update semester', 'error')
+        
+        return redirect(url_for('admin_views.get_upload_page'))
+    except Exception as e:
+        flash(f'Error updating semester: {str(e)}', 'error')
+        return redirect(url_for('admin_views.get_update_semester', semester_id=semester_id))
 
 @admin_views.route('/delete_semester/<int:semester_id>', methods=['POST'])
 @admin_required

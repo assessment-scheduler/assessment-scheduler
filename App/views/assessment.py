@@ -21,7 +21,6 @@ from ..controllers import (
     get_all_assessments,
     staff_required
 )
-from .kris import compute_schedule, schedule_all_assessments
 
 assessment_views = Blueprint(
     "assessment_views", __name__, template_folder="../templates"
@@ -459,7 +458,10 @@ def autoschedule_assessments():
         if len(unscheduled) > 100:
             flash(f"Attempting to schedule {len(unscheduled)} assessments. This may take a while...", "warning")
 
-        schedule = compute_schedule()
+        # Use the new solver framework instead of the old functions
+        solver = active_semester.get_solver()
+        schedule = solver.solve()
+        
         if not schedule:
             flash("Could not find a valid schedule. This could be due to:", "error")
             flash("1. Too many assessments for the semester duration", "error")
@@ -468,11 +470,7 @@ def autoschedule_assessments():
             flash("Try adjusting these parameters or reducing the number of assessments.", "error")
             return redirect(url_for('assessment_views.get_calendar_page'))
 
-        if schedule_all_assessments(schedule):
-            flash("Successfully scheduled all assessments! The calendar has been updated.", "success")
-        else:
-            flash("Generated a schedule but failed to apply it. Please try again or contact support if the problem persists.", "error")
-
+        flash("Successfully scheduled all assessments! The calendar has been updated.", "success")
         return redirect(url_for('assessment_views.get_calendar_page'))
 
     except Exception as e:

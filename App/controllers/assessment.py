@@ -107,17 +107,16 @@ def update_assessment(
 
 
 def schedule_assessment(
-    semester, schedule_date: int, course_code: str, name: str
+    semester, schedule_date, course_code: str, name: str
 ) -> bool:
     assessment: Optional[Assessment] = get_assessment(course_code, name)
     if not assessment:
         return False
 
+    assessment.scheduled = schedule_date
     days_diff = (schedule_date - semester.start_date).days
     week = (days_diff // 7) + 1
     day = (days_diff % 7) + 1
-
-    assessment.scheduled = schedule_date
     assessment.start_week = week
     assessment.start_day = day
     assessment.end_week = week
