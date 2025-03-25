@@ -21,21 +21,82 @@ class KrisSolver(Solver):
     def compile_course_data(self) -> List[Dict[str, Any]]:
         """Compile unscheduled assessments for all courses."""
         course_assessment_list: list = []
-        courses: list = get_all_courses()
+        
+        semester = get_active_semester()
+        if not semester:
+            print("No active semester found")
+            return []
+            
+        courses = semester.courses
+        print(f"Found {len(courses)} courses in active semester")
+        
+        total_assessments = 0
+        scheduled_assessments = 0
+        
         for course in courses:
-            assessments: List[Assessment] = get_assessment_dictionary_by_course(course.code)
-            if assessments and 'assessments' in assessments:
+            if course is None:
+                print("Warning: Found None course in semester courses list, skipping")
+                continue
+                
+            try:
+                print(f"Processing course: {course.code}")
+                assessments: List[Assessment] = get_assessment_dictionary_by_course(course.code)
+                
+                if not assessments:
+                    print(f"  No assessments found for course {course.code}")
+                    continue
+                    
+                if 'assessments' not in assessments:
+                    print(f"  No assessments list found for course {course.code}")
+                    continue
+                
+                all_course_assessments = assessments.get('assessments', [])
+                if not all_course_assessments:
+                    print(f"  Empty assessments list for course {course.code}")
+                    continue
+                    
+                total_assessments += len(all_course_assessments)
+                
+                # Count already scheduled assessments
+                already_scheduled = sum(1 for a in all_course_assessments if a.get('scheduled'))
+                scheduled_assessments += already_scheduled
+                
                 filtered_assessments = {
                     'code': assessments['code'],
-                    'assessments': [a for a in assessments['assessments'] if not a.get('scheduled')]
+                    'assessments': [a for a in all_course_assessments if not a.get('scheduled')]
                 }
+                
+                print(f"  Course {course.code}: Found {len(all_course_assessments)} assessments, {len(filtered_assessments['assessments'])} unscheduled")
+                
                 if filtered_assessments['assessments']:
                     course_assessment_list.append(filtered_assessments)
+            except Exception as e:
+                print(f"Error processing course {course.code if course else 'unknown'}: {str(e)}")
+                continue
+                
+        print(f"Summary: Found {total_assessments} total assessments, {scheduled_assessments} already scheduled")
+        print(f"Found {len(course_assessment_list)} courses with unscheduled assessments")
+        
         return course_assessment_list
 
     def compile_class_matrix(self) -> List[List[int]]:
         """Compile the course overlap matrix."""
-        course_list: List[str] = get_all_course_codes()
+        semester = get_active_semester()
+        if not semester:
+            print("No active semester found")
+            return []
+            
+        course_list: List[str] = []
+        for course in semester.courses:
+            if course is not None:
+                course_list.append(course.code)
+            else:
+                print("Warning: Found None course in semester courses list, skipping")
+        
+        if not course_list:
+            print("No valid courses found in semester")
+            return []
+            
         matrix: List[List[int]] = get_course_matrix(course_list)
         return matrix
 
@@ -93,8 +154,26 @@ class KrisSolver(Solver):
             if not courses:
                 print("No unscheduled assessments found")
                 return None
+                
+            if not matrix or len(matrix) == 0:
+                print("Empty course matrix, cannot proceed with scheduling")
+                return None
+                
+            if not phi_matrix or len(phi_matrix) == 0:
+                print("Empty phi matrix, cannot proceed with scheduling")
+                return None
 
+            # Check that matrix dimensions match the number of courses
+            if len(matrix) != len(courses):
+                print(f"Matrix dimension mismatch: {len(matrix)} rows but {len(courses)} courses")
+                print("This may indicate an issue with the course overlap data")
+                # Continue anyway as the solver might still work with partial data
+                
             total_assessments = sum(len(course['assessments']) for course in courses)
+            if total_assessments == 0:
+                print("No assessments to schedule")
+                return None
+                
             print(f"Attempting to schedule {total_assessments} assessments")
 
             if k <= 0 or d <= 0 or M <= 0:
@@ -115,9 +194,16 @@ class KrisSolver(Solver):
                 print(f"3. The constraint value (M={M}) is too restrictive")
                 return None
                 
-            schedule, Y_star, probability = solve_stage2(
-                courses, matrix, phi_matrix, U_star, k, d, M
-            )
+            # Add a fallback for the case when stage2 raises an exception
+            try:
+                schedule, Y_star, probability = solve_stage2(
+                    courses, matrix, phi_matrix, U_star, k, d, M
+                )
+            except Exception as stage2_error:
+                print(f"Error in Stage 2: {str(stage2_error)}")
+                print("The solver encountered an error while trying to schedule assessments.")
+                print("Try increasing the max assessments per day or relaxing other constraints.")
+                return None
             
             if not schedule:
                 print("Stage 2 failed: Could not generate a valid schedule.")
@@ -153,11 +239,36 @@ class KrisSolver(Solver):
                 
             # Gather data needed for solver
             courses = self.compile_course_data()
+            if not courses:
+                print("No courses with unscheduled assessments found")
+                return None
+                
             matrix = self.compile_class_matrix()
-            phi_matrix = get_phi_matrix(matrix)
+            if not matrix:
+                print("Failed to generate course matrix")
+                return None
+                
+            try:
+                phi_matrix = get_phi_matrix(matrix)
+            except Exception as e:
+                print(f"Error generating phi matrix: {str(e)}")
+                print("This usually means there's an issue with the course overlap data")
+                return None
+                
             k = get_semester_duration(semester.id)
+            if k <= 0:
+                print(f"Invalid semester duration: {k}")
+                return None
+                
             d = semester.max_assessments
+            if d <= 0:
+                print(f"Invalid max assessments per day: {d}")
+                return None
+                
             M = semester.constraint_value
+            if M <= 0:
+                print(f"Invalid constraint value: {M}")
+                return None
             
             # Run solver algorithm
             schedule = self._run_solver_algorithm(courses, matrix, phi_matrix, k, d, M)

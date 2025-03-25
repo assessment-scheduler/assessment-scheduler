@@ -3,6 +3,12 @@ var weekCounter = 0;
 document.addEventListener("DOMContentLoaded", function () {
   let eventsLoaded = false;
   
+  console.log("Calendar init - Semester dates:", semester);
+  if (semester && semester.start_date && semester.end_date) {
+    console.log("Start date:", new Date(semester.start_date));
+    console.log("End date:", new Date(semester.end_date));
+  }
+  
   const colors = {
     Assignment: "#4a88c7",
     Quiz: "#4a88c7",
@@ -106,22 +112,41 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: localStorage.getItem('calendarViewType') || "dayGridMonth",
+    initialView: "dayGridMonth",  // Use standard month view initially
     headerToolbar: {
       left: "prev,next,today",
       center: "title",
-      right: "semesterView,dayGridMonth,timeGridWeek",
+      right: "dayGridMonth,timeGridWeek",
+    },
+    customButtons: {
+      fullSemester: {
+        text: 'Full Semester',
+        click: function() {
+          if (semester && semester.start_date && semester.end_date) {
+            console.log("Showing full semester range:", semester.start_date, "to", semester.end_date);
+            
+            const startDate = new Date(semester.start_date);
+            const endDate = new Date(semester.end_date);
+            
+            // Calculate the number of months to display
+            const monthDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                              (endDate.getMonth() - startDate.getMonth()) + 1;
+            
+            console.log("Number of months in semester:", monthDiff);
+            
+            // Use multiMonth view to show all months in the semester
+            calendar.setOption('multiMonthMaxColumns', 3); // Adjust based on screen size
+            calendar.setOption('multiMonthMinWidth', 250); // Adjust based on preference
+            
+            calendar.gotoDate(startDate);
+            calendar.changeView('multiMonth', {
+              duration: { months: monthDiff }
+            });
+          }
+        }
+      }
     },
     views: {
-      semesterView: {
-        type: "dayGridMonth",
-        duration: { weeks: semesterWeeks },
-        buttonText: "Semester",
-        visibleRange: semester && semester.start_date && semester.end_date ? {
-          start: semester.start_date,
-          end: semester.end_date,
-        } : null,
-      },
       timeGridWeek: {
         allDaySlot: true,
         allDayText: 'Assessments',
@@ -148,11 +173,6 @@ document.addEventListener("DOMContentLoaded", function () {
     dragScroll: true,
     dropAccept: '.draggable-assessment',
     
-    validRange: semester && semester.start_date && semester.end_date ? {
-      start: semester.start_date,
-      end: semester.end_date
-    } : null,
-    
     eventAllow: function(dropInfo, draggedEvent) {
       if (!semester || !semester.start_date || !semester.end_date) {
         return false;
@@ -166,7 +186,10 @@ document.addEventListener("DOMContentLoaded", function () {
     },
     
     viewDidMount: function(info) {
-      localStorage.setItem('calendarViewType', info.view.type);
+      // Only store dayGridMonth and timeGridWeek views in localStorage
+      if (info.view.type === 'dayGridMonth' || info.view.type === 'timeGridWeek') {
+        localStorage.setItem('calendarViewType', info.view.type);
+      }
     },
     
     eventDidMount: function(info) {
@@ -288,7 +311,8 @@ document.addEventListener("DOMContentLoaded", function () {
     eventLeave: function(info) {
       const eventId = info.event.id;
       unscheduleEvent(eventId);
-    }
+    },
+    initialDate: semester && semester.start_date ? semester.start_date : undefined,
   });
 
   if (calendarEvents && calendarEvents.length > 0) {
@@ -304,6 +328,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   try {
     calendar.render();
+    
+    // Go to semester start date if available
+    if (semester && semester.start_date) {
+      console.log("Setting calendar initial date to semester start date:", semester.start_date);
+      calendar.gotoDate(new Date(semester.start_date));
+    }
     
     if (eventsLoaded) {
       setTimeout(() => calendar.refetchEvents(), 300);

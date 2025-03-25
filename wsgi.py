@@ -11,6 +11,11 @@ from App.views import *
 from App.controllers.kris import solve_stage1, solve_stage2
 from App.controllers.courseoverlap import get_phi_matrix
 from App.models.solvers.kris import KrisSolver
+from App.controllers.admin import create_admin_user
+from App.controllers.semester import get_all_semesters, create_test_assessments_for_semester
+from App.controllers.course import get_lecturer_assignments, get_course_lecturer_count, remove_lecturer
+from App.controllers.staff import get_staff_by_id
+from App.models.course_lecturer import CourseLecturer
 
 app = create_app()
 
@@ -23,7 +28,7 @@ def init():
 @app.cli.command("clear", help="Removes all data from the database")
 def drop():
     clear()
-    create_admin(101101, 'admin', 'adminpass')
+    create_admin_user(101101, 'admin', 'adminpass')
     print("database cleared")
 
 
@@ -287,31 +292,24 @@ def create_semester_command(
         )
 
 
-@semester_cli.command("list", help="List all semesters")
-def list_semesters() -> None:
+@semester_cli.command("list", help="Lists all semesters")
+def list_semesters():
     semesters = get_all_semesters()
     table = PrettyTable()
-    table.field_names = [
-        "ID",
-        "Start Date",
-        "End Date",
-        "Semester Number",
-        "Max Assessments",
-        "Constraint Value",
-        "Active",
-    ]
+    table.field_names = ["ID", "Semester", "Start Date", "End Date", "Max Assessments", "Solver", "Active", "Courses"]
+    
     for semester in semesters:
-        table.add_row(
-            [
-                semester.id,
-                semester.start_date,
-                semester.end_date,
-                semester.sem_num,
-                semester.max_assessments,
-                semester.constraint_value,
-                semester.active,
-            ]
-        )
+        table.add_row([
+            semester.id,
+            semester.sem_num,
+            semester.start_date,
+            semester.end_date,
+            semester.max_assessments,
+            semester.solver_type,
+            "Yes" if semester.active else "No",
+            len(semester.course_assignments)
+        ])
+    
     print(table)
 
 
@@ -337,6 +335,16 @@ def activate_semester(semester_id: int):
     success: bool = set_active(semester.id)
     print(f"Semester {semester.id} set to active!")
     return True
+
+
+@semester_cli.command("create_test_assessments", help="Creates test assessments for all courses in a semester")
+@click.argument("semester_id", type=int)
+@click.option("--count", default=3, help="Number of assessments to create per course")
+def create_semester_test_assessments(semester_id, count):
+    """Creates test assessments for all courses in a semester"""
+    print(f"Creating {count} test assessments per course for semester {semester_id}")
+    created = create_test_assessments_for_semester(semester_id, count)
+    print(f"Created {created} test assessments in total")
 
 
 app.cli.add_command(semester_cli)
@@ -409,7 +417,7 @@ admin_cli = AppGroup("admin", help="Admin related functionality")
 @click.argument("email")
 @click.argument("password")
 def create_admin_command(admin_id, email, password):
-    success = create_admin(admin_id, email, password)
+    success = create_admin_user(admin_id, email, password)
     if success:
         print(f"Admin {admin_id} created successfully!")
     else:
@@ -464,9 +472,6 @@ def test_list_lecturers_for_course(course_code):
 @course_lecturer_cli.command("list_for_lecturer", help="List all courses for a lecturer")
 @click.argument("lecturer_id")
 def test_list_courses_for_lecturer(lecturer_id):
-    from App.controllers.course import get_lecturer_assignments
-    from App.controllers.staff import get_staff_by_id
-    
     staff = get_staff_by_id(lecturer_id)
     if not staff:
         print(f"No staff found with ID {lecturer_id}")
@@ -496,8 +501,6 @@ def test_list_courses_for_lecturer(lecturer_id):
 
 @course_lecturer_cli.command("count", help="Count course-lecturer assignments")
 def count_course_lecturer_assignments():
-    from App.controllers.course import get_course_lecturer_count
-    
     count = get_course_lecturer_count()
     print(f"Total course-lecturer assignments: {count}")
 
@@ -505,8 +508,6 @@ def count_course_lecturer_assignments():
 @click.argument("lecturer_id")
 @click.argument("course_code")
 def remove_lecturer_command(lecturer_id, course_code):
-    from App.controllers.course import remove_lecturer
-    
     result = remove_lecturer(lecturer_id, course_code)
     if result:
         print(f"Successfully removed lecturer {lecturer_id} from course {course_code}")
@@ -517,9 +518,6 @@ def remove_lecturer_command(lecturer_id, course_code):
 @click.argument("lecturer_id")
 @click.argument("course_code")
 def remove_lecturer_from_course(lecturer_id, course_code):
-    from App.models.course_lecturer import CourseLecturer
-    from App.models import db
-    
     assignment = CourseLecturer.query.filter_by(
         staff_id=lecturer_id,
         course_code=course_code
