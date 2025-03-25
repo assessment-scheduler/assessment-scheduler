@@ -33,11 +33,14 @@
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 4px;
-    cursor: move;
+    cursor: grab !important;
     border-left: 4px solid #fff;
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     transition: all 0.2s ease;
     color: white !important;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto !important;
   }
   
   .draggable-assessment:hover {
@@ -761,20 +764,31 @@
     border: 1px solid var(--tertiary-color);
     background-color: rgba(103, 78, 204, 0.7);
     position: relative;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transform: scale(1);
+    transition: all 0.3s ease;
   }
   
   .draggable-assessment.status-unscheduled:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    transform: translateY(-3px);
+    transform: translateY(-3px) scale(1.02);
+    background-color: rgba(103, 78, 204, 0.9);
+  }
+  
+  .draggable-assessment.status-unscheduled::after {
+    content: '↹';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 16px;
+    color: white;
+    opacity: 0.7;
+    transition: all 0.2s ease;
   }
   
   .draggable-assessment.status-unscheduled:hover::after {
-    content: '↹';
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 16px;
-    color: white;
+    opacity: 1;
+    transform: scale(1.2);
   }
   
   .draggable-assessment.scheduled {
@@ -911,6 +925,13 @@
           Drag unscheduled assessments to the calendar to schedule them
         </div>
         
+        <div class="drag-instructions">
+          <i class="material-icons">info</i>
+          <strong>To unschedule an assessment:</strong><br>
+          1. Click on a scheduled assessment in the calendar<br>
+          2. Or drag it outside the calendar area
+        </div>
+        
         {% if semester %}
         <div class="date-range-info">
           <i class="material-icons">date_range</i>
@@ -959,6 +980,7 @@
                     data-course-code="{{ assessment.course_code }}" 
                     data-percentage="{{ assessment.percentage }}"
                     data-proctored="{{ assessment.proctored }}"
+                    data-scheduled="{{ assessment.scheduled|default('false') }}"
                     data-name="{{ assessment.name }}">
                   <span class="assessment-name">{{ assessment.course_code }}-{{ assessment.name }}</span>
                   <div class="assessment-details">

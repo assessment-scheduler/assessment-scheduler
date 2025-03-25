@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     new FullCalendar.Draggable(unscheduledList, {
-      itemSelector: ".status-unscheduled",
+      itemSelector: ".draggable-assessment.status-unscheduled",
       eventData: function(eventEl) {
         console.log("Dragging assessment:", eventEl.dataset);
         return {
@@ -327,6 +327,10 @@ document.addEventListener("DOMContentLoaded", function () {
         eventEl.style.opacity = '0.6';
         eventEl.style.cursor = 'default';
         eventEl.style.pointerEvents = isOwnedAssessment ? 'auto' : 'none';
+      } else {
+        // Add tooltip for owned assessments to indicate they can be clicked
+        eventEl.title = 'Click to unschedule';
+        eventEl.style.cursor = 'pointer';
       }
       
       eventEl.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
@@ -393,34 +397,63 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
       
-      const offsets = calculateWeekAndDayOffsets(tempEvent.start, semester.start_date);
-      console.log("Calculated offsets:", offsets);
-      
-      const eventData = {
-        id: tempEvent.id,
-        assessment_date: tempEvent.start.toISOString().split('T')[0],
-        start_week: offsets.startWeek,
-        start_day: offsets.startDay,
-        end_week: offsets.endWeek,
-        end_day: offsets.endDay
-      };
-      
-      console.log("Saving assessment with data:", eventData);
-      saveEvent(eventData, tempEvent);
+      try {
+        const offsets = calculateWeekAndDayOffsets(tempEvent.start, semester.start_date);
+        console.log("Calculated offsets:", offsets);
+        
+        const eventData = {
+          id: tempEvent.id,
+          assessment_date: tempEvent.start.toISOString().split('T')[0],
+          start_week: offsets.startWeek,
+          start_day: offsets.startDay,
+          end_week: offsets.endWeek,
+          end_day: offsets.endDay
+        };
+        
+        console.log("Saving assessment with data:", eventData);
+        saveEvent(eventData, tempEvent);
+      } catch (error) {
+        console.error("Error scheduling assessment:", error);
+        tempEvent.remove();
+        alert("Failed to schedule assessment. Please try again.");
+      }
     },
     eventDragStop: function(info) {
-      // Removed the drag-out-to-unschedule functionality
-      return;
+      // Check if the element was dropped outside of a valid calendar area
+      const isOutsideCalendar = document.querySelector('.fc-event-dragging') === null;
+      const isOwnedAssessment = info.event.extendedProps?.isOwnedAssessment;
+      
+      if (isOutsideCalendar && isOwnedAssessment) {
+        console.log("Assessment dragged outside calendar:", info.event.id);
+        const eventId = info.event.id;
+        
+        if (confirm('Are you sure you want to unschedule this assessment?')) {
+          // Remove the event from the calendar
+          info.event.remove();
+          // Call the unschedule endpoint
+          unscheduleEvent(eventId);
+        }
+      }
     },
     eventRemove: function(info) {
-      // Only for explicit remove actions, not drag-out
-      return;
+      // Explicit remove actions, not drag-out
+      console.log("Event removed:", info.event.id);
     },
     eventLeave: function(info) {
-      // Disabled the unschedule-on-leave functionality
-      return;
+      console.log("Event left calendar:", info.event.id);
     },
     initialDate: semester && semester.start_date ? semester.start_date : undefined,
+    eventClick: function(info) {
+      const isOwnedAssessment = info.event.extendedProps?.isOwnedAssessment;
+      
+      if (isOwnedAssessment) {
+        if (confirm('Would you like to unschedule this assessment?')) {
+          const eventId = info.event.id;
+          info.event.remove();
+          unscheduleEvent(eventId);
+        }
+      }
+    },
   });
 
   if (calendarEvents && calendarEvents.length > 0) {
@@ -442,14 +475,32 @@ document.addEventListener("DOMContentLoaded", function () {
     if (semester && semester.start_date) {
       console.log("Setting calendar initial date to semester start date:", semester.start_date);
       calendar.gotoDate(new Date(semester.start_date));
+      
+      // Set view to dayGridMonth to ensure we see the monthly view first
+      calendar.changeView('dayGridMonth');
     }
     
-    if (eventsLoaded) {
-      setTimeout(() => {
-        console.log("Refreshing calendar events...");
-        calendar.refetchEvents();
-      }, 300);
-    }
+    // Ensure events are loaded by forcing a refetch after a short delay
+    setTimeout(() => {
+      console.log("Refreshing calendar events...");
+      calendar.refetchEvents();
+      
+      // Highlight all scheduled assessments briefly to draw attention to them
+      const calendarEvents = calendar.getEvents();
+      console.log(`Calendar has ${calendarEvents.length} events loaded`);
+      
+      calendarEvents.forEach(event => {
+        const eventEl = event.el;
+        if (eventEl) {
+          eventEl.style.transition = 'all 0.5s ease';
+          eventEl.style.boxShadow = '0 0 8px 2px rgba(103, 78, 204, 0.6)';
+          
+          setTimeout(() => {
+            eventEl.style.boxShadow = '';
+          }, 1500);
+        }
+      });
+    }, 300);
     
     // Make sure FullCalendar has initialized properly by checking its APIs
     console.log("Calendar API check:", {
@@ -940,4 +991,8 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   
   document.addEventListener('themeToggled', applyBlueBackgroundClass);
+
+  // Check browser console for errors
+  console.log("Draggable elements initialized:", 
+    document.querySelectorAll(".draggable-assessment").length);
 }); 

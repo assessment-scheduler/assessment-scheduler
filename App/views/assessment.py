@@ -309,137 +309,142 @@ def get_schedule_assessment_page(id):
 @assessment_views.route("/calendar", methods=["GET"])
 @staff_required
 def get_calendar_page():
-    email = get_jwt_identity()
-    staff = get_staff_by_email(email)
-
-    all_assessments = get_all_assessments() or []
-
-    user_assessments = get_assessments_by_lecturer(staff.email) or []
-
-    staff_exams = []
-    scheduled_assessments = []
-    unscheduled_assessments = []
-    # List to hold all assessments (both scheduled and unscheduled) for the current user
-    my_assessments = []
-
-    for assessment in all_assessments:
-        try:
-            assessment_dict = {
-                "id": assessment.id,
-                "name": assessment.name,
-                "course_code": assessment.course_code,
-                "percentage": assessment.percentage,
-                "start_week": assessment.start_week,
-                "start_day": assessment.start_day,
-                "end_week": assessment.end_week,
-                "end_day": assessment.end_day,
-                "proctored": assessment.proctored,
-                "scheduled": (
-                    assessment.scheduled.isoformat() if assessment.scheduled else None
-                ),
-            }
-
-            if assessment.scheduled:
-                if isinstance(assessment_dict["scheduled"], str):
-                    if "T" in assessment_dict["scheduled"]:
-                        assessment_dict["scheduled"] = assessment_dict[
-                            "scheduled"
-                        ].split("T")[0]
-
-                scheduled_assessments.append(assessment_dict)
-
-        except Exception as e:
-            print(f"Error processing assessment {assessment.id}: {str(e)}")
-
-    active_semester = get_active_semester()
-    if not active_semester:
-        flash("No active semester found. Please contact an administrator.", "warning")
-        semester = {}
-    else:
+    try:
+        email = get_jwt_identity()
+        staff = get_staff_by_email(email)
+        
+        # Get active semester first - if none exists, return early with clear message
+        active_semester = get_active_semester()
+        if not active_semester:
+            flash("No active semester found. Please contact an administrator.", "warning")
+            # Return a simplified version of the template with just the error
+            return render_template("calendar.html", semester=None, error="no_semester")
+            
+        # Process semester data
         semester = {
             "id": active_semester.id,
-            "start_date": active_semester.start_date.isoformat(),
-            "end_date": active_semester.end_date.isoformat(),
+            "start_date": active_semester.start_date.isoformat().split("T")[0],
+            "end_date": active_semester.end_date.isoformat().split("T")[0],
             "sem_num": active_semester.sem_num,
             "max_assessments": active_semester.max_assessments,
             "constraint_value": active_semester.constraint_value,
             "active": active_semester.active,
         }
+        
+        # Get all assessments and process
+        all_assessments = get_all_assessments() or []
+        user_assessments = get_assessments_by_lecturer(staff.email) or []
+        
+        # Initialize with empty lists to avoid None issues
+        staff_exams = []
+        scheduled_assessments = []
+        unscheduled_assessments = []
+        my_assessments = []
+        
+        # Process data with better error handling
+        for assessment in all_assessments:
+            try:
+                assessment_dict = {
+                    "id": assessment.id,
+                    "name": assessment.name,
+                    "course_code": assessment.course_code,
+                    "percentage": assessment.percentage,
+                    "start_week": assessment.start_week,
+                    "start_day": assessment.start_day,
+                    "end_week": assessment.end_week,
+                    "end_day": assessment.end_day,
+                    "proctored": assessment.proctored,
+                    "scheduled": (
+                        assessment.scheduled.isoformat() if assessment.scheduled else None
+                    ),
+                }
 
-        if isinstance(semester.get("start_date"), str):
-            semester["start_date"] = semester["start_date"].split("T")[0]
-        if isinstance(semester.get("end_date"), str):
-            semester["end_date"] = semester["end_date"].split("T")[0]
+                if assessment.scheduled:
+                    if isinstance(assessment_dict["scheduled"], str):
+                        if "T" in assessment_dict["scheduled"]:
+                            assessment_dict["scheduled"] = assessment_dict[
+                                "scheduled"
+                            ].split("T")[0]
 
-    # Get the list of course codes in the active semester
-    semester_course_codes = []
-    if active_semester:
-        semester_course_codes = [assignment.course_code for assignment in active_semester.course_assignments]
+                    scheduled_assessments.append(assessment_dict)
 
-    for assessment in user_assessments:
-        try:
-            assessment_dict = {
-                "id": assessment.id,
-                "name": assessment.name,
-                "course_code": assessment.course_code,
-                "percentage": assessment.percentage,
-                "start_week": assessment.start_week,
-                "start_day": assessment.start_day,
-                "end_week": assessment.end_week,
-                "end_day": assessment.end_day,
-                "proctored": assessment.proctored,
-                "scheduled": (
-                    assessment.scheduled.isoformat() if assessment.scheduled else None
-                ),
-            }
+            except Exception as e:
+                print(f"Error processing assessment {assessment.id}: {str(e)}")
 
-            if assessment_dict.get("scheduled") and isinstance(
-                assessment_dict["scheduled"], str
-            ):
-                if "T" in assessment_dict["scheduled"]:
-                    assessment_dict["scheduled"] = assessment_dict["scheduled"].split(
-                        "T"
-                    )[0]
+        # Get the list of course codes in the active semester
+        semester_course_codes = []
+        if active_semester:
+            semester_course_codes = [assignment.course_code for assignment in active_semester.course_assignments]
 
-            staff_exams.append(assessment_dict)
-            
-            # Add to my_assessments list regardless of scheduling status
-            my_assessments.append(assessment_dict)
+        for assessment in user_assessments:
+            try:
+                assessment_dict = {
+                    "id": assessment.id,
+                    "name": assessment.name,
+                    "course_code": assessment.course_code,
+                    "percentage": assessment.percentage,
+                    "start_week": assessment.start_week,
+                    "start_day": assessment.start_day,
+                    "end_week": assessment.end_week,
+                    "end_day": assessment.end_day,
+                    "proctored": assessment.proctored,
+                    "scheduled": (
+                        assessment.scheduled.isoformat() if assessment.scheduled else None
+                    ),
+                }
 
-            # Only show unscheduled assessments for courses in the active semester
-            if not assessment.scheduled and assessment.course_code in semester_course_codes:
-                unscheduled_assessments.append(assessment_dict)
-        except Exception as e:
-            print(f"Error processing user assessment {assessment.id}: {str(e)}")
+                if assessment_dict.get("scheduled") and isinstance(
+                    assessment_dict["scheduled"], str
+                ):
+                    if "T" in assessment_dict["scheduled"]:
+                        assessment_dict["scheduled"] = assessment_dict["scheduled"].split(
+                            "T"
+                        )[0]
 
-    staff_course_objects = get_staff_courses(email) or []
-    staff_courses = []
+                staff_exams.append(assessment_dict)
+                
+                # Add to my_assessments list regardless of scheduling status
+                my_assessments.append(assessment_dict)
 
-    for course in staff_course_objects:
-        try:
-            course_dict = {
-                "code": course.code,
-                "name": course.name,
-                "level": course.code[4] if len(course.code) > 4 else "",
-            }
-            staff_courses.append(course_dict)
-        except Exception as e:
-            print(f"Error processing course {course.code}: {str(e)}")
+                # Only show unscheduled assessments for courses in the active semester
+                if not assessment.scheduled and assessment.course_code in semester_course_codes:
+                    unscheduled_assessments.append(assessment_dict)
+            except Exception as e:
+                print(f"Error processing user assessment {assessment.id}: {str(e)}")
 
-    courses = staff_courses
-    other_exams = staff_exams
+        staff_course_objects = get_staff_courses(email) or []
+        staff_courses = []
 
-    return render_template(
-        "calendar.html",
-        staff_exams=staff_exams,
-        other_exams=other_exams,
-        staff_courses=staff_courses,
-        courses=courses,
-        semester=semester,
-        scheduled_assessments=scheduled_assessments,
-        unscheduled_assessments=unscheduled_assessments,
-        my_assessments=my_assessments  # Add the new my_assessments list to the template
-    )
+        for course in staff_course_objects:
+            try:
+                course_dict = {
+                    "code": course.code,
+                    "name": course.name,
+                    "level": course.code[4] if len(course.code) > 4 else "",
+                }
+                staff_courses.append(course_dict)
+            except Exception as e:
+                print(f"Error processing course {course.code}: {str(e)}")
+
+        courses = staff_courses
+        other_exams = staff_exams
+
+        return render_template(
+            "calendar.html",
+            staff_exams=staff_exams,
+            other_exams=other_exams,
+            staff_courses=staff_courses,
+            courses=courses,
+            semester=semester,
+            scheduled_assessments=scheduled_assessments,
+            unscheduled_assessments=unscheduled_assessments,
+            my_assessments=my_assessments
+        )
+    except Exception as e:
+        # Log the error with traceback for debugging
+        traceback.print_exc()
+        flash(f"An error occurred loading the calendar: {str(e)}", "error")
+        return render_template("calendar.html", error="general_error")
 
 
 @assessment_views.route("/autoschedule", methods=["POST"])
