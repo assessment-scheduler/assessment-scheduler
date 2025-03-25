@@ -9,6 +9,44 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("End date:", new Date(semester.end_date));
   }
   
+  // Debug information: Print all scheduled assessments details
+  console.log("============ SCHEDULED ASSESSMENTS DEBUG INFO ============");
+  console.log(`Total scheduled assessments: ${scheduledAssessments ? scheduledAssessments.length : 0}`);
+  if (scheduledAssessments && scheduledAssessments.length > 0) {
+    console.table(scheduledAssessments.map(assessment => ({
+      id: assessment.id,
+      course: assessment.course_code,
+      name: assessment.name,
+      date: assessment.scheduled,
+      percentage: assessment.percentage,
+      proctored: assessment.proctored ? "Yes" : "No",
+      week: assessment.start_week,
+      day: assessment.start_day
+    })));
+    
+    // Group by course
+    const courseGroups = {};
+    scheduledAssessments.forEach(assessment => {
+      if (!courseGroups[assessment.course_code]) {
+        courseGroups[assessment.course_code] = [];
+      }
+      courseGroups[assessment.course_code].push(assessment);
+    });
+    
+    console.log("Scheduled assessments by course:");
+    Object.keys(courseGroups).forEach(courseCode => {
+      console.log(`${courseCode}: ${courseGroups[courseCode].length} assessments`);
+      console.group(courseCode);
+      courseGroups[courseCode].forEach(assessment => {
+        console.log(`${assessment.name} - ${assessment.scheduled} - ${assessment.percentage}%${assessment.proctored ? " (Proctored)" : ""}`);
+      });
+      console.groupEnd();
+    });
+  } else {
+    console.log("No scheduled assessments found.");
+  }
+  console.log("=======================================================");
+  
   const colors = {
     Assignment: "#4a88c7",
     Quiz: "#4a88c7",
@@ -469,45 +507,25 @@ document.addEventListener("DOMContentLoaded", function () {
         eventContent.innerHTML = html;
       }
       
-      eventEl.style.margin = '2px 0';
-      eventEl.style.padding = '4px 8px';
-      eventEl.style.height = 'auto';
-      eventEl.style.minHeight = '50px';
-      eventEl.style.width = '100%';
+      // Use our unified card styling
+      eventEl.classList.add('calendar-event');
       
+      // Set appropriate border-left color based on proctored status
       if (isProctored) {
-        eventEl.style.borderLeft = '4px solid #9C9FE2';
+        eventEl.style.borderLeftColor = '#9C9FE2';
       } else {
-        eventEl.style.borderLeft = '4px solid #fff';
+        eventEl.style.borderLeftColor = '#4a88c7';
       }
       
+      // Adjust interaction based on ownership
       if (!isOwnedAssessment) {
         eventEl.style.opacity = '0.6';
         eventEl.style.cursor = 'default';
-        eventEl.style.pointerEvents = isOwnedAssessment ? 'auto' : 'none';
+        eventEl.style.pointerEvents = 'none';
       } else {
-        // Add tooltip for owned assessments to indicate they can be clicked
-        eventEl.title = 'Click to unschedule';
+        eventEl.title = 'Click to unschedule or drag to reschedule';
         eventEl.style.cursor = 'pointer';
       }
-      
-      eventEl.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
-      eventEl.style.borderRadius = '4px';
-      eventEl.style.transition = 'all 0.2s ease';
-      
-      if (isOwnedAssessment) {
-        eventEl.addEventListener('mouseenter', function() {
-          eventEl.style.boxShadow = '0 3px 6px rgba(0,0,0,0.3)';
-          eventEl.style.transform = 'translateY(-2px)';
-        });
-        
-        eventEl.addEventListener('mouseleave', function() {
-          eventEl.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
-          eventEl.style.transform = 'translateY(0)';
-        });
-      }
-      
-      eventEl.title = info.event.title;
     },
     
     eventResize: handleEventEdit,
@@ -551,7 +569,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // After successful save, we might want to update the UI
         // This will happen in the saveEvent function
-      } else {
+        } else {
         // Regular scheduling of an unscheduled assessment
         saveEvent(data, info.event);
       }
@@ -908,17 +926,53 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function handleEventDrop(info) {
-    const eventDate = info.event.start;
-    const semesterStart = new Date(semester.start_date);
-    const semesterEnd = new Date(semester.end_date);
+    const event = info.event;
+    const newDate = event.start;
     
-    if (eventDate < semesterStart || eventDate > semesterEnd) {
+    if (!semester || !semester.start_date || !semester.end_date) {
       info.revert();
-      alert("Cannot schedule assessment: Date is outside the semester range.");
+      console.error('Semester date range not available');
+      alert("Cannot reschedule assessment: No active semester found.");
       return;
     }
     
-    handleEventEdit(info);
+    const eventDate = newDate;
+    const semesterStart = new Date(semester.start_date);
+    const semesterEnd = new Date(semester.end_date);
+    
+    // Validate the drop is within the semester
+    if (eventDate < semesterStart || eventDate > semesterEnd) {
+      info.revert();
+      alert("Cannot reschedule assessment: Date is outside the semester range.");
+      return;
+    }
+    
+    console.log("Rescheduling event via drag:", event.id, "to", newDate.toISOString().split('T')[0]);
+    
+    // Calculate week and day offsets
+    const offsets = calculateWeekAndDayOffsets(newDate, semester.start_date);
+    
+    // Create data for saving
+    const data = {
+      assessment_id: event.id,
+      assessment_date: newDate.toISOString().split('T')[0],
+      start_week: offsets.startWeek,
+      start_day: offsets.startDay,
+      end_week: offsets.endWeek,
+      end_day: offsets.endDay
+    };
+    
+    // Add visual indicator that we're processing
+    event.setProp('classNames', ['processing-drop']);
+    
+    // Save the event - treat this as a rescheduling
+    saveEvent(data, {
+      id: event.id,
+      start: newDate,
+      extendedProps: {
+        isRescheduling: true
+      }
+    });
   }
 
   function handleNewItem(info) {
@@ -954,7 +1008,7 @@ document.addEventListener("DOMContentLoaded", function () {
         data.end_day = offsets.endDay;
       }
     }
-    
+
     // Check if this is a rescheduling operation
     const isRescheduling = tempEvent && tempEvent.extendedProps && tempEvent.extendedProps.isRescheduling;
     
@@ -963,7 +1017,7 @@ document.addEventListener("DOMContentLoaded", function () {
     form.method = 'POST';
     form.action = '/schedule_assessment';
     form.style.display = 'none';
-
+    
     // Add the assessment_id field
     const idField = document.createElement('input');
     idField.type = 'hidden';
@@ -1089,82 +1143,41 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     
     const showMoreBtn = document.getElementById('show-more-btn');
-    const showLessBtn = document.getElementById('show-less-btn');
+    const closePopupBtn = document.getElementById('close-popup-btn');
     const allAssessments = document.getElementById('all-assessments');
+    const popupOverlay = document.querySelector('.popup-overlay');
     
     if (showMoreBtn) {
       showMoreBtn.addEventListener('click', function() {
         allAssessments.classList.remove('hidden');
-        showMoreBtn.style.display = 'none';
-        
-        // Reinitialize draggable functionality for the now-visible assessments
-        setTimeout(() => {
-          if (allAssessments) {
-            console.log("Reinitializing drag for expanded assessments after show");
-            new FullCalendar.Draggable(allAssessments, {
-              itemSelector: ".draggable-assessment",
-              eventData: function(eventEl) {
-                return {
-                  id: eventEl.dataset.assessmentId,
-                  title: `${eventEl.dataset.courseCode}-${eventEl.dataset.name || eventEl.children[0].innerText.split('-')[1]} (${eventEl.dataset.percentage}%)`,
-                  backgroundColor: eventEl.dataset.proctored === "1" ? colors.Proctored : colors.Assignment,
-                  textColor: '#fff',
-                  extendedProps: {
-                    course_code: eventEl.dataset.courseCode,
-                    percentage: eventEl.dataset.percentage,
-                    proctored: eventEl.dataset.proctored === "1",
-                  }
-                };
-              },
-              mirrorSelector: ".draggable-assessment",
-              dragRevertDuration: 0,
-              droppableScope: 'assessment'
-            });
-          }
-        }, 100);
+        popupOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent scrolling behind popup
       });
     }
     
-    if (showLessBtn) {
-      showLessBtn.addEventListener('click', function() {
+    if (closePopupBtn) {
+      closePopupBtn.addEventListener('click', function() {
         allAssessments.classList.add('hidden');
-        showMoreBtn.style.display = 'block';
+        popupOverlay.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
       });
     }
     
-    // Add click handler for scheduled assessments in the list
-    setTimeout(() => {
-      const scheduledAssessmentsInList = document.querySelectorAll('#unscheduled-list .draggable-assessment.scheduled');
-      console.log("Found scheduled assessments in list:", scheduledAssessmentsInList.length);
-      
-      scheduledAssessmentsInList.forEach(assessment => {
-        assessment.addEventListener('click', function(e) {
-          console.log("Scheduled assessment clicked:", this.dataset);
-          if (e.target.closest('.draggable-assessment.scheduled')) {
-            const assessmentId = this.dataset.assessmentId;
-            const event = calendar.getEventById(assessmentId);
-            
-            if (event) {
-              // Go to the date of the assessment
-              calendar.gotoDate(event.start);
-              
-              // Highlight the event
-              const eventEl = event.el;
-              if (eventEl) {
-                eventEl.style.boxShadow = '0 0 10px 2px rgba(255, 255, 0, 0.7)';
-                eventEl.style.zIndex = '1000';
-                
-                // Remove highlight after 2 seconds
-        setTimeout(() => {
-                  eventEl.style.boxShadow = '';
-                  eventEl.style.zIndex = '';
-                }, 2000);
-              }
-            }
-          }
-        });
+    if (popupOverlay) {
+      popupOverlay.addEventListener('click', function() {
+        allAssessments.classList.add('hidden');
+        popupOverlay.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
       });
-    }, 500);
+    }
+    
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && !allAssessments.classList.contains('hidden')) {
+        allAssessments.classList.add('hidden');
+        popupOverlay.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
+      }
+    });
   });
 
   function applyBlueBackgroundClass() {
