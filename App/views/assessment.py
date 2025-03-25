@@ -413,7 +413,6 @@ def get_calendar_page():
         if isinstance(semester.get("start_date"), str):
             semester["start_date"] = semester["start_date"].split("T")[0]
         if isinstance(semester.get("end_date"), str):
-            semester["start_date"].split("T")[0]
             semester["end_date"] = semester["end_date"].split("T")[0]
 
     return render_template(

@@ -572,6 +572,49 @@
   .assessment-item.draggable-assessment .course-code {
     color: white !important;
   }
+  
+  .fc-list-day-cushion {
+    background-color: var(--tertiary-color) !important;
+    color: white !important;
+  }
+  
+  .fc-list-event-dot {
+    border-color: var(--tertiary-color) !important;
+  }
+  
+  .fc .fc-list-table {
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .fc-theme-standard .fc-list-day-cushion {
+    padding: 10px 15px !important;
+  }
+  
+  .fc-theme-standard .fc-list {
+    border: 1px solid var(--border-color);
+  }
+  
+  .calendar-list-item td {
+    padding: 12px 8px !important;
+    vertical-align: middle !important;
+  }
+  
+  .fc-list-event-title a {
+    color: var(--text-color) !important;
+    font-weight: 500 !important;
+  }
+  
+  .fc-list-empty {
+    background-color: var(--card-color) !important;
+    color: var(--text-muted) !important;
+    padding: 25px !important;
+    font-style: italic;
+  }
+  
+  .fc-list-event:hover td {
+    background-color: rgba(103, 78, 204, 0.1) !important;
+  }
 </style>
 {% endblock %}
 
@@ -724,6 +767,8 @@
     const endDate = new Date(semester.end_date);
     const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
     semesterWeeks = Math.ceil(daysDiff / 7);
+    console.log("Semester date range:", semester.start_date, "to", semester.end_date);
+    console.log("Days difference:", daysDiff, "Semester weeks:", semesterWeeks);
   }
   
   document.addEventListener('DOMContentLoaded', function() {

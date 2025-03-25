@@ -8,11 +8,7 @@ from ..views.assessment import assessment_views
 from ..controllers import (
     change_password,
     create_assessment,
-    get_course,
     get_all_courses,
-    create_course,
-    update_course,
-    delete_course,
     assign_lecturer,
     create_cell,
     get_all_staff,
@@ -26,8 +22,6 @@ from ..controllers import (
     create_semester,
     set_active,
     parse_date,
-    get_all_assessments,
-    update_assessment,
     update_semester
 )
 from ..controllers.auth import admin_required
