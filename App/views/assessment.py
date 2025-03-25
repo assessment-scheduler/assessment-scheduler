@@ -346,6 +346,31 @@ def get_calendar_page():
         except Exception as e:
             print(f"Error processing assessment {assessment.id}: {str(e)}")
 
+    active_semester = get_active_semester()
+    if not active_semester:
+        flash("No active semester found. Please contact an administrator.", "warning")
+        semester = {}
+    else:
+        semester = {
+            "id": active_semester.id,
+            "start_date": active_semester.start_date.isoformat(),
+            "end_date": active_semester.end_date.isoformat(),
+            "sem_num": active_semester.sem_num,
+            "max_assessments": active_semester.max_assessments,
+            "constraint_value": active_semester.constraint_value,
+            "active": active_semester.active,
+        }
+
+        if isinstance(semester.get("start_date"), str):
+            semester["start_date"] = semester["start_date"].split("T")[0]
+        if isinstance(semester.get("end_date"), str):
+            semester["end_date"] = semester["end_date"].split("T")[0]
+
+    # Get the list of course codes in the active semester
+    semester_course_codes = []
+    if active_semester:
+        semester_course_codes = [assignment.course_code for assignment in active_semester.course_assignments]
+
     for assessment in user_assessments:
         try:
             assessment_dict = {
@@ -373,7 +398,8 @@ def get_calendar_page():
 
             staff_exams.append(assessment_dict)
 
-            if not assessment.scheduled:
+            # Only show unscheduled assessments for courses in the active semester
+            if not assessment.scheduled and assessment.course_code in semester_course_codes:
                 unscheduled_assessments.append(assessment_dict)
         except Exception as e:
             print(f"Error processing user assessment {assessment.id}: {str(e)}")
@@ -394,26 +420,6 @@ def get_calendar_page():
 
     courses = staff_courses
     other_exams = staff_exams
-
-    active_semester = get_active_semester()
-    if not active_semester:
-        flash("No active semester found. Please contact an administrator.", "warning")
-        semester = {}
-    else:
-        semester = {
-            "id": active_semester.id,
-            "start_date": active_semester.start_date.isoformat(),
-            "end_date": active_semester.end_date.isoformat(),
-            "sem_num": active_semester.sem_num,
-            "max_assessments": active_semester.max_assessments,
-            "constraint_value": active_semester.constraint_value,
-            "active": active_semester.active,
-        }
-
-        if isinstance(semester.get("start_date"), str):
-            semester["start_date"] = semester["start_date"].split("T")[0]
-        if isinstance(semester.get("end_date"), str):
-            semester["end_date"] = semester["end_date"].split("T")[0]
 
     return render_template(
         "calendar.html",

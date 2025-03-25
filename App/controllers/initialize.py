@@ -1,6 +1,6 @@
 import csv
 from datetime import date, timedelta
-from ..controllers.admin import create_admin
+from ..controllers.admin import create_admin_user
 from ..database import db
 from .user import create_user
 from .staff import create_staff
@@ -13,7 +13,7 @@ def initialize() -> None:
     db.drop_all()
     db.create_all()
 
-    create_admin(101101, 'admin', 'adminpass')
+    create_admin_user(101101, 'admin', 'adminpass')
 
     with open('App/uploads/staff.csv') as staff_file:
          reader = csv.DictReader(staff_file)

@@ -312,6 +312,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const eventId = info.event.id;
       unscheduleEvent(eventId);
     },
+    initialDate: semester && semester.start_date ? semester.start_date : undefined,
   });
 
   if (calendarEvents && calendarEvents.length > 0) {
@@ -327,6 +328,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   try {
     calendar.render();
+    
+    // Go to semester start date if available
+    if (semester && semester.start_date) {
+      console.log("Setting calendar initial date to semester start date:", semester.start_date);
+      calendar.gotoDate(new Date(semester.start_date));
+    }
     
     if (eventsLoaded) {
       setTimeout(() => calendar.refetchEvents(), 300);

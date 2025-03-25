@@ -25,6 +25,11 @@ from ..controllers import (
     update_semester
 )
 from ..controllers.auth import admin_required
+from ..controllers.admin import create_admin_user, get_admin_by_id, update_admin, delete_admin
+from ..controllers.semester import get_semester, set_active
+from ..controllers.staff import create_staff, get_staff_by_id, update_staff, delete_staff, get_all_staff
+import traceback, csv
+from io import TextIOWrapper
 
 admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
 
@@ -85,7 +90,6 @@ def add_semester_action():
         constraint_value = int(request.form.get('constraint_value'))
         solver_type = request.form.get('solver_type')
         
-        # Get selected courses (multi-select field)
         courses = request.form.getlist('courses')
         
         start_date = parse_date(start_date)
@@ -105,7 +109,7 @@ def add_semester_action():
             sem_num, 
             max_assessments, 
             constraint_value,
-            False,  # Not active by default
+            False,  
             solver_type,
             courses
         )
@@ -148,7 +152,6 @@ def update_semester_action(semester_id):
         solver_type = request.form.get('solver_type')
         active = 'active' in request.form
         
-        # Get selected courses (multi-select field)
         courses = request.form.getlist('courses')
         
         result = update_semester(
@@ -197,6 +200,29 @@ def set_active_semester(semester_id):
     
     if result:
         flash('Semester set as active', 'success')
+        
+        # Get semester to check if it has courses
+        semester = get_semester(semester_id)
+        if semester and semester.course_assignments:
+            # Check if there are any unscheduled assessments
+            from ..models.assessment import Assessment
+            
+            unscheduled_count = 0
+            for assignment in semester.course_assignments:
+                if assignment.course:
+                    unscheduled_assessments = Assessment.query.filter_by(
+                        course_code=assignment.course_code,
+                        scheduled=None
+                    ).count()
+                    unscheduled_count += unscheduled_assessments
+            
+            if unscheduled_count > 0:
+                flash(f"Started auto-scheduling {unscheduled_count} unscheduled assessments for {len(semester.course_assignments)} courses", "info")
+                flash("This process may take a moment to complete. Check the calendar page when complete.", "info")
+            else:
+                flash("All assessments for this semester are already scheduled. No auto-scheduling needed.", "info")
+        else:
+            flash("No courses found in this semester. Please add courses to schedule assessments.", "warning")
     else:
         flash('Failed to set semester as active', 'error')
     

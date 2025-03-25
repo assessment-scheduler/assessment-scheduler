@@ -1,8 +1,9 @@
 from typing import List, Optional, Union
+from datetime import date, datetime
 from ..database import db
 from ..models.semester import Semester
 from ..models.semester_course import SemesterCourse
-from datetime import date, datetime
+import traceback
 
 def parse_date(date_value: Union[str, date]) -> date:
     if isinstance(date_value, str):
@@ -85,6 +86,23 @@ def update_semester(
     if active and not semester.active:
         deactivate_all()
         semester.active = True
+        
+        db.session.commit()
+        
+        try:
+            solver = semester.get_solver()
+            
+            schedule = solver.solve()
+            
+            if schedule:
+                print(f"Automatically scheduled {len(schedule)} assessments for semester {semester_id}")
+            else:
+                print(f"Failed to automatically schedule assessments for semester {semester_id}")
+        except Exception as e:
+            print(f"Error while auto-scheduling for semester {semester_id}: {str(e)}")
+            print("Traceback:", traceback.format_exc())
+    else:
+        db.session.commit()
     
     if course_codes is not None:
         SemesterCourse.query.filter_by(semester_id=semester.id).delete()
@@ -93,7 +111,6 @@ def update_semester(
             semester_course = SemesterCourse(semester_id=semester.id, course_code=code)
             db.session.add(semester_course)
     
-    db.session.commit()
     return True
 
 def get_active_semester() -> Optional[Semester]:
@@ -121,6 +138,48 @@ def set_active(semester_id: int) -> bool:
         deactivate_all()
         semester.active = True
         db.session.commit()
+        
+        if not semester.course_assignments:
+            print(f"Semester {semester_id} has no courses assigned. Skipping auto-scheduling.")
+            return True
+        
+        from ..models.assessment import Assessment
+        
+        unscheduled_count = 0
+        for assignment in semester.course_assignments:
+            if assignment.course:
+                unscheduled_assessments = Assessment.query.filter_by(
+                    course_code=assignment.course_code,
+                    scheduled=None
+                ).count()
+                unscheduled_count += unscheduled_assessments
+        
+        if unscheduled_count == 0:
+            print(f"No unscheduled assessments found for semester {semester_id}. Skipping auto-scheduling.")
+            return True
+            
+        print(f"Found {unscheduled_count} unscheduled assessments for semester {semester_id}")
+        
+        try:
+            solver = semester.get_solver()
+            if solver is None:
+                print(f"Could not get solver for semester {semester_id}. Solver type: {semester.solver_type}")
+                return True
+            
+            print(f"Starting auto-scheduling for semester {semester_id} with {len(semester.course_assignments)} courses")
+            
+            schedule = solver.solve()
+            
+            if schedule:
+                print(f"Successfully scheduled {len(schedule)} assessments for semester {semester_id}")
+            else:
+                print(f"Could not find optimal schedule for semester {semester_id} - no assessments were scheduled")
+                print("This may be due to constraints being too restrictive or insufficient data")
+        except Exception as e:
+            import traceback
+            print(f"Error while auto-scheduling for semester {semester_id}: {str(e)}")
+            print("Traceback:", traceback.format_exc())
+            
         return True
 
 def add_course_to_semester(semester_id: int, course_code: str) -> bool:
@@ -145,3 +204,45 @@ def remove_course_from_semester(semester_id: int, course_code: str) -> bool:
         print(f"Error removing course {course_code} from semester {semester_id}: {str(e)}")
         db.session.rollback()
         return False
+
+def create_test_assessments_for_semester(semester_id: int, count_per_course: int = 3) -> int:
+    """
+    Creates test assessments for all courses in a semester.
+    Returns the number of assessments created.
+    """
+    from .assessment import create_assessment
+    
+    semester = get_semester(semester_id)
+    if not semester:
+        print(f"Semester {semester_id} not found")
+        return 0
+        
+    created_count = 0
+    
+    for assignment in semester.course_assignments:
+        course_code = assignment.course_code
+        
+        for i in range(1, count_per_course + 1):
+            try:
+                percentage = 10 + (i * 10)
+                start_week = 2 + (i * 2)
+                
+                name = f"Test Assessment {i}"
+                create_assessment(
+                    course_code=course_code,
+                    name=name,
+                    percentage=percentage,
+                    start_week=start_week,
+                    start_day=i,
+                    end_week=start_week,
+                    end_day=i,
+                    proctored=(i == 1)  
+                )
+                created_count += 1
+                print(f"Created assessment {name} for course {course_code}")
+                
+            except Exception as e:
+                print(f"Error creating assessment for course {course_code}: {str(e)}")
+                
+    print(f"Created {created_count} test assessments for semester {semester_id}")
+    return created_count

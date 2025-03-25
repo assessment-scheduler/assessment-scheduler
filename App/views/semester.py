@@ -11,6 +11,7 @@ from ..controllers.semester import (
     set_active
 )
 from ..controllers.course import get_all_courses
+from ..models.assessment import Assessment
 
 semester_views = Blueprint('semester_views', __name__, template_folder ='../templates')
 
@@ -113,6 +114,27 @@ def set_active_semester(semester_id: int):
     success = set_active(semester_id)
     if success:
         flash(f"Semester {semester_id} was successfully set as active", "success")
+        
+        # Get semester to check if it has courses
+        semester = get_semester(semester_id)
+        if semester and semester.course_assignments:
+            # Check if there are any unscheduled assessments
+            unscheduled_count = 0
+            for assignment in semester.course_assignments:
+                if assignment.course:
+                    unscheduled_assessments = Assessment.query.filter_by(
+                        course_code=assignment.course_code,
+                        scheduled=None
+                    ).count()
+                    unscheduled_count += unscheduled_assessments
+            
+            if unscheduled_count > 0:
+                flash(f"Started auto-scheduling {unscheduled_count} unscheduled assessments for {len(semester.course_assignments)} courses", "info")
+                flash("This process may take a moment to complete. Check the calendar page when complete.", "info")
+            else:
+                flash("All assessments for this semester are already scheduled. No auto-scheduling needed.", "info")
+        else:
+            flash("No courses found in this semester. Please add courses to schedule assessments.", "warning")
     else:
         flash(f"Failed to set semester {semester_id} as active", "error")
     
