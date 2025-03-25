@@ -55,6 +55,18 @@
     background: var(--accent-color);
   }
   
+  /* Scheduled assessment styling */
+  .draggable-assessment.scheduled {
+    background: var(--tertiary-color);
+    opacity: 0.85;
+    border-left: 4px solid #4cd964;
+  }
+  
+  .draggable-assessment.scheduled:hover {
+    opacity: 1;
+    background: var(--accent-color);
+  }
+  
   .assessment-details {
     font-size: 11px;
     color: var(--text-muted);
@@ -81,6 +93,41 @@
     border-radius: 3px;
     font-size: 11px;
     margin-left: 5px;
+  }
+  
+  .badge.proctored {
+    background: #9C9FE2;
+    color: white;
+    font-weight: bold;
+    font-size: 10px;
+    padding: 3px 7px;
+  }
+  
+  .badge-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 5px 0;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+  
+  .status-badge.scheduled {
+    background: #4cd964;
+    color: white;
+  }
+  
+  .status-badge.unscheduled {
+    background: #ff9500;
+    color: white;
+    font-weight: bold;
+    font-size: 10px;
+    padding: 3px 7px;
   }
   
   #main {
@@ -225,6 +272,22 @@
     background-color: #b03a2e;
   }
   
+  .action-btn.success {
+    background-color: #2ecc71;
+  }
+  
+  .action-btn.success:hover {
+    background-color: #27ae60;
+  }
+  
+  .action-btn.warning {
+    background-color: #f39c12;
+  }
+  
+  .action-btn.warning:hover {
+    background-color: #e67e22;
+  }
+  
   .drag-instructions {
     background-color: rgba(0, 0, 0, 0.05);
     padding: 10px;
@@ -307,12 +370,58 @@
     transition: max-height 0.3s ease, opacity 0.3s ease;
     max-height: 1000px;
     opacity: 1;
+    background-color: var(--card-color);
   }
   
   .all-assessments.hidden {
     max-height: 0;
     overflow: hidden;
     opacity: 0;
+  }
+  
+  #all-assessments .draggable-assessment {
+    background-color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    cursor: grab;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  #all-assessments .draggable-assessment::after {
+    content: '↹';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 16px;
+    color: var(--text-muted);
+    opacity: 0.5;
+    transition: all 0.2s ease;
+  }
+  
+  #all-assessments .draggable-assessment:hover::after {
+    opacity: 1;
+    color: white;
+  }
+  
+  #all-assessments .draggable-assessment .assessment-name {
+    color: var(--text-color) !important;
+  }
+  
+  #all-assessments .draggable-assessment .assessment-details {
+    color: var(--text-muted) !important;
+  }
+  
+  #all-assessments .draggable-assessment:hover {
+    background-color: var(--tertiary-color);
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+  }
+  
+  #all-assessments .draggable-assessment:hover .assessment-name,
+  #all-assessments .draggable-assessment:hover .assessment-details,
+  #all-assessments .draggable-assessment:hover .course-code {
+    color: white !important;
   }
   
   #show-more-btn, #show-less-btn {
@@ -615,6 +724,124 @@
   .fc-list-event:hover td {
     background-color: rgba(103, 78, 204, 0.1) !important;
   }
+  
+  #debug-section {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 5px;
+    border: 1px dashed var(--border-color);
+  }
+  
+  #debug-section h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+  }
+  
+  #debug-section form {
+    margin-bottom: 8px;
+  }
+  
+  #debug-section form:last-child {
+    margin-bottom: 0;
+  }
+  
+  .dark-mode #debug-section {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .draggable-assessment.status-unscheduled {
+    cursor: grab;
+    border: 1px solid var(--tertiary-color);
+    background-color: rgba(103, 78, 204, 0.7);
+    position: relative;
+  }
+  
+  .draggable-assessment.status-unscheduled:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transform: translateY(-3px);
+  }
+  
+  .draggable-assessment.status-unscheduled:hover::after {
+    content: '↹';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 16px;
+    color: white;
+  }
+  
+  .draggable-assessment.scheduled {
+  }
+  
+  /* Popover styling for days with many events */
+  .fc-popover {
+    background-color: var(--secondary-color) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+    border-radius: 6px !important;
+    min-width: 280px !important;
+    max-width: 400px !important;
+  }
+  
+  .fc-popover-header {
+    background-color: var(--tertiary-color) !important;
+    color: white !important;
+    padding: 8px 10px !important;
+    border-radius: 5px 5px 0 0 !important;
+  }
+  
+  .fc-popover-title {
+    font-weight: 600 !important;
+  }
+  
+  .fc-popover-close {
+    color: white !important;
+    opacity: 0.8 !important;
+    font-size: 18px !important;
+  }
+  
+  .fc-popover-close:hover {
+    opacity: 1 !important;
+  }
+  
+  .fc-popover-body {
+    padding: 10px !important;
+  }
+  
+  .fc-popover .fc-event {
+    margin: 5px 0 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+  }
+  
+  .fc-popover .fc-event:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3) !important;
+    transition: all 0.2s ease !important;
+  }
+  
+  /* Styling for the more link */
+  .fc-daygrid-more-link {
+    background-color: var(--tertiary-color) !important;
+    color: white !important;
+    padding: 2px 5px !important;
+    border-radius: 3px !important;
+    font-weight: normal !important;
+    font-size: 11px !important;
+    margin-top: 2px !important;
+    opacity: 0.9 !important;
+  }
+  
+  .fc-daygrid-more-link:hover {
+    opacity: 1 !important;
+    background-color: var(--accent-color) !important;
+  }
 </style>
 {% endblock %}
 
@@ -647,29 +874,41 @@
     <div id="calendar"></div>
     <div id="nav">
       <div id="unscheduled-list">
-        <h3>Unscheduled Assessments</h3>
-        {% if unscheduled_assessments %}
-          {% for assessment in unscheduled_assessments %}
-            <div class="draggable-assessment {% if assessment.proctored %}proctored{% endif %}" 
+        <h3>My Assessments</h3>
+        {% if my_assessments %}
+          {% for assessment in my_assessments %}
+            <div class="draggable-assessment {% if assessment.proctored %}proctored{% endif %} {% if assessment.scheduled %}scheduled{% else %}status-unscheduled can-drag{% endif %}" 
                 data-assessment-id="{{ assessment.id }}" 
                 data-course-code="{{ assessment.course_code }}" 
                 data-percentage="{{ assessment.percentage }}"
                 data-proctored="{{ assessment.proctored }}"
+                data-scheduled="{{ assessment.scheduled|default('false') }}"
                 data-name="{{ assessment.name }}">
               <span class="assessment-name">{{ assessment.course_code }}-{{ assessment.name }}</span>
               <div class="assessment-details">
                 Weight: {{ assessment.percentage }}%
-                {% if assessment.proctored %}<span class="badge">Proctored</span>{% endif %}
+                <div class="badge-container">
+                  {% if assessment.scheduled %}
+                    <span class="status-badge scheduled">Scheduled</span>
+                  {% else %}
+                    <span class="status-badge unscheduled">Unscheduled</span>
+                  {% endif %}
+                  {% if assessment.proctored %}<span class="badge proctored">Proctored</span>{% endif %}
+                </div>
+                {% if assessment.scheduled %}
+                  <div>Date: {{ assessment.scheduled }}</div>
+                {% endif %}
               </div>
             </div>
           {% endfor %}
         {% else %}
-          <p>No unscheduled assessments found.</p>
+          <p>No assessments found.</p>
         {% endif %}
         
         <div class="drag-instructions">
           <i class="material-icons">touch_app</i>
-          Drag assessments to the calendar to schedule them
+          <strong>Assessments marked with "Unscheduled" can be dragged</strong><br>
+          Drag unscheduled assessments to the calendar to schedule them
         </div>
         
         {% if semester %}
@@ -700,8 +939,11 @@
                 <span class="assessment-name">{{ assessment.course_code }}-{{ assessment.name }}</span>
                 <div class="assessment-details">
                   Weight: {{ assessment.percentage }}%
+                  <div class="badge-container">
+                    <span class="status-badge scheduled">Scheduled</span>
+                    {% if assessment.proctored %}<span class="badge proctored">Proctored</span>{% endif %}
+                  </div>
                   <div>Date: {{ assessment.scheduled }}</div>
-                  {% if assessment.proctored %}<span class="badge">Proctored</span>{% endif %}
                 </div>
               </div>
             {% endfor %}
@@ -721,8 +963,11 @@
                   <span class="assessment-name">{{ assessment.course_code }}-{{ assessment.name }}</span>
                   <div class="assessment-details">
                     Weight: {{ assessment.percentage }}%
+                    <div class="badge-container">
+                      <span class="status-badge scheduled">Scheduled</span>
+                      {% if assessment.proctored %}<span class="badge proctored">Proctored</span>{% endif %}
+                    </div>
                     <div>Date: {{ assessment.scheduled }}</div>
-                    {% if assessment.proctored %}<span class="badge">Proctored</span>{% endif %}
                   </div>
                 </div>
               {% endfor %}
@@ -731,21 +976,38 @@
             </div>
           {% endif %}
           
-          <form id="unschedule-all-form" action="/unschedule_all_assessments" method="POST" onsubmit="return confirm('Are you sure you want to unschedule all your assessments?');">
-            <button type="submit" class="action-btn danger">Unschedule All My Assessments</button>
-          </form>
-          
-          <div class="drag-instructions">
-            <i class="material-icons">open_with</i>
-            Drag events out of the calendar to unschedule them
+          <div id="debug-section">
+            <h4>Debug Tools</h4>
+            <form id="unschedule-all-form" action="/unschedule_all_assessments" method="POST" onsubmit="return confirm('Are you sure you want to unschedule all your assessments?');">
+              <button type="submit" class="action-btn danger">Unschedule All My Assessments</button>
+            </form>
+            
+            <form id="unschedule-all-system-form" action="/unschedule_all_system_assessments" method="POST" onsubmit="return confirm('WARNING: This will unschedule ALL assessments in the system for ALL staff members. Are you sure you want to proceed?');">
+              <button type="submit" class="action-btn danger">Unschedule All</button>
+            </form>
+            
+            <form id="reschedule-all-form" action="/autoschedule" method="POST" onsubmit="return confirm('Are you sure you want to reschedule all assessments? This may take some time.');">
+              <button type="submit" class="action-btn success">Reschedule All</button>
+            </form>
+            
+            <form id="reset-constraints-form" action="/reset_all_constraints" method="POST" onsubmit="return confirm('WARNING: This will reset ALL assessments time constraints to default values (Week 1-15). This is useful when scheduling keeps failing due to conflicting constraints. Continue?');">
+              <button type="submit" class="action-btn warning">Reset All Constraints</button>
+            </form>
           </div>
         {% else %}
           <p>No scheduled assessments found.</p>
+          
+          <div id="debug-section">
+            <h4>Debug Tools</h4>
+            <form id="reschedule-all-form" action="/autoschedule" method="POST" onsubmit="return confirm('Are you sure you want to reschedule all assessments? This may take some time.');">
+              <button type="submit" class="action-btn success">Reschedule All</button>
+            </form>
+            
+            <form id="reset-constraints-form" action="/reset_all_constraints" method="POST" onsubmit="return confirm('WARNING: This will reset ALL assessments time constraints to default values (Week 1-15). This is useful when scheduling keeps failing due to conflicting constraints. Continue?');">
+              <button type="submit" class="action-btn warning">Reset All Constraints</button>
+            </form>
+          </div>
         {% endif %}
-        
-        <form id="unschedule-all-system-form" action="/unschedule_all_system_assessments" method="POST" onsubmit="return confirm('WARNING: This will unschedule ALL assessments in the system for ALL staff members. Are you sure you want to proceed?');">
-          <button type="submit" class="action-btn danger" style="margin-top: 10px;">Unschedule All</button>
-        </form>
       </div>
     </div>
   </div>
@@ -760,6 +1022,7 @@
   var otherExams = JSON.parse('{{ other_exams | tojson | safe }}');
   var scheduledAssessments = JSON.parse('{{ scheduled_assessments | tojson | safe }}');
   var unscheduledAssessments = JSON.parse('{{ unscheduled_assessments | tojson | safe }}');
+  var myAssessments = JSON.parse('{{ my_assessments | tojson | safe }}');
   
   var semesterWeeks = 15;
   if (semester && semester.start_date && semester.end_date) {

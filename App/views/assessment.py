@@ -19,8 +19,11 @@ from ..controllers import (
     get_assessments_by_course,
     get_course,
     get_all_assessments,
-    staff_required
+    staff_required,
+    unschedule_assessment_only,
+    reset_all_assessment_constraints
 )
+import time
 
 assessment_views = Blueprint(
     "assessment_views", __name__, template_folder="../templates"
@@ -316,6 +319,8 @@ def get_calendar_page():
     staff_exams = []
     scheduled_assessments = []
     unscheduled_assessments = []
+    # List to hold all assessments (both scheduled and unscheduled) for the current user
+    my_assessments = []
 
     for assessment in all_assessments:
         try:
@@ -397,6 +402,9 @@ def get_calendar_page():
                     )[0]
 
             staff_exams.append(assessment_dict)
+            
+            # Add to my_assessments list regardless of scheduling status
+            my_assessments.append(assessment_dict)
 
             # Only show unscheduled assessments for courses in the active semester
             if not assessment.scheduled and assessment.course_code in semester_course_codes:
@@ -429,7 +437,8 @@ def get_calendar_page():
         courses=courses,
         semester=semester,
         scheduled_assessments=scheduled_assessments,
-        unscheduled_assessments=unscheduled_assessments
+        unscheduled_assessments=unscheduled_assessments,
+        my_assessments=my_assessments  # Add the new my_assessments list to the template
     )
 
 
@@ -503,17 +512,7 @@ def unschedule_assessment():
             flash("You do not have permission to unschedule assessments for this course", "error")
             return redirect(url_for("assessment_views.get_calendar_page"))
 
-        result = update_assessment(
-            assessment_id,
-            assessment.name,
-            assessment.percentage,
-            assessment.start_week,
-            assessment.start_day,
-            assessment.end_week,
-            assessment.end_day,
-            assessment.proctored,
-            None 
-        )
+        result = unschedule_assessment_only(assessment_id)
 
         if result:
             flash("Assessment unscheduled successfully", "success")
@@ -543,39 +542,19 @@ def unschedule_all_assessments():
                 for assessment in course_assessments:
                     if assessment.scheduled:
                         scheduled_count += 1
-                        update_assessment(
-                            assessment.id,
-                            assessment.name,
-                            assessment.percentage,
-                            assessment.start_week,
-                            assessment.start_day,
-                            assessment.end_week,
-                            assessment.end_day,
-                            assessment.proctored,
-                            None
-                        )
+                        unschedule_assessment_only(assessment.id)
         else:
             for assessment in assessments:
                 if assessment.scheduled:
                     scheduled_count += 1
-                    update_assessment(
-                        assessment.id,
-                        assessment.name,
-                        assessment.percentage,
-                        assessment.start_week,
-                        assessment.start_day,
-                        assessment.end_week,
-                        assessment.end_day,
-                        assessment.proctored,
-                        None
-                    )
+                    unschedule_assessment_only(assessment.id)
         
         if scheduled_count > 0:
             flash(f"Successfully unscheduled {scheduled_count} assessments", "success")
         else:
             flash("No scheduled assessments found", "info")
-            
-        return redirect(url_for("assessment_views.get_calendar_page"))
+        
+        return redirect(url_for("assessment_views.get_calendar_page") + "?refresh=" + str(int(time.time())))
 
     except Exception as e:
         flash(f"An error occurred: {str(e)}", "error")
@@ -592,24 +571,32 @@ def unschedule_all_system_assessments():
         for assessment in assessments:
             if assessment.scheduled:
                 scheduled_count += 1
-                update_assessment(
-                    assessment.id,
-                    assessment.name,
-                    assessment.percentage,
-                    assessment.start_week,
-                    assessment.start_day,
-                    assessment.end_week,
-                    assessment.end_day,
-                    assessment.proctored,
-                    None
-                )
+                unschedule_assessment_only(assessment.id)
         
         if scheduled_count > 0:
             flash(f"Successfully unscheduled {scheduled_count} assessments across all courses", "success")
         else:
             flash("No scheduled assessments found in the system", "info")
             
+        return redirect(url_for("assessment_views.get_calendar_page") + "?refresh=" + str(int(time.time())))
+
+    except Exception as e:
+        flash(f"An error occurred: {str(e)}", "error")
         return redirect(url_for("assessment_views.get_calendar_page"))
+
+
+@assessment_views.route("/reset_all_constraints", methods=["POST"])
+@staff_required
+def reset_all_constraints():
+    try:
+        reset_count = reset_all_assessment_constraints()
+        
+        if reset_count > 0:
+            flash(f"Successfully reset constraints for {reset_count} assessments. Scheduling should now be more flexible.", "success")
+        else:
+            flash("No assessments found to reset", "info")
+            
+        return redirect(url_for("assessment_views.get_calendar_page") + "?refresh=" + str(int(time.time())))
 
     except Exception as e:
         flash(f"An error occurred: {str(e)}", "error")
