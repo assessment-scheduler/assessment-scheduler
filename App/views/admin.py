@@ -471,7 +471,7 @@ def upload_semesters_file():
                         int(row['sem_num']),
                         int(row['max_assessments']),
                         int(row['constraint_value']),
-                        bool(row['active'])
+                        row['active'] == "1" or row['active'].lower() == "true"
                     ):
                         semesters_added += 1
             

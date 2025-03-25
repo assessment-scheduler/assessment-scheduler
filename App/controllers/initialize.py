@@ -53,7 +53,7 @@ def initialize() -> None:
     with open('App/uploads/semesters.csv') as semester_file:
         reader = csv.DictReader(semester_file)
         for row in reader:
-             create_semester(row['start_date'], row['end_date'], row['sem_num'], row['max_assessments'], row['constraint_value'], bool(row['active']))
+             create_semester(row['start_date'], row['end_date'], row['sem_num'], row['max_assessments'], row['constraint_value'], row['active'] == "1" or row['active'] == "True")
 
     with open('App/uploads/semester_courses.csv') as semester_courses_file:
         reader = csv.DictReader(semester_courses_file)
