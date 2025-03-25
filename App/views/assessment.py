@@ -606,3 +606,73 @@ def reset_all_constraints():
     except Exception as e:
         flash(f"An error occurred: {str(e)}", "error")
         return redirect(url_for("assessment_views.get_calendar_page"))
+
+
+@assessment_views.route("/schedule_assessment", methods=["POST"])
+@staff_required
+def schedule_assessment():
+    try:
+        assessment_id = request.form.get("assessment_id")
+        assessment_date = datetime.strptime(
+            request.form.get("assessment_date"), "%Y-%m-%d"
+        ).date()
+        
+        # Check if this is a rescheduling operation
+        is_rescheduling = request.form.get("is_rescheduling") == "true"
+
+        email = get_jwt_identity()
+        user = get_user_by_email(email)
+        assessment = get_assessment_by_id(assessment_id)
+
+        if not assessment:
+            flash("Assessment not found", "error")
+            return redirect(url_for("assessment_views.get_calendar_page"))
+
+        if not is_course_lecturer(user.id, assessment.course_code):
+            flash("You do not have permission to schedule assessments for this course", "error")
+            return redirect(url_for("assessment_views.get_calendar_page"))
+
+        semester = get_active_semester()
+        if not semester:
+            flash("No active semester found", "error")
+            return redirect(url_for("assessment_views.get_calendar_page"))
+
+        # If manually set in the form, use those values
+        start_week = request.form.get("start_week")
+        start_day = request.form.get("start_day")
+        end_week = request.form.get("end_week")
+        end_day = request.form.get("end_day")
+        
+        # Calculate from the date if not provided
+        if not start_week or not start_day or not end_week or not end_day:
+            days_diff = (assessment_date - semester.start_date).days
+            start_week = (days_diff // 7) + 1
+            start_day = (days_diff % 7) + 1
+            end_week = start_week
+            end_day = start_day
+
+        result = update_assessment(
+            assessment_id,
+            assessment.name,
+            assessment.percentage,
+            start_week,
+            start_day,
+            end_week,
+            end_day,
+            assessment.proctored,
+            assessment_date,
+        )
+
+        if result:
+            if is_rescheduling:
+                flash("Assessment rescheduled successfully", "success")
+            else:
+                flash("Assessment scheduled successfully", "success")
+            return redirect(url_for("assessment_views.get_calendar_page"))
+        else:
+            flash("Failed to schedule assessment", "error")
+            return redirect(url_for("assessment_views.get_calendar_page"))
+
+    except Exception as e:
+        flash(f"An error occurred: {str(e)}", "error")
+        return redirect(url_for("assessment_views.get_calendar_page"))

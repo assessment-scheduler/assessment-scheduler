@@ -156,16 +156,27 @@
   }
   
   .fc-event {
-    border: none !important;
-    margin: 2px !important;
-    padding: 5px !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
-    color: white !important;
+    border-left: 4px solid var(--tertiary-color);
+    background-color: var(--card-color);
+    color: var(--text-color);
+    border-radius: 4px;
+    padding: 4px 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    margin: 2px 0;
+    height: auto;
+    min-height: 50px;
+    width: 100%;
+  }
+  
+  .fc-event:hover,
+  .calendar-event:hover {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
   }
   
   .fc-event-main {
-    padding: 3px 5px !important;
-    color: white !important;
+    padding: 4px;
   }
   
   .fc-event-time {
@@ -311,6 +322,44 @@
     font-size: 1.5rem;
     margin-bottom: 5px;
     color: var(--tertiary-color);
+  }
+  
+  .drag-tips {
+    background-color: rgba(103, 78, 204, 0.1);
+    padding: 12px 15px;
+    border-radius: 6px;
+    margin-top: 15px;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    border-left: 3px solid var(--tertiary-color);
+  }
+  
+  .dark-mode .drag-tips {
+    background-color: rgba(103, 78, 204, 0.2);
+  }
+  
+  .drag-tips h4 {
+    margin: 0 0 8px 0;
+    font-size: 1rem;
+    color: var(--tertiary-color);
+  }
+  
+  .drag-tips ul {
+    margin: 0;
+    padding-left: 5px;
+    list-style-type: none;
+  }
+  
+  .drag-tips li {
+    padding: 5px 0;
+    display: flex;
+    align-items: flex-start;
+  }
+  
+  .tip-icon {
+    display: inline-block;
+    margin-right: 8px;
+    font-size: 1.1rem;
   }
   
   .date-range-info {
@@ -775,6 +824,23 @@
     background-color: rgba(103, 78, 204, 0.9);
   }
   
+  /* Drag handle icon styling */
+  .draggable-assessment.status-unscheduled::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 5px;
+    background-color: var(--accent-color);
+    border-radius: 4px 0 0 4px;
+    transition: all 0.2s ease;
+  }
+  
+  .draggable-assessment.status-unscheduled:hover::before {
+    width: 8px;
+  }
+  
   .draggable-assessment.status-unscheduled::after {
     content: '↹';
     position: absolute;
@@ -791,7 +857,24 @@
     transform: scale(1.2);
   }
   
-  .draggable-assessment.scheduled {
+  /* Improvements for calendar day cells */
+  .fc-daygrid-day {
+    transition: all 0.2s ease !important;
+  }
+  
+  .fc-daygrid-day:hover {
+    background-color: rgba(103, 78, 204, 0.1) !important;
+    box-shadow: inset 0 0 0 1px rgba(103, 78, 204, 0.3) !important;
+  }
+  
+  /* Today highlight */
+  .fc-day-today {
+    background-color: rgba(103, 78, 204, 0.15) !important;
+    box-shadow: inset 0 0 0 2px rgba(103, 78, 204, 0.4) !important;
+  }
+  
+  .fc-day-today:hover {
+    background-color: rgba(103, 78, 204, 0.2) !important;
   }
   
   /* Popover styling for days with many events */
@@ -856,6 +939,497 @@
     opacity: 1 !important;
     background-color: var(--accent-color) !important;
   }
+  
+  /* Enhanced drag and drop styles */
+  .draggable-assessment.is-dragging {
+    opacity: 0.7;
+    transform: scale(1.05);
+    box-shadow: 0 6px 10px rgba(0,0,0,0.3);
+    z-index: 9999;
+  }
+  
+  .assessment-mirror {
+    opacity: 0.9 !important;
+    z-index: 10000 !important;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
+    border: 2px dashed var(--tertiary-color) !important;
+    background-color: var(--accent-color) !important;
+  }
+  
+  .potential-drop-target {
+    transition: all 0.2s ease;
+  }
+  
+  .drop-target-highlight {
+    background-color: rgba(103, 78, 204, 0.1) !important;
+    box-shadow: inset 0 0 0 2px var(--tertiary-color) !important;
+  }
+  
+  .active-drop-target {
+    background-color: rgba(103, 78, 204, 0.2) !important;
+    box-shadow: inset 0 0 0 3px var(--accent-color) !important;
+  }
+  
+  .being-dragged {
+    z-index: 9999 !important;
+    opacity: 0.9 !important;
+  }
+  
+  .being-removed {
+    transition: all 0.3s ease !important;
+  }
+  
+  .processing-drop {
+    background-color: rgba(74, 136, 199, 0.2) !important;
+    animation: pulse-border 1.5s infinite ease-in-out;
+  }
+  
+  @keyframes pulse-border {
+    0% { border-left-width: 4px; }
+    50% { border-left-width: 8px; }
+    100% { border-left-width: 4px; }
+  }
+  
+  .drop-success {
+    animation: pulse-success 1s ease;
+  }
+  
+  .drop-error {
+    animation: pulse-error 1s ease;
+  }
+  
+  @keyframes pulse-success {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  @keyframes pulse-error {
+    0% { transform: scale(1); background-color: rgba(255, 59, 48, 0.7); }
+    50% { transform: scale(1.05); background-color: rgba(255, 59, 48, 0.8); }
+    100% { transform: scale(1); }
+  }
+  
+  .event-loading {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 16px;
+    height: 16px;
+  }
+  
+  .loading-spinner {
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top: 2px solid white;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .drop-success-indicator {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 16px;
+    height: 16px;
+    background-color: #4cd964;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    animation: fade-in 0.3s ease;
+  }
+  
+  @keyframes fade-in {
+    0% { opacity: 0; transform: scale(0); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  
+  /* Mobile enhancements for drag and drop */
+  @media (max-width: 768px) {
+    .assessment-mirror {
+      max-width: 200px !important;
+    }
+    
+    .fc-event {
+      touch-action: none !important; /* Prevent scroll when trying to drag */
+    }
+    
+    .draggable-assessment {
+      margin-bottom: 15px !important; /* More space for touch targets */
+    }
+    
+    .draggable-assessment::after {
+      content: '↹';
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px !important;
+      color: rgba(255,255,255,0.8);
+    }
+  }
+  
+  .drop-preview {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    right: 5px;
+    height: auto;
+    background-color: rgba(103, 78, 204, 0.2);
+    border: 2px dashed var(--tertiary-color);
+    border-radius: 4px;
+    padding: 4px;
+    color: var(--tertiary-color);
+    font-size: 11px;
+    text-align: center;
+    pointer-events: none;
+    z-index: 5;
+    animation: pulse 1.5s infinite ease-in-out;
+  }
+  
+  @keyframes pulse {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+  }
+  
+  /* Style for dates outside semester range */
+  .outside-semester {
+    opacity: 0.5 !important;
+    background-color: #f0f0f0 !important;
+    color: #999 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+  }
+  
+  .outside-semester .fc-daygrid-day-number {
+    color: #999 !important;
+  }
+  
+  /* Style for dates outside semester in dark mode */
+  [data-bs-theme="dark"] .outside-semester {
+    background-color: #2a2a2a !important;
+    color: #666 !important;
+  }
+  
+  [data-bs-theme="dark"] .outside-semester .fc-daygrid-day-number {
+    color: #666 !important;
+  }
+  
+  /* Updated card styles with unified color palette */
+  :root {
+    /* Define a unified color palette */
+    --card-purple: #674ECC;
+    --card-purple-light: #e2dcf8;
+    --card-purple-dark: #563db3;
+    --card-blue: #4a88c7;
+    --card-blue-light: #d9e9f7;
+    --card-blue-dark: #3d70a9;
+    --card-accent: #9C9FE2;
+    --card-accent-light: #e4e5f5;
+    --card-accent-dark: #7a7dc7;
+  }
+  
+  /* Base card style that all cards will inherit */
+  .assessment-item,
+  .draggable-assessment {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    border-left: 4px solid var(--card-purple);
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  .assessment-item:hover,
+  .draggable-assessment:hover {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+  
+  /* Text colors for all cards in light mode */
+  .assessment-item .assessment-name,
+  .draggable-assessment .assessment-name {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+  }
+  
+  .assessment-item .assessment-details,
+  .draggable-assessment .assessment-details {
+    color: #666;
+    font-size: 0.8rem;
+  }
+  
+  /* Status badge styling - unified for all cards */
+  .status-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-right: 4px;
+    color: white;
+  }
+  
+  .status-badge.scheduled {
+    background-color: var(--card-blue);
+  }
+  
+  .status-badge.unscheduled {
+    background-color: var(--card-purple);
+  }
+  
+  .badge.proctored {
+    background-color: var(--card-accent);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+  
+  /* Special styling for unscheduled items - Light mode */
+  .draggable-assessment.status-unscheduled {
+    cursor: grab;
+    background-color: var(--card-purple);
+    border-left-color: var(--card-purple-dark);
+    color: white;
+  }
+  
+  .draggable-assessment.status-unscheduled .assessment-name,
+  .draggable-assessment.status-unscheduled .assessment-details {
+    color: white;
+  }
+  
+  /* Special styling for scheduled items - Light mode */
+  .draggable-assessment.scheduled {
+    cursor: grab;
+    background-color: var(--card-blue);
+    border-left-color: var(--card-blue-dark);
+    color: white;
+  }
+  
+  .draggable-assessment.scheduled .assessment-name,
+  .draggable-assessment.scheduled .assessment-details {
+    color: white;
+  }
+  
+  /* Hover states - Light mode */
+  .draggable-assessment.status-unscheduled:hover {
+    background-color: var(--card-purple-dark);
+  }
+  
+  .draggable-assessment.scheduled:hover {
+    background-color: var(--card-blue-dark);
+  }
+  
+  /* Special styling for proctored items */
+  .draggable-assessment.proctored.status-unscheduled {
+    border-left-color: var(--card-accent);
+  }
+  
+  .draggable-assessment.proctored.scheduled {
+    border-left-color: var(--card-accent);
+  }
+  
+  /* Dark mode adjustments - Not needed since we're using the same colors */
+  [data-bs-theme="dark"] .assessment-item,
+  [data-bs-theme="dark"] .draggable-assessment {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Active drag state */
+  .draggable-assessment.is-dragging,
+  .assessment-item.is-dragging {
+    opacity: 0.8;
+    transform: scale(0.98);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Calendar events - match the card colors */
+  .fc-event[style*="background-color: var(--tertiary-color)"] {
+    background-color: var(--card-purple) !important;
+    border-left-color: var(--card-purple-dark);
+  }
+  
+  /* Proctored events on calendar */
+  .fc-event[style*="background-color: #674ECC"],
+  .fc-event[style*="background-color: rgb(103, 78, 204)"] {
+    background-color: var(--card-purple) !important;
+    border-left-color: var(--card-accent);
+  }
+  
+  /* Consistent heading styles across all assessment lists */
+  #unscheduled-list h3,
+  #scheduled-list h3 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
+  }
+  
+  /* Style for the show more/less buttons */
+  #show-more-btn, 
+  #show-less-btn {
+    margin-top: 10px;
+    background-color: var(--card-blue);
+    color: white;
+    border: none;
+    transition: all 0.2s ease;
+  }
+  
+  #show-more-btn:hover, 
+  #show-less-btn:hover {
+    background-color: var(--card-blue-dark);
+    transform: translateY(-2px);
+  }
+  
+  /* Popup style for all assessments */
+  #all-assessments {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+  }
+  
+  /* Popup background overlay */
+  .popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+  
+  .popup-overlay.active {
+    display: block;
+  }
+  
+  #all-assessments.hidden {
+    display: none;
+  }
+  
+  /* Dark mode adjustments for popup */
+  [data-bs-theme="dark"] #all-assessments {
+    background-color: #2d3748;
+    border-color: #4a5568;
+  }
+  
+  /* Add a title to the popup */
+  #all-assessments .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  #all-assessments .popup-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--text-color);
+  }
+  
+  /* Close button in popup header */
+  #all-assessments .close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--text-color);
+    opacity: 0.7;
+    transition: all 0.2s ease;
+  }
+  
+  #all-assessments .close-btn:hover {
+    opacity: 1;
+  }
+  
+  /* Style for scheduled assessment cards in the popup */
+  #all-assessments .assessment-item, 
+  #all-assessments .draggable-assessment {
+    background-color: var(--card-blue);
+    color: white;
+    border-left-color: var(--card-blue-dark);
+  }
+  
+  #all-assessments .assessment-item .assessment-name,
+  #all-assessments .draggable-assessment .assessment-name,
+  #all-assessments .assessment-item .assessment-details,
+  #all-assessments .draggable-assessment .assessment-details {
+    color: white;
+  }
+  
+  #all-assessments .assessment-item:hover,
+  #all-assessments .draggable-assessment:hover {
+    background-color: var(--card-blue-dark);
+  }
+  
+  /* Proctored items in popup */
+  #all-assessments .assessment-item.proctored,
+  #all-assessments .draggable-assessment.proctored {
+    border-left-color: var(--card-accent);
+  }
+  
+  /* Make the popup scrollbar more attractive */
+  #all-assessments::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  #all-assessments::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  #all-assessments::-webkit-scrollbar-thumb {
+    background: var(--card-blue);
+    border-radius: 10px;
+  }
+  
+  #all-assessments::-webkit-scrollbar-thumb:hover {
+    background: var(--card-blue-dark);
+  }
+  
+  /* Dark mode scrollbar */
+  [data-bs-theme="dark"] #all-assessments::-webkit-scrollbar-track {
+    background: #2d3748;
+  }
+  
+  /* Ensure the count badge in the scheduled list matches our color scheme */
+  .count-badge {
+    background-color: var(--card-blue);
+    color: white;
+  }
 </style>
 {% endblock %}
 
@@ -891,7 +1465,7 @@
         <h3>My Assessments</h3>
         {% if my_assessments %}
           {% for assessment in my_assessments %}
-            <div class="draggable-assessment {% if assessment.proctored %}proctored{% endif %} {% if assessment.scheduled %}scheduled{% else %}status-unscheduled can-drag{% endif %}" 
+            <div class="draggable-assessment {% if assessment.proctored %}proctored{% endif %} {% if assessment.scheduled %}scheduled can-drag{% else %}status-unscheduled can-drag{% endif %}" 
                 data-assessment-id="{{ assessment.id }}" 
                 data-course-code="{{ assessment.course_code }}" 
                 data-percentage="{{ assessment.percentage }}"
@@ -918,12 +1492,6 @@
         {% else %}
           <p>No assessments found.</p>
         {% endif %}
-        
-        <div class="drag-instructions">
-          <i class="material-icons">touch_app</i>
-          <strong>Assessments marked with "Unscheduled" can be dragged</strong><br>
-          Drag unscheduled assessments to the calendar to schedule them
-        </div>
         
         <div class="drag-instructions">
           <i class="material-icons">info</i>
@@ -973,7 +1541,12 @@
           {% if scheduled_assessments|length > 3 %}
             <button id="show-more-btn" class="action-btn">Show All ({{ scheduled_assessments|length }}) Assessments</button>
             
+            <div class="popup-overlay"></div>
             <div id="all-assessments" class="all-assessments hidden">
+              <div class="popup-header">
+                <div class="popup-title">All Scheduled Assessments ({{ scheduled_assessments|length }})</div>
+                <button class="close-btn" id="close-popup-btn">&times;</button>
+              </div>
               {% for assessment in scheduled_assessments %}
                 <div class="assessment-item draggable-assessment {% if assessment.proctored %}proctored{% endif %}" 
                     data-assessment-id="{{ assessment.id }}" 
@@ -993,8 +1566,6 @@
                   </div>
                 </div>
               {% endfor %}
-              
-              <button id="show-less-btn" class="action-btn">Show Less</button>
             </div>
           {% endif %}
           
