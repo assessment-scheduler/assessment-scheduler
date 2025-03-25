@@ -27,9 +27,9 @@ document.addEventListener("DOMContentLoaded", function () {
     
     try {
       // Handle ISO string format
-      if (typeof dateStr === 'string' && dateStr.includes('T')) {
-        return dateStr.split('T')[0];
-      }
+    if (typeof dateStr === 'string' && dateStr.includes('T')) {
+      return dateStr.split('T')[0];
+    }
       
       // Handle date object
       if (dateStr instanceof Date) {
@@ -39,9 +39,9 @@ document.addEventListener("DOMContentLoaded", function () {
       // Handle string date without T
       if (typeof dateStr === 'string' && dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
         return dateStr.substring(0, 10);
-      }
-      
-      return dateStr;
+    }
+    
+    return dateStr;
     } catch (error) {
       console.error("Error formatting date:", error, dateStr);
       return null;
@@ -113,6 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
     
+    // Improved draggable initialization with better feedback
     new FullCalendar.Draggable(unscheduledList, {
       itemSelector: ".draggable-assessment.status-unscheduled",
       eventData: function(eventEl) {
@@ -131,7 +132,23 @@ document.addEventListener("DOMContentLoaded", function () {
       },
       mirrorSelector: ".draggable-assessment",
       dragRevertDuration: 0,
-      droppableScope: 'assessment'
+      droppableScope: 'assessment',
+      dragClass: 'is-dragging',
+      mirrorClass: 'assessment-mirror',
+      // Add animation effects and feedback during dragging
+      elementDragging: function(el, event) {
+        // Highlight valid drop targets on drag start
+        document.querySelectorAll('.fc-day').forEach(day => {
+          day.classList.add('potential-drop-target');
+        });
+      },
+      elementDragStop: function(el, event) {
+        // Remove highlights when dragging stops
+        document.querySelectorAll('.fc-day').forEach(day => {
+          day.classList.remove('potential-drop-target');
+          day.classList.remove('active-drop-target');
+        });
+      }
     });
   }
 
@@ -179,7 +196,22 @@ document.addEventListener("DOMContentLoaded", function () {
       },
       mirrorSelector: ".draggable-assessment",
       dragRevertDuration: 0,
-      droppableScope: 'assessment'
+      droppableScope: 'assessment',
+      dragClass: 'is-dragging',
+      mirrorClass: 'assessment-mirror',
+      elementDragging: function(el, event) {
+        // Highlight valid drop targets on drag start
+        document.querySelectorAll('.fc-day').forEach(day => {
+          day.classList.add('potential-drop-target');
+        });
+      },
+      elementDragStop: function(el, event) {
+        // Remove highlights when dragging stops
+        document.querySelectorAll('.fc-day').forEach(day => {
+          day.classList.remove('potential-drop-target');
+          day.classList.remove('active-drop-target');
+        });
+      }
     });
   }
 
@@ -237,6 +269,74 @@ document.addEventListener("DOMContentLoaded", function () {
     droppable: true,
     dayMaxEvents: 2, // Limit visible events to 2 per day
     
+    // Improved drop handling for better UX
+    dragRevert: true, // Revert drag if not dropped successfully
+    dragScroll: true, // Auto-scroll while dragging
+    longPressDelay: 150, // Make touch interactions more responsive
+    eventLongPressDelay: 150, // Also for events
+    
+    // Change cursors to indicate draggability
+    eventDragStart: function(info) {
+      document.body.style.cursor = 'grabbing';
+      info.el.style.cursor = 'grabbing';
+      
+      // Add visual effect for dragging
+      info.el.classList.add('being-dragged');
+      info.el.style.boxShadow = '0 6px 10px rgba(0,0,0,0.3)';
+      info.el.style.transform = 'scale(1.05)';
+      
+      // Highlight calendar days when dragging starts
+      document.querySelectorAll('.fc-day').forEach(day => {
+        const dayDate = new Date(day.getAttribute('data-date'));
+        if (semester && dayDate) {
+          const semesterStart = new Date(semester.start_date);
+          const semesterEnd = new Date(semester.end_date);
+          if (dayDate >= semesterStart && dayDate <= semesterEnd) {
+            day.classList.add('drop-target-highlight');
+          }
+        }
+      });
+    },
+    
+    eventDragStop: function(info) {
+      document.body.style.cursor = '';
+      info.el.style.cursor = '';
+      
+      // Remove visual dragging effect
+      info.el.classList.remove('being-dragged');
+      info.el.style.boxShadow = '';
+      info.el.style.transform = '';
+      
+      // Remove highlights
+      document.querySelectorAll('.fc-day').forEach(day => {
+        day.classList.remove('drop-target-highlight');
+      });
+      
+      // Check if the element was dropped outside of a valid calendar area
+      const isOutsideCalendar = document.querySelector('.fc-event-dragging') === null;
+      const isOwnedAssessment = info.event.extendedProps?.isOwnedAssessment;
+      
+      if (isOutsideCalendar && isOwnedAssessment) {
+        console.log("Assessment dragged outside calendar:", info.event.id);
+        const eventId = info.event.id;
+        
+        if (confirm('Are you sure you want to unschedule this assessment?')) {
+          // Add visual feedback before removal
+          info.el.classList.add('being-removed');
+          info.el.style.opacity = '0';
+          info.el.style.transform = 'scale(0.8)';
+          
+          // Small delay for visual effect
+          setTimeout(() => {
+            // Remove the event from the calendar
+            info.event.remove();
+            // Call the unschedule endpoint
+            unscheduleEvent(eventId);
+          }, 300);
+        }
+      }
+    },
+    
     // Configure the "more" events popover
     moreLinkClick: 'popover',
     eventPopoverDidMount: function(info) {
@@ -260,12 +360,69 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     },
     
+    // Add hover effects for calendar days during drag operations
+    dayCellDidMount: function(info) {
+      const cell = info.el;
+      
+      // Add hover listeners for drag preview
+      cell.addEventListener('dragenter', function(e) {
+        // Check if we're currently dragging an assessment
+        if (document.querySelector('.is-dragging') || document.querySelector('.fc-event-dragging')) {
+          cell.classList.add('active-drop-target');
+          
+          // Show a preview of where the assessment would be placed
+          const dateStr = cell.getAttribute('data-date');
+          if (dateStr) {
+            // Create or update preview element
+            let preview = cell.querySelector('.drop-preview');
+            if (!preview) {
+              preview = document.createElement('div');
+              preview.className = 'drop-preview';
+              preview.innerHTML = '<span>Drop assessment here</span>';
+              cell.appendChild(preview);
+            }
+          }
+        }
+      });
+      
+      cell.addEventListener('dragleave', function(e) {
+        cell.classList.remove('active-drop-target');
+        
+        // Remove preview
+        const preview = cell.querySelector('.drop-preview');
+        if (preview) {
+          preview.remove();
+        }
+      });
+      
+      cell.addEventListener('dragover', function(e) {
+        // Required to allow dropping
+        e.preventDefault();
+      });
+      
+      // For touch devices
+      cell.addEventListener('touchmove', function(e) {
+        const touch = e.touches[0];
+        const elementAtTouch = document.elementFromPoint(touch.clientX, touch.clientY);
+        
+        // If we're over a calendar day
+        if (elementAtTouch && elementAtTouch.classList.contains('fc-daygrid-day')) {
+          // Remove active state from all days
+          document.querySelectorAll('.fc-daygrid-day').forEach(day => {
+            day.classList.remove('active-drop-target');
+          });
+          
+          // Add active state to current day
+          elementAtTouch.classList.add('active-drop-target');
+        }
+      });
+    },
+    
     eventStartEditable: true,
     eventDurationEditable: false,
     removable: true,
     droppableScope: 'assessment',
     dragRevertDuration: 0,
-    dragScroll: true,
     dropAccept: '.draggable-assessment',
     
     eventAllow: function(dropInfo, draggedEvent) {
@@ -283,7 +440,7 @@ document.addEventListener("DOMContentLoaded", function () {
     viewDidMount: function(info) {
       // Only store dayGridMonth and timeGridWeek views in localStorage
       if (info.view.type === 'dayGridMonth' || info.view.type === 'timeGridWeek') {
-        localStorage.setItem('calendarViewType', info.view.type);
+      localStorage.setItem('calendarViewType', info.view.type);
       }
     },
     
@@ -366,10 +523,32 @@ document.addEventListener("DOMContentLoaded", function () {
         extendedProps: tempEvent.extendedProps
       });
       
+      // First, add visual feedback that we're processing the drop
+      const eventEl = info.event.el;
+      if (eventEl) {
+        eventEl.classList.add('processing-drop');
+        eventEl.style.boxShadow = '0 0 0 2px #4cd964';
+        eventEl.style.transition = 'all 0.3s ease';
+        
+        // Add a small loading indicator
+        const loadingEl = document.createElement('div');
+        loadingEl.classList.add('event-loading');
+        loadingEl.innerHTML = '<div class="loading-spinner"></div>';
+        eventEl.appendChild(loadingEl);
+      }
+      
       if (!semester || !semester.start_date) {
         console.error('Semester start date not available');
+        // Show error visual feedback
+        if (eventEl) {
+          eventEl.classList.remove('processing-drop');
+          eventEl.classList.add('drop-error');
+          eventEl.style.boxShadow = '0 0 0 2px #ff3b30';
+        }
+        setTimeout(() => {
         tempEvent.remove();
         alert("Cannot schedule assessment: No active semester found.");
+        }, 500);
         return;
       }
       
@@ -384,55 +563,89 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       
       if (eventDate < semesterStart || eventDate > semesterEnd) {
+        // Show error visual feedback
+        if (eventEl) {
+          eventEl.classList.remove('processing-drop');
+          eventEl.classList.add('drop-error');
+          eventEl.style.boxShadow = '0 0 0 2px #ff3b30';
+        }
+        setTimeout(() => {
         tempEvent.remove();
         alert("Cannot schedule assessment: Date is outside the semester range.");
+        }, 500);
         return;
       }
       
       // Ensure we have a valid assessment ID
       if (!tempEvent.id) {
         console.error('No assessment ID found on dropped event');
-        tempEvent.remove();
-        alert("Cannot schedule assessment: Missing assessment ID.");
+        // Show error visual feedback
+        if (eventEl) {
+          eventEl.classList.remove('processing-drop');
+          eventEl.classList.add('drop-error');
+          eventEl.style.boxShadow = '0 0 0 2px #ff3b30';
+        }
+        setTimeout(() => {
+          tempEvent.remove();
+          alert("Cannot schedule assessment: Missing assessment ID.");
+        }, 500);
         return;
       }
       
       try {
-        const offsets = calculateWeekAndDayOffsets(tempEvent.start, semester.start_date);
+      const offsets = calculateWeekAndDayOffsets(tempEvent.start, semester.start_date);
         console.log("Calculated offsets:", offsets);
-        
+      
         const eventData = {
-          id: tempEvent.id,
-          assessment_date: tempEvent.start.toISOString().split('T')[0],
-          start_week: offsets.startWeek,
-          start_day: offsets.startDay,
-          end_week: offsets.endWeek,
-          end_day: offsets.endDay
+        id: tempEvent.id,
+        assessment_date: tempEvent.start.toISOString().split('T')[0],
+        start_week: offsets.startWeek,
+        start_day: offsets.startDay,
+        end_week: offsets.endWeek,
+        end_day: offsets.endDay
         };
         
         console.log("Saving assessment with data:", eventData);
+        
+        // Show success visual feedback
+        if (eventEl) {
+          eventEl.classList.remove('processing-drop');
+          eventEl.classList.add('drop-success');
+          eventEl.style.boxShadow = '0 0 0 2px #4cd964';
+          
+          // Remove the loading indicator
+          const loadingEl = eventEl.querySelector('.event-loading');
+          if (loadingEl) {
+            loadingEl.remove();
+          }
+          
+          // Add a success indicator
+          const successEl = document.createElement('div');
+          successEl.classList.add('drop-success-indicator');
+          successEl.innerHTML = '✓';
+          eventEl.appendChild(successEl);
+          
+          // Remove after animation completes
+          setTimeout(() => {
+            successEl.remove();
+            eventEl.classList.remove('drop-success');
+            eventEl.style.boxShadow = '';
+          }, 1500);
+        }
+        
         saveEvent(eventData, tempEvent);
       } catch (error) {
         console.error("Error scheduling assessment:", error);
-        tempEvent.remove();
-        alert("Failed to schedule assessment. Please try again.");
-      }
-    },
-    eventDragStop: function(info) {
-      // Check if the element was dropped outside of a valid calendar area
-      const isOutsideCalendar = document.querySelector('.fc-event-dragging') === null;
-      const isOwnedAssessment = info.event.extendedProps?.isOwnedAssessment;
-      
-      if (isOutsideCalendar && isOwnedAssessment) {
-        console.log("Assessment dragged outside calendar:", info.event.id);
-        const eventId = info.event.id;
-        
-        if (confirm('Are you sure you want to unschedule this assessment?')) {
-          // Remove the event from the calendar
-          info.event.remove();
-          // Call the unschedule endpoint
-          unscheduleEvent(eventId);
+        // Show error visual feedback
+        if (eventEl) {
+          eventEl.classList.remove('processing-drop');
+          eventEl.classList.add('drop-error');
+          eventEl.style.boxShadow = '0 0 0 2px #ff3b30';
         }
+        setTimeout(() => {
+          tempEvent.remove();
+          alert("Failed to schedule assessment. Please try again.");
+        }, 500);
       }
     },
     eventRemove: function(info) {
@@ -448,10 +661,10 @@ document.addEventListener("DOMContentLoaded", function () {
       
       if (isOwnedAssessment) {
         if (confirm('Would you like to unschedule this assessment?')) {
-          const eventId = info.event.id;
+      const eventId = info.event.id;
           info.event.remove();
-          unscheduleEvent(eventId);
-        }
+      unscheduleEvent(eventId);
+    }
       }
     },
   });
@@ -474,11 +687,63 @@ document.addEventListener("DOMContentLoaded", function () {
     // Go to semester start date if available
     if (semester && semester.start_date) {
       console.log("Setting calendar initial date to semester start date:", semester.start_date);
-      calendar.gotoDate(new Date(semester.start_date));
       
-      // Set view to dayGridMonth to ensure we see the monthly view first
-      calendar.changeView('dayGridMonth');
+      // Check if we need to restore saved view position after refresh
+      const savedDate = localStorage.getItem('calendarCurrentDate');
+      const savedView = localStorage.getItem('calendarViewType');
+      
+      if (savedDate) {
+        console.log("Restoring calendar to saved date:", savedDate);
+        calendar.gotoDate(new Date(savedDate));
+      } else {
+        calendar.gotoDate(new Date(semester.start_date));
+      }
+      
+      // Restore saved view type or default to month view
+      if (savedView) {
+        console.log("Restoring saved view type:", savedView);
+        calendar.changeView(savedView);
+      } else {
+        calendar.changeView('dayGridMonth');
+      }
     }
+    
+    // Apply visual styling to dates outside semester range
+    const markDatesOutsideSemester = () => {
+      if (semester && semester.start_date && semester.end_date) {
+        const semesterStart = new Date(semester.start_date);
+        const semesterEnd = new Date(semester.end_date);
+        
+        // Find all day cells in the calendar
+        const dayCells = document.querySelectorAll('.fc-daygrid-day');
+        
+        dayCells.forEach(dayCell => {
+          const dateAttr = dayCell.getAttribute('data-date');
+          if (dateAttr) {
+            const cellDate = new Date(dateAttr);
+            
+            // Check if date is outside semester range
+            if (cellDate < semesterStart || cellDate > semesterEnd) {
+              dayCell.classList.add('outside-semester');
+            } else {
+              dayCell.classList.remove('outside-semester');
+            }
+          }
+        });
+      }
+    };
+    
+    // Initial application of outside-semester styling
+    markDatesOutsideSemester();
+    
+    // Apply styling when month changes
+    calendar.on('datesSet', function() {
+      markDatesOutsideSemester();
+      
+      // Save current date and view for state preservation
+      localStorage.setItem('calendarCurrentDate', calendar.getDate().toISOString());
+      localStorage.setItem('calendarViewType', calendar.view.type);
+    });
     
     // Ensure events are loaded by forcing a refetch after a short delay
     setTimeout(() => {
@@ -548,7 +813,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (selectedLevel !== "0" || selectedCourse !== "all" || selectedType !== "all") {
         const filteredEvents = filterEvents(selectedLevel, selectedCourse, selectedType);
         console.log("Initial filtered events count:", filteredEvents.length);
-        updateCalendarEvents(calendar, filteredEvents, false);
+            updateCalendarEvents(calendar, filteredEvents, false);
       }
     }
   }
@@ -675,7 +940,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     console.log("Filtered events for calendar:", updatedEvents.length);
     
-    updatedEvents.forEach(event => {
+      updatedEvents.forEach(event => {
       try {
         const existingEvent = calendar.getEventById(event.id);
         if (!existingEvent) {
@@ -755,12 +1020,19 @@ document.addEventListener("DOMContentLoaded", function () {
   function saveEvent(data, tempEvent = null) {
     console.log("saveEvent called with data:", data);
     
-    const currentLevel = levelFilter ? levelFilter.value : "0";
-    const currentCourse = courseFilter ? courseFilter.value : "all";
-    const currentType = typeFilter ? typeFilter.value : "all";
-    
+    // Save current calendar state before form submission
     if (calendar) {
       localStorage.setItem('calendarViewType', calendar.view.type);
+      localStorage.setItem('calendarCurrentDate', calendar.getDate().toISOString());
+      
+      // Also save filter states
+      const currentLevel = levelFilter ? levelFilter.value : "0";
+      const currentCourse = courseFilter ? courseFilter.value : "all";
+      const currentType = typeFilter ? typeFilter.value : "all";
+      
+      localStorage.setItem('calendarLevelFilter', currentLevel);
+      localStorage.setItem('calendarCourseFilter', currentCourse);
+      localStorage.setItem('calendarTypeFilter', currentType);
     }
 
     if (!data.assessment_date && tempEvent && tempEvent.start) {
@@ -785,36 +1057,36 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     try {
-      const formattedData = {
-        id: parseInt(data.id),
-        assessment_date: data.assessment_date,
-        start_week: parseInt(data.start_week),
-        start_day: parseInt(data.start_day),
-        end_week: parseInt(data.end_week),
-        end_day: parseInt(data.end_day)
-      };
-  
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = '/update_assessment_schedule';
-      form.style.display = 'none';
-      
-      for (const key in formattedData) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = formattedData[key];
-        form.appendChild(input);
-      }
-      
-      document.body.appendChild(form);
+    const formattedData = {
+      id: parseInt(data.id),
+      assessment_date: data.assessment_date,
+      start_week: parseInt(data.start_week),
+      start_day: parseInt(data.start_day),
+      end_week: parseInt(data.end_week),
+      end_day: parseInt(data.end_day)
+    };
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/update_assessment_schedule';
+    form.style.display = 'none';
+    
+    for (const key in formattedData) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = formattedData[key];
+      form.appendChild(input);
+    }
+    
+    document.body.appendChild(form);
       
       // Add visual feedback
       if (tempEvent && tempEvent.el) {
         tempEvent.el.style.boxShadow = '0 0 10px 2px rgba(46, 204, 113, 0.7)';
       }
       
-      form.submit();
+    form.submit();
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("Error scheduling assessment. Please try again.");
@@ -828,6 +1100,16 @@ document.addEventListener("DOMContentLoaded", function () {
   function unscheduleEvent(eventId) {
     if (calendar) {
       localStorage.setItem('calendarViewType', calendar.view.type);
+      localStorage.setItem('calendarCurrentDate', calendar.getDate().toISOString());
+      
+      // Also save filter states
+      const currentLevel = levelFilter ? levelFilter.value : "0";
+      const currentCourse = courseFilter ? courseFilter.value : "all";
+      const currentType = typeFilter ? typeFilter.value : "all";
+      
+      localStorage.setItem('calendarLevelFilter', currentLevel);
+      localStorage.setItem('calendarCourseFilter', currentCourse);
+      localStorage.setItem('calendarTypeFilter', currentType);
     }
     
     const form = document.createElement('form');
@@ -953,7 +1235,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 eventEl.style.zIndex = '1000';
                 
                 // Remove highlight after 2 seconds
-                setTimeout(() => {
+        setTimeout(() => {
                   eventEl.style.boxShadow = '';
                   eventEl.style.zIndex = '';
                 }, 2000);
