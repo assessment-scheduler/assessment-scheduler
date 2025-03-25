@@ -86,11 +86,11 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!calendarEl) return;
 
   if (unscheduledList) {
-    console.log("Initializing drag for unscheduled assessments");
+    console.log("Initializing drag for assessments in My Assessments list");
     
-    // Find all draggable unscheduled items
-    const draggableItems = unscheduledList.querySelectorAll('.draggable-assessment.status-unscheduled.can-drag');
-    console.log(`Found ${draggableItems.length} draggable unscheduled assessments`);
+    // Find all draggable items (both scheduled and unscheduled)
+    const draggableItems = unscheduledList.querySelectorAll('.draggable-assessment.can-drag');
+    console.log(`Found ${draggableItems.length} draggable assessments`);
     
     // More detailed logging to debug draggable elements
     const allItems = unscheduledList.querySelectorAll('.draggable-assessment');
@@ -105,17 +105,17 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       console.warn("NO DRAGGABLE ITEMS FOUND - check class names!");
       
-      // Fallback to any unscheduled assessment
-      const anyUnscheduled = unscheduledList.querySelectorAll('.status-unscheduled');
-      if (anyUnscheduled.length > 0) {
-        console.log("Found unscheduled items without can-drag class:", anyUnscheduled.length);
-        console.log("Sample unscheduled item:", anyUnscheduled[0]);
+      // Fallback to any assessment
+      const anyAssessment = unscheduledList.querySelectorAll('.draggable-assessment');
+      if (anyAssessment.length > 0) {
+        console.log("Found assessments without can-drag class:", anyAssessment.length);
+        console.log("Sample assessment item:", anyAssessment[0]);
       }
     }
     
     // Improved draggable initialization with better feedback
     new FullCalendar.Draggable(unscheduledList, {
-      itemSelector: ".draggable-assessment.status-unscheduled",
+      itemSelector: ".draggable-assessment.can-drag",
       eventData: function(eventEl) {
         console.log("Dragging assessment:", eventEl.dataset);
         return {
@@ -127,6 +127,7 @@ document.addEventListener("DOMContentLoaded", function () {
             course_code: eventEl.dataset.courseCode,
             percentage: eventEl.dataset.percentage,
             proctored: eventEl.dataset.proctored === "1" || eventEl.dataset.proctored === "True" || eventEl.dataset.proctored === "true",
+            isRescheduling: eventEl.classList.contains('scheduled')
           }
         };
       },
@@ -513,139 +514,46 @@ document.addEventListener("DOMContentLoaded", function () {
     eventDrop: handleEventDrop,
     drop: handleNewItem,
     eventReceive: function(info) {
-      const tempEvent = info.event;
+      console.log("Event received:", info.event);
       
-      console.log("Assessment dropped on calendar:", tempEvent);
-      console.log("Event properties:", {
-        id: tempEvent.id,
-        title: tempEvent.title,
-        start: tempEvent.start,
-        extendedProps: tempEvent.extendedProps
-      });
+      // Determine if this is a scheduled assessment being rescheduled
+      const isRescheduling = info.event.extendedProps.isRescheduling;
+      const assessmentId = info.event.id;
       
-      // First, add visual feedback that we're processing the drop
-      const eventEl = info.event.el;
-      if (eventEl) {
-        eventEl.classList.add('processing-drop');
-        eventEl.style.boxShadow = '0 0 0 2px #4cd964';
-        eventEl.style.transition = 'all 0.3s ease';
-        
-        // Add a small loading indicator
-        const loadingEl = document.createElement('div');
-        loadingEl.classList.add('event-loading');
-        loadingEl.innerHTML = '<div class="loading-spinner"></div>';
-        eventEl.appendChild(loadingEl);
+      // Create data for the API call
+      const data = {
+        assessment_id: assessmentId,
+        assessment_date: info.event.start ? info.event.start.toISOString().split('T')[0] : null,
+      };
+      
+      if (semester && semester.start_date) {
+        const offsets = calculateWeekAndDayOffsets(info.event.start, semester.start_date);
+        data.start_week = offsets.startWeek;
+        data.start_day = offsets.startDay;
+        data.end_week = offsets.endWeek;
+        data.end_day = offsets.endDay;
       }
       
-      if (!semester || !semester.start_date) {
-        console.error('Semester start date not available');
-        // Show error visual feedback
-        if (eventEl) {
-          eventEl.classList.remove('processing-drop');
-          eventEl.classList.add('drop-error');
-          eventEl.style.boxShadow = '0 0 0 2px #ff3b30';
-        }
-        setTimeout(() => {
-        tempEvent.remove();
-        alert("Cannot schedule assessment: No active semester found.");
-        }, 500);
-        return;
-      }
+      console.log("Saving event with data:", data);
       
-      const eventDate = tempEvent.start;
-      const semesterStart = new Date(semester.start_date);
-      const semesterEnd = new Date(semester.end_date);
+      // Add visual indicator that we're processing
+      const loadingIndicator = document.createElement('div');
+      loadingIndicator.className = 'event-loading';
+      loadingIndicator.innerHTML = '<div class="loading-spinner"></div>';
+      info.event.setProp('classNames', ['processing-drop']);
       
-      console.log("Validating date range:", {
-        event: eventDate,
-        semesterStart: semesterStart,
-        semesterEnd: semesterEnd
-      });
-      
-      if (eventDate < semesterStart || eventDate > semesterEnd) {
-        // Show error visual feedback
-        if (eventEl) {
-          eventEl.classList.remove('processing-drop');
-          eventEl.classList.add('drop-error');
-          eventEl.style.boxShadow = '0 0 0 2px #ff3b30';
-        }
-        setTimeout(() => {
-        tempEvent.remove();
-        alert("Cannot schedule assessment: Date is outside the semester range.");
-        }, 500);
-        return;
-      }
-      
-      // Ensure we have a valid assessment ID
-      if (!tempEvent.id) {
-        console.error('No assessment ID found on dropped event');
-        // Show error visual feedback
-        if (eventEl) {
-          eventEl.classList.remove('processing-drop');
-          eventEl.classList.add('drop-error');
-          eventEl.style.boxShadow = '0 0 0 2px #ff3b30';
-        }
-        setTimeout(() => {
-          tempEvent.remove();
-          alert("Cannot schedule assessment: Missing assessment ID.");
-        }, 500);
-        return;
-      }
-      
-      try {
-      const offsets = calculateWeekAndDayOffsets(tempEvent.start, semester.start_date);
-        console.log("Calculated offsets:", offsets);
-      
-        const eventData = {
-        id: tempEvent.id,
-        assessment_date: tempEvent.start.toISOString().split('T')[0],
-        start_week: offsets.startWeek,
-        start_day: offsets.startDay,
-        end_week: offsets.endWeek,
-        end_day: offsets.endDay
-        };
+      // If it's already scheduled, we need to unschedule first then reschedule
+      if (isRescheduling) {
+        console.log("Rescheduling existing assessment:", assessmentId, "to date:", data.assessment_date);
         
-        console.log("Saving assessment with data:", eventData);
+        // We'll save the event directly instead of calling unscheduleEvent first
+        saveEvent(data, info.event);
         
-        // Show success visual feedback
-        if (eventEl) {
-          eventEl.classList.remove('processing-drop');
-          eventEl.classList.add('drop-success');
-          eventEl.style.boxShadow = '0 0 0 2px #4cd964';
-          
-          // Remove the loading indicator
-          const loadingEl = eventEl.querySelector('.event-loading');
-          if (loadingEl) {
-            loadingEl.remove();
-          }
-          
-          // Add a success indicator
-          const successEl = document.createElement('div');
-          successEl.classList.add('drop-success-indicator');
-          successEl.innerHTML = '✓';
-          eventEl.appendChild(successEl);
-          
-          // Remove after animation completes
-          setTimeout(() => {
-            successEl.remove();
-            eventEl.classList.remove('drop-success');
-            eventEl.style.boxShadow = '';
-          }, 1500);
-        }
-        
-        saveEvent(eventData, tempEvent);
-      } catch (error) {
-        console.error("Error scheduling assessment:", error);
-        // Show error visual feedback
-        if (eventEl) {
-          eventEl.classList.remove('processing-drop');
-          eventEl.classList.add('drop-error');
-          eventEl.style.boxShadow = '0 0 0 2px #ff3b30';
-        }
-        setTimeout(() => {
-          tempEvent.remove();
-          alert("Failed to schedule assessment. Please try again.");
-        }, 500);
+        // After successful save, we might want to update the UI
+        // This will happen in the saveEvent function
+      } else {
+        // Regular scheduling of an unscheduled assessment
+        saveEvent(data, info.event);
       }
     },
     eventRemove: function(info) {
@@ -1046,55 +954,67 @@ document.addEventListener("DOMContentLoaded", function () {
         data.end_day = offsets.endDay;
       }
     }
-
-    console.log('Sending assessment update:', {
-      id: data.id,
-      date: data.assessment_date,
-      start_week: data.start_week,
-      start_day: data.start_day,
-      end_week: data.end_week,
-      end_day: data.end_day
-    });
-
-    try {
-    const formattedData = {
-      id: parseInt(data.id),
-      assessment_date: data.assessment_date,
-      start_week: parseInt(data.start_week),
-      start_day: parseInt(data.start_day),
-      end_week: parseInt(data.end_week),
-      end_day: parseInt(data.end_day)
-    };
-
+    
+    // Check if this is a rescheduling operation
+    const isRescheduling = tempEvent && tempEvent.extendedProps && tempEvent.extendedProps.isRescheduling;
+    
+    // Create and submit the form
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = '/update_assessment_schedule';
+    form.action = '/schedule_assessment';
     form.style.display = 'none';
+
+    // Add the assessment_id field
+    const idField = document.createElement('input');
+    idField.type = 'hidden';
+    idField.name = 'assessment_id';
+    idField.value = data.assessment_id || (tempEvent ? tempEvent.id : '');
+    form.appendChild(idField);
+
+    // Add the date field
+    const dateField = document.createElement('input');
+    dateField.type = 'hidden';
+    dateField.name = 'assessment_date';
+    dateField.value = data.assessment_date;
+    form.appendChild(dateField);
+
+    // Add the week and day offset fields
+    const startWeekField = document.createElement('input');
+    startWeekField.type = 'hidden';
+    startWeekField.name = 'start_week';
+    startWeekField.value = data.start_week;
+    form.appendChild(startWeekField);
+
+    const startDayField = document.createElement('input');
+    startDayField.type = 'hidden';
+    startDayField.name = 'start_day';
+    startDayField.value = data.start_day;
+    form.appendChild(startDayField);
+
+    const endWeekField = document.createElement('input');
+    endWeekField.type = 'hidden';
+    endWeekField.name = 'end_week';
+    endWeekField.value = data.end_week;
+    form.appendChild(endWeekField);
+
+    const endDayField = document.createElement('input');
+    endDayField.type = 'hidden';
+    endDayField.name = 'end_day';
+    endDayField.value = data.end_day;
+    form.appendChild(endDayField);
     
-    for (const key in formattedData) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = formattedData[key];
-      form.appendChild(input);
+    // Add an extra field to indicate this is a rescheduling
+    if (isRescheduling) {
+      const reschedulingField = document.createElement('input');
+      reschedulingField.type = 'hidden';
+      reschedulingField.name = 'is_rescheduling';
+      reschedulingField.value = 'true';
+      form.appendChild(reschedulingField);
     }
-    
+
+    // Add the form to the document and submit it
     document.body.appendChild(form);
-      
-      // Add visual feedback
-      if (tempEvent && tempEvent.el) {
-        tempEvent.el.style.boxShadow = '0 0 10px 2px rgba(46, 204, 113, 0.7)';
-      }
-      
     form.submit();
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      alert("Error scheduling assessment. Please try again.");
-      
-      if (tempEvent) {
-        tempEvent.remove();
-      }
-    }
   }
 
   function unscheduleEvent(eventId) {

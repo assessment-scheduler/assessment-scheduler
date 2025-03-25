@@ -1143,7 +1143,7 @@
         <h3>My Assessments</h3>
         {% if my_assessments %}
           {% for assessment in my_assessments %}
-            <div class="draggable-assessment {% if assessment.proctored %}proctored{% endif %} {% if assessment.scheduled %}scheduled{% else %}status-unscheduled can-drag{% endif %}" 
+            <div class="draggable-assessment {% if assessment.proctored %}proctored{% endif %} {% if assessment.scheduled %}scheduled can-drag{% else %}status-unscheduled can-drag{% endif %}" 
                 data-assessment-id="{{ assessment.id }}" 
                 data-course-code="{{ assessment.course_code }}" 
                 data-percentage="{{ assessment.percentage }}"
