@@ -36,6 +36,91 @@
         .theme-toggle:hover {
             background-color: rgba(255, 255, 255, 0.1);
         }
+
+        .flash-message {
+            max-width: 800px;
+            margin: 15px auto;
+            padding: 15px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: slideDown 0.3s ease-out forwards;
+            position: relative;
+            z-index: 100;
+        }
+        
+        .flash-message .msgContainer {
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+        
+        .flash-message .msgContainer::before {
+            font-family: 'Material Icons';
+            font-size: 24px;
+            margin-right: 12px;
+        }
+        
+        .flash-message .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            color: inherit;
+        }
+        
+        .flash-message .close-btn:hover {
+            opacity: 1;
+        }
+        
+        .error .msgContainer::before {
+            content: "error";
+            color: #e74c3c;
+        }
+        
+        .error {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-left: 4px solid #e74c3c;
+            color: #c0392b;
+        }
+        
+        .success .msgContainer::before {
+            content: "check_circle";
+            color: #2ecc71;
+        }
+        
+        .success {
+            background-color: #2ecc71;
+            border-left: 4px solid #27ae60;
+            color: white;
+        }
+        
+        .warning .msgContainer::before {
+            content: "warning";
+            color: #f39c12;
+        }
+        
+        .warning {
+            background-color: rgba(243, 156, 18, 0.1);
+            border-left: 4px solid #f39c12;
+            color: #d35400;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hiddenFlashMsg {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
     </style>
     {% block head %}{% endblock %}
 </head>

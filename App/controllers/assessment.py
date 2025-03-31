@@ -107,17 +107,16 @@ def update_assessment(
 
 
 def schedule_assessment(
-    semester, schedule_date: int, course_code: str, name: str
+    semester, schedule_date, course_code: str, name: str
 ) -> bool:
     assessment: Optional[Assessment] = get_assessment(course_code, name)
     if not assessment:
         return False
 
+    assessment.scheduled = schedule_date
     days_diff = (schedule_date - semester.start_date).days
     week = (days_diff // 7) + 1
     day = (days_diff % 7) + 1
-
-    assessment.scheduled = schedule_date
     assessment.start_week = week
     assessment.start_day = day
     assessment.end_week = week
@@ -143,3 +142,44 @@ def delete_assessment_by_id(assessment_id) -> bool:
     db.session.delete(assessment)
     db.session.commit()
     return True
+
+
+def unschedule_assessment_only(assessment_id) -> bool:
+    assessment: Optional[Assessment] = Assessment.query.get(int(assessment_id))
+    if assessment is None:
+        return False
+    assessment.scheduled = None
+    db.session.commit()
+    return True
+
+
+def reset_assessment_constraints(assessment_id, original_start_week, original_start_day, 
+                               original_end_week, original_end_day) -> bool:
+    assessment: Optional[Assessment] = Assessment.query.get(int(assessment_id))
+    if assessment is None:
+        return False
+    
+    assessment.start_week = original_start_week
+    assessment.start_day = original_start_day
+    assessment.end_week = original_end_week
+    assessment.end_day = original_end_day
+    assessment.scheduled = None
+    
+    db.session.commit()
+    return True
+
+
+def reset_all_assessment_constraints() -> int:
+   
+    assessments = get_all_assessments()
+    reset_count = 0
+    
+    for assessment in assessments:
+        assessment.start_week = 1  
+        assessment.start_day = 1   
+        assessment.end_week = 15   
+        assessment.end_day = 5    
+        reset_count += 1
+    
+    db.session.commit()
+    return reset_count

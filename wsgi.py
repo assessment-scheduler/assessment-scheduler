@@ -1,45 +1,21 @@
 from datetime import date
 from typing import List
-from App.models.admin import Admin
 import click, pytest, sys
 from flask import Flask
 from flask.cli import AppGroup
 from prettytable import PrettyTable
 from App.main import create_app
-from App.controllers import (
-    clear,
-    create_user,
-    get_all_users_json,
-    get_all_users,
-    initialize,
-    assign_lecturer,
-    create_course,
-    get_all_course_codes,
-    get_all_courses,
-    get_course,
-    get_all_staff, 
-    get_staff_courses,
-    get_staff_by_id,
-    delete_assessment_by_id,
-    get_all_assessments,
-    get_assessment_dictionary_by_course,
-    create_semester,
-    get_all_semesters,
-    get_semester,
-    get_semester_duration,
-    set_active,
-    get_all_cells,
-    get_cell,
-    get_course_row,
-    get_course_matrix,
-    get_phi_matrix,
-    create_admin
-    
-)
-from App.views import (
-    compute_schedule,
-    schedule_all_assessments,
-)
+from App.models import *
+from App.controllers import *
+from App.views import *
+from App.controllers.kris import solve_stage1, solve_stage2
+from App.controllers.courseoverlap import get_phi_matrix
+from App.models.solvers.kris import KrisSolver
+from App.controllers.admin import create_admin_user
+from App.controllers.semester import get_all_semesters, create_test_assessments_for_semester
+from App.controllers.course import get_lecturer_assignments, get_course_lecturer_count, remove_lecturer
+from App.controllers.staff import get_staff_by_id
+from App.models.course_lecturer import CourseLecturer
 
 app = create_app()
 
@@ -52,7 +28,7 @@ def init():
 @app.cli.command("clear", help="Removes all data from the database")
 def drop():
     clear()
-    create_admin(101101, 'admin', 'adminpass')
+    create_admin_user(101101, 'admin', 'adminpass')
     print("database cleared")
 
 
@@ -101,9 +77,10 @@ staff_cli = AppGroup("staff", help="Staff related functionality")
 def cli_list_staff():
     staff_members = get_all_staff()
     table = PrettyTable()
-    table.field_names = ["ID", "Email", "First Name", "Last Name"]
+    table.field_names = ["ID", "Email", "First Name", "Last Name", "Department", "Faculty", "Courses"]
     for staff in staff_members:
-        table.add_row([staff.id, staff.email, staff.first_name, staff.last_name])
+        courses = [assignment.course.code for assignment in staff.course_assignments]
+        table.add_row([staff.id, staff.email, staff.first_name, staff.last_name, staff.department, staff.faculty, ", ".join(courses)])
     print(table)
 
 
@@ -111,45 +88,30 @@ def cli_list_staff():
 @click.argument("lecturer_id")
 @click.argument("course_code")
 def assign_course(lecturer_id: str, course_code: str):
-    assign_lecturer(lecturer_id, course_code)
-
-
-@staff_cli.command("assign", help="assigned a course to a lecturer")
-@click.argument("lecturer_id")
-@click.argument("course_code")
-def assign_course(lecturer_id: str, course_code: str):
-    course = get_course(course_code)
-    lecturer = get_staff_by_id(lecturer_id)
-    if course is None or lecturer is None:
-        print(f"Could not assign course {course_code} to lecturer {lecturer_id}")
-    else:
-        assign_lecturer(lecturer_id, course_code)
+    success = assign_lecturer(lecturer_id, course_code)
+    if success:
         print(f"Course {course_code} assigned to lecturer {lecturer_id}")
+    else:
+        print(f"Failed to assign course {course_code} to lecturer {lecturer_id}")
 
 
-@staff_cli.command("courses", help="lists the courses belonging to a lecturer")
+@staff_cli.command("courses", help="Lists the courses belonging to a lecturer")
 @click.argument("lecturer_id")
-def list_courses(staff_email: str):
-    courses = get_staff_courses(staff_email)
+def list_courses(lecturer_id: str):
+    courses = get_staff_courses(lecturer_id)
     if courses is None:
-        print(f"Could not list courses for lecturer {staff_email}")
+        print(f"Could not list courses for lecturer {lecturer_id}")
     else:
         table = PrettyTable()
-        table.field_names = [
-            "Course Code",
-            "Course Name",
-            "Lecturer First Name",
-            "Lecturer Last Name",
-        ]
+        table.field_names = ["Course Code", "Course Name", "Level", "Credits", "Semester"]
         for course in courses:
-            table.add_row(
-                [
-                    course.code,
-                    course.name,
-                    course.lecturer.first_name,
-                    course.lecturer.last_name,
-                ]
-            )
+            table.add_row([
+                course.code,
+                course.name,
+                course.level or "N/A",
+                course.credits or "N/A",
+                course.semester or "N/A"
+            ])
         print(table)
 
 
@@ -171,11 +133,40 @@ def cli_create_course(course_code, course_name):
 def cli_list_courses():
     courses = get_all_courses()
     table = PrettyTable()
-    table.field_names = ["Course Code", "Course Name", "Lecturer"]
+    table.field_names = ["Course Code", "Course Name", "Level", "Credits", "Semester", "Lecturers"]
     for course in courses:
-        lecturer_email = course.lecturer.email if course.lecturer else "N/A"
-        table.add_row([course.code, course.name, lecturer_email])
+        lecturers = [assignment.lecturer.first_name + " " + assignment.lecturer.last_name 
+                    for assignment in course.lecturer_assignments]
+        table.add_row([
+            course.code, 
+            course.name, 
+            course.level or "N/A",
+            course.credits or "N/A",
+            course.semester or "N/A",
+            ", ".join(lecturers) or "N/A"
+        ])
     print(table)
+
+
+@course_cli.command("lecturers", help="Lists all lecturers for a course")
+@click.argument("course_code")
+def list_course_lecturers(course_code: str):
+    lecturers = get_course_lecturers(course_code)
+    if lecturers is None:
+        print(f"Could not find lecturers for course {course_code}")
+    else:
+        table = PrettyTable()
+        table.field_names = ["ID", "First Name", "Last Name", "Email", "Department", "Faculty"]
+        for lecturer in lecturers:
+            table.add_row([
+                lecturer.id,
+                lecturer.first_name,
+                lecturer.last_name,
+                lecturer.email,
+                lecturer.department or "N/A",
+                lecturer.faculty or "N/A"
+            ])
+        print(table)
 
 
 app.cli.add_command(course_cli)
@@ -224,12 +215,6 @@ def delete_assessment_command(id):
     else:
         print("Failed to delete assessment")
 
-
-
-# @assessment_cli.command("compile", help = "creates a large structure containing all assessments for all courses")
-# def compile_assessments():
-#     print(compile_course_data())
-
 app.cli.add_command(assessment_cli)
 
 overlap_cli = AppGroup("overlap", help="Course Overlap related functionality")
@@ -243,11 +228,11 @@ def list_overlaps():
         "Course Code 1",
         "Course Code 2",
         "Overlap",
-    ]  # Adjust fields as necessary
+    ]
     for overlap in overlaps:
         table.add_row(
             [overlap.code1, overlap.code2, overlap.student_count]
-        )  # Fixed attribute names
+        )
     print(table)
 
 
@@ -307,31 +292,24 @@ def create_semester_command(
         )
 
 
-@semester_cli.command("list", help="List all semesters")
-def list_semesters() -> None:
+@semester_cli.command("list", help="Lists all semesters")
+def list_semesters():
     semesters = get_all_semesters()
     table = PrettyTable()
-    table.field_names = [
-        "ID",
-        "Start Date",
-        "End Date",
-        "Semester Number",
-        "Max Assessments",
-        "Constraint Value",
-        "Active",
-    ]
+    table.field_names = ["ID", "Semester", "Start Date", "End Date", "Max Assessments", "Solver", "Active", "Courses"]
+    
     for semester in semesters:
-        table.add_row(
-            [
-                semester.id,
-                semester.start_date,
-                semester.end_date,
-                semester.sem_num,
-                semester.max_assessments,
-                semester.constraint_value,
-                semester.active,
-            ]
-        )
+        table.add_row([
+            semester.id,
+            semester.sem_num,
+            semester.start_date,
+            semester.end_date,
+            semester.max_assessments,
+            semester.solver_type,
+            "Yes" if semester.active else "No",
+            len(semester.course_assignments)
+        ])
+    
     print(table)
 
 
@@ -359,15 +337,74 @@ def activate_semester(semester_id: int):
     return True
 
 
+@semester_cli.command("create_test_assessments", help="Creates test assessments for all courses in a semester")
+@click.argument("semester_id", type=int)
+@click.option("--count", default=3, help="Number of assessments to create per course")
+def create_semester_test_assessments(semester_id, count):
+    """Creates test assessments for all courses in a semester"""
+    print(f"Creating {count} test assessments per course for semester {semester_id}")
+    created = create_test_assessments_for_semester(semester_id, count)
+    print(f"Created {created} test assessments in total")
+
+
 app.cli.add_command(semester_cli)
 
 kris_cli = AppGroup("kris", help="Kris related functionality")
 
 
 @kris_cli.command("solve", help="Uses the kris model to schedule assessments")
-def schedule_assessments_command():
-    schedule = compute_schedule()
-    schedule_all_assessments(schedule)
+def kris_solve():
+    """Solve the assessment scheduling problem using the Kris model."""
+    try:
+        print("\n=== Starting Kris Model Data Preparation ===")
+        solver = KrisSolver()
+        courses = solver.compile_course_data()
+        print(f"\nTotal courses with assessments: {len(courses)}")
+        print("\nCourse and assessment details:")
+        
+        matrix = solver.compile_class_matrix()
+        phi_matrix = get_phi_matrix(matrix)
+        print("\nCourse overlap matrix:")
+        for row in matrix:
+            print(row)
+        
+        semester = get_active_semester()
+        if semester is None:
+            print("No active semester found")
+            return None
+            
+        k = get_semester_duration(semester.id)
+        d = semester.max_assessments
+        M = semester.constraint_value
+        
+        print(f"\nScheduling parameters:")
+        print(f"- Semester duration (k): {k} days")
+        print(f"- Maximum assessments per day (d): {d}")
+        print(f"- Constraint value (M): {M}")
+        
+        print("\n=== Starting Kris Model Solving ===")
+        
+        schedule = solver._run_solver_algorithm(courses, matrix, phi_matrix, k, d, M)
+        
+        if not schedule:
+            print("Failed to generate a valid schedule")
+            return None
+            
+        print("\n=== Kris Model Solution ===")
+        print(f"Total assessments scheduled: {len(schedule)}")
+        
+        print("\nDetailed schedule:")
+        for entry in schedule:
+            k, week, day, course, assessment = entry
+            print(f"  Week {week}, Day {day}: {course}-{assessment}")
+        
+        return schedule
+        
+    except Exception as e:
+        print(f"Error in Kris model: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return None
 
 
 app.cli.add_command(kris_cli)
@@ -380,7 +417,7 @@ admin_cli = AppGroup("admin", help="Admin related functionality")
 @click.argument("email")
 @click.argument("password")
 def create_admin_command(admin_id, email, password):
-    success = create_admin(admin_id, email, password)
+    success = create_admin_user(admin_id, email, password)
     if success:
         print(f"Admin {admin_id} created successfully!")
     else:
@@ -399,5 +436,100 @@ def list_admins_command():
 
 
 app.cli.add_command(admin_cli)
+
+course_lecturer_cli = AppGroup("course_lecturer", help="Test CourseLecturer bridge table functionality")
+
+@course_lecturer_cli.command("assign", help="Assign a lecturer to a course")
+@click.argument("lecturer_id")
+@click.argument("course_code")
+def test_assign_lecturer(lecturer_id, course_code):
+    result = assign_lecturer(lecturer_id, course_code)
+    if result:
+        print(f"Successfully assigned lecturer {lecturer_id} to course {course_code}")
+    else:
+        print(f"Failed to assign lecturer {lecturer_id} to course {course_code}")
+
+@course_lecturer_cli.command("list_for_course", help="List all lecturers for a course")
+@click.argument("course_code")
+def test_list_lecturers_for_course(course_code):
+    lecturers = get_course_lecturers(course_code)
+    if not lecturers:
+        print(f"No lecturers found for course {course_code}")
+    else:
+        table = PrettyTable()
+        table.field_names = ["ID", "Email", "First Name", "Last Name", "Department"]
+        for lecturer in lecturers:
+            table.add_row([
+                lecturer.id,
+                lecturer.email,
+                lecturer.first_name,
+                lecturer.last_name,
+                lecturer.department or "N/A"
+            ])
+        print(f"Lecturers for course {course_code}:")
+        print(table)
+
+@course_lecturer_cli.command("list_for_lecturer", help="List all courses for a lecturer")
+@click.argument("lecturer_id")
+def test_list_courses_for_lecturer(lecturer_id):
+    staff = get_staff_by_id(lecturer_id)
+    if not staff:
+        print(f"No staff found with ID {lecturer_id}")
+        return
+    
+    assignments = get_lecturer_assignments(lecturer_id)
+    
+    if not assignments:
+        print(f"No courses found for lecturer {lecturer_id}")
+        return
+    
+    print(f"Courses for lecturer {staff.first_name} {staff.last_name}:")
+    
+    table = PrettyTable()
+    table.field_names = ["Code", "Name", "Level", "Credits", "Semester"]
+    
+    for assignment in assignments:
+        table.add_row([
+            assignment['course_code'],
+            assignment['course_name'],
+            assignment['level'] or "N/A",
+            assignment['credits'] or "N/A",
+            assignment['semester'] or "N/A"
+        ])
+    
+    print(table)
+
+@course_lecturer_cli.command("count", help="Count course-lecturer assignments")
+def count_course_lecturer_assignments():
+    count = get_course_lecturer_count()
+    print(f"Total course-lecturer assignments: {count}")
+
+@course_lecturer_cli.command("delete", help="Remove a lecturer from a course using the controller function")
+@click.argument("lecturer_id")
+@click.argument("course_code")
+def remove_lecturer_command(lecturer_id, course_code):
+    result = remove_lecturer(lecturer_id, course_code)
+    if result:
+        print(f"Successfully removed lecturer {lecturer_id} from course {course_code}")
+    else:
+        print(f"Failed to remove lecturer {lecturer_id} from course {course_code}")
+
+@course_lecturer_cli.command("remove", help="Remove a lecturer from a course")
+@click.argument("lecturer_id")
+@click.argument("course_code")
+def remove_lecturer_from_course(lecturer_id, course_code):
+    assignment = CourseLecturer.query.filter_by(
+        staff_id=lecturer_id,
+        course_code=course_code
+    ).first()
+    
+    if assignment:
+        db.session.delete(assignment)
+        db.session.commit()
+        print(f"Successfully removed lecturer {lecturer_id} from course {course_code}")
+    else:
+        print(f"No assignment found for lecturer {lecturer_id} and course {course_code}")
+
+app.cli.add_command(course_lecturer_cli)
 
 # The WSGI acts as test environment

@@ -65,10 +65,10 @@ def solve_stage1(courses, c, K, M):
     if status == cp_model.OPTIMAL:
         U_star = solver.Value(U)
         print(f"Stage 1 solved with U* = {U_star}")
-        return U_star, solver, x
+        return U_star, True, x
     else:
         print("Stage 1 failed to find an optimal solution.")
-        exit()
+        return None, False, None
 
 
 def build_stage2_model(courses, c, phi, U_star, K, d, M):
@@ -171,7 +171,7 @@ def solve_stage2(courses, c, phi, U_star, K, d, M):
         return schedule, Y_star, probability
     else:
         print("Stage 2 failed to find an optimal solution.")
-        exit()
+        return None, None, None
 
 
 def print_schedule(schedule, U_star, d, probability):

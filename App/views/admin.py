@@ -8,11 +8,7 @@ from ..views.assessment import assessment_views
 from ..controllers import (
     change_password,
     create_assessment,
-    get_course,
     get_all_courses,
-    create_course,
-    update_course,
-    delete_course,
     assign_lecturer,
     create_cell,
     get_all_staff,
@@ -26,10 +22,14 @@ from ..controllers import (
     create_semester,
     set_active,
     parse_date,
-    get_all_assessments,
-    update_assessment
+    update_semester
 )
 from ..controllers.auth import admin_required
+from ..controllers.admin import create_admin_user, get_admin_by_id, update_admin, delete_admin
+from ..controllers.semester import get_semester, set_active
+from ..controllers.staff import create_staff, get_staff_by_id, update_staff, delete_staff, get_all_staff
+import traceback, csv
+from io import TextIOWrapper
 
 admin_views = Blueprint('admin_views', __name__, template_folder='../templates')
 
@@ -76,17 +76,21 @@ def get_upload_files_page():
 @admin_views.route('/new_semester', methods=['GET'])
 @admin_required
 def get_new_semester_form():
-    return render_template('add_semester.html')
+    courses = get_all_courses()
+    return render_template('add_semester.html', all_courses=courses)
 
 @admin_views.route('/add_semester', methods=['POST'])
 @admin_required
-def add_new_semester():
-    if request.method == 'POST':
+def add_semester_action():
+    try:
         start_date = request.form.get('start_date')
         end_date = request.form.get('end_date')
         sem_num = int(request.form.get('sem_num'))
         max_assessments = int(request.form.get('max_assessments'))
         constraint_value = int(request.form.get('constraint_value'))
+        solver_type = request.form.get('solver_type')
+        
+        courses = request.form.getlist('courses')
         
         start_date = parse_date(start_date)
         end_date = parse_date(end_date)
@@ -99,7 +103,16 @@ def add_new_semester():
             flash('Start date must be before end date', 'error')
             return redirect(url_for('admin_views.get_new_semester_form'))
         
-        result = create_semester(start_date, end_date, sem_num, max_assessments, constraint_value)
+        result = create_semester(
+            start_date, 
+            end_date, 
+            sem_num, 
+            max_assessments, 
+            constraint_value,
+            False,  
+            solver_type,
+            courses
+        )
         
         if result:
             flash('Semester added successfully', 'success')
@@ -107,6 +120,9 @@ def add_new_semester():
             flash('Failed to add semester', 'error')
         
         return redirect(url_for('admin_views.get_upload_page'))
+    except Exception as e:
+        flash(f'Error adding semester: {str(e)}', 'error')
+        return redirect(url_for('admin_views.get_new_semester_form'))
 
 @admin_views.route('/update_semester/<int:semester_id>', methods=['GET'])
 @admin_required
@@ -116,7 +132,49 @@ def get_update_semester(semester_id):
         flash('Semester not found', 'error')
         return redirect(url_for('admin_views.get_upload_page'))
     
-    return render_template('add_semester.html', semester=semester)
+    courses = get_all_courses()
+    return render_template('add_semester.html', semester=semester, all_courses=courses)
+
+@admin_views.route('/update_semester/<int:semester_id>', methods=['POST'])
+@admin_required
+def update_semester_action(semester_id):
+    try:
+        semester = get_semester(semester_id)
+        if not semester:
+            flash('Semester not found', 'error')
+            return redirect(url_for('admin_views.get_upload_page'))
+            
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+        sem_num = int(request.form.get('sem_num'))
+        max_assessments = int(request.form.get('max_assessments'))
+        constraint_value = int(request.form.get('constraint_value'))
+        solver_type = request.form.get('solver_type')
+        active = 'active' in request.form
+        
+        courses = request.form.getlist('courses')
+        
+        result = update_semester(
+            semester_id,
+            start_date, 
+            end_date, 
+            sem_num, 
+            max_assessments, 
+            constraint_value,
+            active,
+            solver_type,
+            courses
+        )
+        
+        if result:
+            flash('Semester updated successfully', 'success')
+        else:
+            flash('Failed to update semester', 'error')
+        
+        return redirect(url_for('admin_views.get_upload_page'))
+    except Exception as e:
+        flash(f'Error updating semester: {str(e)}', 'error')
+        return redirect(url_for('admin_views.get_update_semester', semester_id=semester_id))
 
 @admin_views.route('/delete_semester/<int:semester_id>', methods=['POST'])
 @admin_required
@@ -142,6 +200,29 @@ def set_active_semester(semester_id):
     
     if result:
         flash('Semester set as active', 'success')
+        
+        # Get semester to check if it has courses
+        semester = get_semester(semester_id)
+        if semester and semester.course_assignments:
+            # Check if there are any unscheduled assessments
+            from ..models.assessment import Assessment
+            
+            unscheduled_count = 0
+            for assignment in semester.course_assignments:
+                if assignment.course:
+                    unscheduled_assessments = Assessment.query.filter_by(
+                        course_code=assignment.course_code,
+                        scheduled=None
+                    ).count()
+                    unscheduled_count += unscheduled_assessments
+            
+            if unscheduled_count > 0:
+                flash(f"Started auto-scheduling {unscheduled_count} unscheduled assessments for {len(semester.course_assignments)} courses", "info")
+                flash("This process may take a moment to complete. Check the calendar page when complete.", "info")
+            else:
+                flash("All assessments for this semester are already scheduled. No auto-scheduling needed.", "info")
+        else:
+            flash("No courses found in this semester. Please add courses to schedule assessments.", "warning")
     else:
         flash('Failed to set semester as active', 'error')
     
@@ -390,7 +471,7 @@ def upload_semesters_file():
                         int(row['sem_num']),
                         int(row['max_assessments']),
                         int(row['constraint_value']),
-                        bool(row['active'])
+                        row['active'] == "1" or row['active'].lower() == "true"
                     ):
                         semesters_added += 1
             

@@ -30,33 +30,62 @@
     }
     
     select {
-        background: #2c2f33;
-        border: none;
+        background: var(--bg-color, #fff);
+        border: 1px solid var(--border-color, #ccc);
         padding: 1rem 0.8rem;
-        color: white;
+        color: var(--text-color, #333);
         border-radius: 6px;
         width: 100%;
     }
     
     select option {
-        background: #2c2f33;
-        color: white;
+        background: var(--bg-color, #fff);
+        color: var(--text-color, #333);
     }
     
-    /* Ensure text is white in all browsers */
+    /* Remove forced white text color */
     select, select option, select:focus, select:active {
-        color: white !important;
+        color: var(--text-color, #333);
     }
     
     /* For Firefox */
     select:-moz-focusring {
-        color: white !important;
+        color: var(--text-color, #333);
         text-shadow: none;
     }
     
     /* For IE/Edge */
     select::-ms-value {
-        color: white !important;
+        color: var(--text-color, #333);
+        background-color: var(--bg-color, #fff);
+    }
+    
+    /* Dark mode specific styling */
+    .dark-mode select {
+        background: #2c2f33;
+        color: #ffffff;
+        border-color: #444;
+    }
+    
+    .dark-mode select option {
+        background: #2c2f33;
+        color: #ffffff;
+    }
+    
+    .dark-mode select, 
+    .dark-mode select option, 
+    .dark-mode select:focus, 
+    .dark-mode select:active {
+        color: #ffffff;
+    }
+    
+    .dark-mode select:-moz-focusring {
+        color: #ffffff;
+        text-shadow: none;
+    }
+    
+    .dark-mode select::-ms-value {
+        color: #ffffff;
         background-color: #2c2f33;
     }
     
@@ -100,6 +129,34 @@
         display: block;
         margin-top: 5px;
         color: #aaa;
+    }
+
+    .multiselect-container {
+        margin-bottom: 15px;
+    }
+    
+    .lecturer-chip {
+        display: inline-flex;
+        align-items: center;
+        background-color: var(--tertiary-color);
+        border-radius: 16px;
+        padding: 5px 12px;
+        margin: 5px;
+        color: white;
+    }
+    
+    .lecturer-chip .remove-lecturer {
+        margin-left: 6px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    #selected-lecturers {
+        margin-top: 10px;
+        min-height: 40px;
+        padding: 5px;
+        border-radius: 6px;
+        background-color: rgba(var(--bg-color-rgb, 255, 255, 255), 0.05);
     }
 </style>
 {% endblock %}
@@ -173,16 +230,28 @@
         </div>
 
         <div class="formInputContainer normalLabel">
-            <label class="mainLabel" for="lecturer_id">Lecturer</label>
-            <select name="lecturer_id" id="lecturer_id">
-                <option value="">-- Select Lecturer --</option>
+            <label class="mainLabel" for="lecturer_select">Lecturers</label>
+            <select id="lecturer_select">
+                <option value="">-- Select Lecturers --</option>
                 {% for staff in staff_list %}
                 <option value="{{ staff.id }}" 
-                    {% if course.lecturer_id and course.lecturer_id == staff.id %}selected{% endif %}>
+                    data-name="{{ staff.first_name }} {{ staff.last_name }}"
+                    {% if staff.id|string in current_lecturer_ids %}disabled{% endif %}>
                     {{ staff.first_name }} {{ staff.last_name }}
                 </option>
                 {% endfor %}
             </select>
+            <span class="hint-text">You can assign multiple lecturers to this course</span>
+            
+            <div id="selected-lecturers">
+                {% for lecturer in current_lecturers %}
+                <div class="lecturer-chip" data-id="{{ lecturer.id }}">
+                    {{ lecturer.first_name }} {{ lecturer.last_name }}
+                    <span class="remove-lecturer" onclick="removeLecturer('{{ lecturer.id }}')">×</span>
+                    <input type="hidden" name="lecturer_ids" value="{{ lecturer.id }}">
+                </div>
+                {% endfor %}
+            </div>
         </div>
 
         <div class="formButtonContainer">
@@ -193,6 +262,53 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const lecturerSelect = document.getElementById('lecturer_select');
+    lecturerSelect.addEventListener('change', function() {
+        if (this.value) {
+            const selectedOption = this.options[this.selectedIndex];
+            addLecturer(this.value, selectedOption.dataset.name);
+            this.selectedIndex = 0; 
+        }
+    });
+});
+
+function addLecturer(id, name) {
+    const selectedLecturers = document.getElementById('selected-lecturers');
+    
+    if (document.querySelector(`.lecturer-chip[data-id="${id}"]`)) {
+        return;
+    }
+    
+    const chip = document.createElement('div');
+    chip.className = 'lecturer-chip';
+    chip.dataset.id = id;
+    chip.innerHTML = `
+        ${name}
+        <span class="remove-lecturer" onclick="removeLecturer('${id}')">×</span>
+        <input type="hidden" name="lecturer_ids" value="${id}">
+    `;
+    
+    selectedLecturers.appendChild(chip);
+    
+    const option = document.querySelector(`#lecturer_select option[value="${id}"]`);
+    if (option) {
+        option.disabled = true;
+    }
+}
+
+function removeLecturer(id) {
+    const chip = document.querySelector(`.lecturer-chip[data-id="${id}"]`);
+    if (chip) {
+        chip.remove();
+        
+        const option = document.querySelector(`#lecturer_select option[value="${id}"]`);
+        if (option) {
+            option.disabled = false;
+        }
+    }
+}
+
 document.getElementById('modifyCourseForm').addEventListener('submit', function(e) {
     const newCourseCode = document.getElementById('new_course_code').value.trim();
     const title = document.getElementById('title').value.trim();
@@ -204,4 +320,4 @@ document.getElementById('modifyCourseForm').addEventListener('submit', function(
     }
 });
 </script>
-{% endblock %} 
+{% endblock %}

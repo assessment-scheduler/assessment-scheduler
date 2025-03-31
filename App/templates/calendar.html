@@ -5,13 +5,11 @@
 {% block head %}
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
 <style>
-  /* Calendar-specific styles that don't override global theme variables */
   body {
     background-color: var(--primary-color);
     color: var(--text-color);
   }
   
-  /* Enhanced styles for the unscheduled assessments panel */
   #unscheduled-list {
     padding: 10px;
     background: var(--card-color);
@@ -35,11 +33,14 @@
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 4px;
-    cursor: move;
+    cursor: grab !important;
     border-left: 4px solid #fff;
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     transition: all 0.2s ease;
     color: white !important;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto !important;
   }
   
   .draggable-assessment:hover {
@@ -57,6 +58,18 @@
     background: var(--accent-color);
   }
   
+  /* Scheduled assessment styling */
+  .draggable-assessment.scheduled {
+    background: var(--tertiary-color);
+    opacity: 0.85;
+    border-left: 4px solid #4cd964;
+  }
+  
+  .draggable-assessment.scheduled:hover {
+    opacity: 1;
+    background: var(--accent-color);
+  }
+  
   .assessment-details {
     font-size: 11px;
     color: var(--text-muted);
@@ -68,12 +81,10 @@
     color: var(--text-color);
   }
   
-  /* Ensure blue background items have white text */
   .draggable-assessment .assessment-name {
     color: white !important;
   }
   
-  /* Light mode specific styles for assessment items with white background */
   body:not(.dark-mode) .assessment-item .assessment-name {
     color: var(--text-color) !important;
   }
@@ -87,7 +98,41 @@
     margin-left: 5px;
   }
   
-  /* Layout adjustments */
+  .badge.proctored {
+    background: #9C9FE2;
+    color: white;
+    font-weight: bold;
+    font-size: 10px;
+    padding: 3px 7px;
+  }
+  
+  .badge-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 5px 0;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+  
+  .status-badge.scheduled {
+    background: #4cd964;
+    color: white;
+  }
+  
+  .status-badge.unscheduled {
+    background: #ff9500;
+    color: white;
+    font-weight: bold;
+    font-size: 10px;
+    padding: 3px 7px;
+  }
+  
   #main {
     display: flex;
     flex-wrap: wrap;
@@ -110,7 +155,6 @@
     min-width: 250px;
   }
   
-  /* Fix for calendar event tiles */
   .fc-event {
     border: none !important;
     margin: 2px !important;
@@ -119,7 +163,6 @@
     color: white !important;
   }
   
-  /* Ensure all event content has white text */
   .fc-event-main {
     padding: 3px 5px !important;
     color: white !important;
@@ -129,7 +172,6 @@
     color: white !important;
   }
   
-  /* Make sure all elements inside events have white text */
   .fc-event * {
     color: white !important;
   }
@@ -146,7 +188,6 @@
     padding: 2px !important;
   }
   
-  /* Fix for event content */
   .fc-event-title {
     padding: 0 !important;
     overflow: hidden !important;
@@ -156,7 +197,6 @@
     color: white !important;
   }
   
-  /* Better appearance for small screens */
   .fc-daygrid-day-frame {
     min-height: 80px !important;
   }
@@ -165,12 +205,10 @@
     background-color: rgba(92, 70, 180, 0.2) !important;
   }
   
-  /* Make sure custom assessment styles override FullCalendar defaults */
   .fc .fc-daygrid-day.fc-day-today {
     background-color: rgba(92, 70, 180, 0.2) !important;
   }
   
-  /* Calendar header styling */
   .fc-col-header-cell {
     background-color: var(--tertiary-color) !important;
   }
@@ -181,7 +219,6 @@
     padding: 8px !important;
   }
   
-  /* Calendar toolbar styling */
   .fc-toolbar-title {
     color: var(--text-color) !important;
   }
@@ -208,7 +245,6 @@
     color: rgba(255, 255, 255, 0.9) !important;
   }
   
-  /* Button styles */
   .action-btn {
     display: inline-block;
     padding: 8px 16px;
@@ -239,7 +275,22 @@
     background-color: #b03a2e;
   }
   
-  /* Drag instructions */
+  .action-btn.success {
+    background-color: #2ecc71;
+  }
+  
+  .action-btn.success:hover {
+    background-color: #27ae60;
+  }
+  
+  .action-btn.warning {
+    background-color: #f39c12;
+  }
+  
+  .action-btn.warning:hover {
+    background-color: #e67e22;
+  }
+  
   .drag-instructions {
     background-color: rgba(0, 0, 0, 0.05);
     padding: 10px;
@@ -291,7 +342,6 @@
     font-style: italic;
   }
   
-  /* Collapsible panel styles */
   .collapsible-header {
     cursor: pointer;
     display: flex;
@@ -318,12 +368,12 @@
     overflow: hidden;
   }
   
-  /* Show more/less functionality */
   .all-assessments {
     margin-top: 10px;
     transition: max-height 0.3s ease, opacity 0.3s ease;
     max-height: 1000px;
     opacity: 1;
+    background-color: var(--card-color);
   }
   
   .all-assessments.hidden {
@@ -332,7 +382,51 @@
     opacity: 0;
   }
   
-  /* Show more/less button styling with theme adaptation */
+  #all-assessments .draggable-assessment {
+    background-color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    cursor: grab;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  #all-assessments .draggable-assessment::after {
+    content: '↹';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 16px;
+    color: var(--text-muted);
+    opacity: 0.5;
+    transition: all 0.2s ease;
+  }
+  
+  #all-assessments .draggable-assessment:hover::after {
+    opacity: 1;
+    color: white;
+  }
+  
+  #all-assessments .draggable-assessment .assessment-name {
+    color: var(--text-color) !important;
+  }
+  
+  #all-assessments .draggable-assessment .assessment-details {
+    color: var(--text-muted) !important;
+  }
+  
+  #all-assessments .draggable-assessment:hover {
+    background-color: var(--tertiary-color);
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+  }
+  
+  #all-assessments .draggable-assessment:hover .assessment-name,
+  #all-assessments .draggable-assessment:hover .assessment-details,
+  #all-assessments .draggable-assessment:hover .course-code {
+    color: white !important;
+  }
+  
   #show-more-btn, #show-less-btn {
     margin-top: 10px;
     background-color: var(--tertiary-color);
@@ -343,7 +437,6 @@
     background-color: var(--accent-color);
   }
   
-  /* Responsive styles */
   @media (max-width: 992px) {
     #main {
       flex-direction: column;
@@ -360,7 +453,6 @@
     }
   }
   
-  /* Filter styles */
   #filters {
     display: flex;
     gap: 10px;
@@ -390,7 +482,6 @@
     box-shadow: 0 0 0 2px rgba(92, 70, 180, 0.3);
   }
   
-  /* Make assessment items more compact */
   .assessment-item, .draggable-assessment {
     padding: 8px;
     margin-bottom: 8px;
@@ -402,7 +493,6 @@
     color: var(--text-color);
   }
   
-  /* Specific styling for scheduled assessment items in light mode */
   body:not(.dark-mode) .assessment-item {
     color: var(--text-color);
   }
@@ -415,7 +505,6 @@
     color: var(--text-muted);
   }
   
-  /* Specific styling for unscheduled assessment items (always blue) */
   .draggable-assessment {
     background-color: var(--tertiary-color);
     color: white !important;
@@ -429,7 +518,6 @@
     color: rgba(255, 255, 255, 0.8) !important;
   }
   
-  /* Fix for assessment items that are also draggable but should have white bg in scheduled list */
   body:not(.dark-mode) .assessment-item.draggable-assessment:not(.blue-bg) {
     background-color: var(--card-color);
     color: var(--text-color) !important;
@@ -443,17 +531,14 @@
     color: var(--text-muted) !important;
   }
   
-  /* Ensure blue background items have white course code */
   .draggable-assessment .course-code {
     color: white !important;
   }
   
-  /* Light mode specific styles for assessment items with white background */
   body:not(.dark-mode) .assessment-item .course-code {
     color: var(--text-color) !important;
   }
   
-  /* Calendar styling for light and dark themes */
   .fc-theme-standard .fc-scrollgrid {
     border-color: var(--border-color);
   }
@@ -470,7 +555,6 @@
     color: var(--text-color) !important;
   }
   
-  /* Scheduled Assessments Panel */
   #scheduled-list {
     padding: 10px;
     background: var(--card-color);
@@ -487,7 +571,6 @@
     color: var(--text-color);
   }
   
-  /* Count badge styling */
   .count-badge {
     background-color: var(--tertiary-color);
     color: var(--text-on-primary);
@@ -497,7 +580,6 @@
     font-weight: bold;
   }
   
-  /* Tooltip styling */
   .tooltip {
     position: relative;
     display: inline-block;
@@ -527,7 +609,6 @@
     opacity: 1;
   }
   
-  /* Ensure blue background items have white details text */
   .assessment-item.blue-bg .assessment-details,
   .draggable-assessment.blue-bg .assessment-details,
   .assessment-item[style*="background-color: var(--tertiary-color)"] .assessment-details,
@@ -537,7 +618,6 @@
     color: rgba(255, 255, 255, 0.8) !important;
   }
   
-  /* Hover effects for assessment items */
   .assessment-item:hover, .draggable-assessment:hover {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
@@ -547,7 +627,6 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
   }
   
-  /* Text styling for assessment items */
   .assessment-item h4, .draggable-assessment h4 {
     margin: 0 0 5px 0;
     font-size: 0.9rem;
@@ -565,7 +644,6 @@
     color: var(--text-color);
   }
   
-  /* Ensure blue background items always have white text */
   .assessment-item.blue-bg,
   .draggable-assessment.blue-bg,
   .assessment-item[style*="background-color: var(--tertiary-color)"],
@@ -590,7 +668,6 @@
     color: white !important;
   }
   
-  /* Specific styling for scheduled assessment items */
   .assessment-item.draggable-assessment {
     background-color: var(--tertiary-color);
     color: white !important;
@@ -606,6 +683,178 @@
   
   .assessment-item.draggable-assessment .course-code {
     color: white !important;
+  }
+  
+  .fc-list-day-cushion {
+    background-color: var(--tertiary-color) !important;
+    color: white !important;
+  }
+  
+  .fc-list-event-dot {
+    border-color: var(--tertiary-color) !important;
+  }
+  
+  .fc .fc-list-table {
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .fc-theme-standard .fc-list-day-cushion {
+    padding: 10px 15px !important;
+  }
+  
+  .fc-theme-standard .fc-list {
+    border: 1px solid var(--border-color);
+  }
+  
+  .calendar-list-item td {
+    padding: 12px 8px !important;
+    vertical-align: middle !important;
+  }
+  
+  .fc-list-event-title a {
+    color: var(--text-color) !important;
+    font-weight: 500 !important;
+  }
+  
+  .fc-list-empty {
+    background-color: var(--card-color) !important;
+    color: var(--text-muted) !important;
+    padding: 25px !important;
+    font-style: italic;
+  }
+  
+  .fc-list-event:hover td {
+    background-color: rgba(103, 78, 204, 0.1) !important;
+  }
+  
+  #debug-section {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 5px;
+    border: 1px dashed var(--border-color);
+  }
+  
+  #debug-section h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+  }
+  
+  #debug-section form {
+    margin-bottom: 8px;
+  }
+  
+  #debug-section form:last-child {
+    margin-bottom: 0;
+  }
+  
+  .dark-mode #debug-section {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .draggable-assessment.status-unscheduled {
+    cursor: grab;
+    border: 1px solid var(--tertiary-color);
+    background-color: rgba(103, 78, 204, 0.7);
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transform: scale(1);
+    transition: all 0.3s ease;
+  }
+  
+  .draggable-assessment.status-unscheduled:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transform: translateY(-3px) scale(1.02);
+    background-color: rgba(103, 78, 204, 0.9);
+  }
+  
+  .draggable-assessment.status-unscheduled::after {
+    content: '↹';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 16px;
+    color: white;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+  }
+  
+  .draggable-assessment.status-unscheduled:hover::after {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  
+  .draggable-assessment.scheduled {
+  }
+  
+  /* Popover styling for days with many events */
+  .fc-popover {
+    background-color: var(--secondary-color) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+    border-radius: 6px !important;
+    min-width: 280px !important;
+    max-width: 400px !important;
+  }
+  
+  .fc-popover-header {
+    background-color: var(--tertiary-color) !important;
+    color: white !important;
+    padding: 8px 10px !important;
+    border-radius: 5px 5px 0 0 !important;
+  }
+  
+  .fc-popover-title {
+    font-weight: 600 !important;
+  }
+  
+  .fc-popover-close {
+    color: white !important;
+    opacity: 0.8 !important;
+    font-size: 18px !important;
+  }
+  
+  .fc-popover-close:hover {
+    opacity: 1 !important;
+  }
+  
+  .fc-popover-body {
+    padding: 10px !important;
+  }
+  
+  .fc-popover .fc-event {
+    margin: 5px 0 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+  }
+  
+  .fc-popover .fc-event:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3) !important;
+    transition: all 0.2s ease !important;
+  }
+  
+  /* Styling for the more link */
+  .fc-daygrid-more-link {
+    background-color: var(--tertiary-color) !important;
+    color: white !important;
+    padding: 2px 5px !important;
+    border-radius: 3px !important;
+    font-weight: normal !important;
+    font-size: 11px !important;
+    margin-top: 2px !important;
+    opacity: 0.9 !important;
+  }
+  
+  .fc-daygrid-more-link:hover {
+    opacity: 1 !important;
+    background-color: var(--accent-color) !important;
   }
 </style>
 {% endblock %}
@@ -638,31 +887,49 @@
   <div id="main">
     <div id="calendar"></div>
     <div id="nav">
-      <!-- Unscheduled Assessments Panel -->
       <div id="unscheduled-list">
-        <h3>Unscheduled Assessments</h3>
-        {% if unscheduled_assessments %}
-          {% for assessment in unscheduled_assessments %}
-            <div class="draggable-assessment {% if assessment.proctored %}proctored{% endif %}" 
+        <h3>My Assessments</h3>
+        {% if my_assessments %}
+          {% for assessment in my_assessments %}
+            <div class="draggable-assessment {% if assessment.proctored %}proctored{% endif %} {% if assessment.scheduled %}scheduled{% else %}status-unscheduled can-drag{% endif %}" 
                 data-assessment-id="{{ assessment.id }}" 
                 data-course-code="{{ assessment.course_code }}" 
                 data-percentage="{{ assessment.percentage }}"
                 data-proctored="{{ assessment.proctored }}"
+                data-scheduled="{{ assessment.scheduled|default('false') }}"
                 data-name="{{ assessment.name }}">
               <span class="assessment-name">{{ assessment.course_code }}-{{ assessment.name }}</span>
               <div class="assessment-details">
                 Weight: {{ assessment.percentage }}%
-                {% if assessment.proctored %}<span class="badge">Proctored</span>{% endif %}
+                <div class="badge-container">
+                  {% if assessment.scheduled %}
+                    <span class="status-badge scheduled">Scheduled</span>
+                  {% else %}
+                    <span class="status-badge unscheduled">Unscheduled</span>
+                  {% endif %}
+                  {% if assessment.proctored %}<span class="badge proctored">Proctored</span>{% endif %}
+                </div>
+                {% if assessment.scheduled %}
+                  <div>Date: {{ assessment.scheduled }}</div>
+                {% endif %}
               </div>
             </div>
           {% endfor %}
         {% else %}
-          <p>No unscheduled assessments found.</p>
+          <p>No assessments found.</p>
         {% endif %}
         
         <div class="drag-instructions">
           <i class="material-icons">touch_app</i>
-          Drag assessments to the calendar to schedule them
+          <strong>Assessments marked with "Unscheduled" can be dragged</strong><br>
+          Drag unscheduled assessments to the calendar to schedule them
+        </div>
+        
+        <div class="drag-instructions">
+          <i class="material-icons">info</i>
+          <strong>To unschedule an assessment:</strong><br>
+          1. Click on a scheduled assessment in the calendar<br>
+          2. Or drag it outside the calendar area
         </div>
         
         {% if semester %}
@@ -677,7 +944,6 @@
         {% endif %}
       </div>
 
-      <!-- Scheduled Assessments Panel -->
       <div id="scheduled-list">
         <h3>
           (All) Scheduled Assessments <span class="count-badge">{{ scheduled_assessments|length }}</span>
@@ -694,8 +960,11 @@
                 <span class="assessment-name">{{ assessment.course_code }}-{{ assessment.name }}</span>
                 <div class="assessment-details">
                   Weight: {{ assessment.percentage }}%
+                  <div class="badge-container">
+                    <span class="status-badge scheduled">Scheduled</span>
+                    {% if assessment.proctored %}<span class="badge proctored">Proctored</span>{% endif %}
+                  </div>
                   <div>Date: {{ assessment.scheduled }}</div>
-                  {% if assessment.proctored %}<span class="badge">Proctored</span>{% endif %}
                 </div>
               </div>
             {% endfor %}
@@ -711,12 +980,16 @@
                     data-course-code="{{ assessment.course_code }}" 
                     data-percentage="{{ assessment.percentage }}"
                     data-proctored="{{ assessment.proctored }}"
+                    data-scheduled="{{ assessment.scheduled|default('false') }}"
                     data-name="{{ assessment.name }}">
                   <span class="assessment-name">{{ assessment.course_code }}-{{ assessment.name }}</span>
                   <div class="assessment-details">
                     Weight: {{ assessment.percentage }}%
+                    <div class="badge-container">
+                      <span class="status-badge scheduled">Scheduled</span>
+                      {% if assessment.proctored %}<span class="badge proctored">Proctored</span>{% endif %}
+                    </div>
                     <div>Date: {{ assessment.scheduled }}</div>
-                    {% if assessment.proctored %}<span class="badge">Proctored</span>{% endif %}
                   </div>
                 </div>
               {% endfor %}
@@ -725,21 +998,38 @@
             </div>
           {% endif %}
           
-          <form id="unschedule-all-form" action="/unschedule_all_assessments" method="POST" onsubmit="return confirm('Are you sure you want to unschedule all your assessments?');">
-            <button type="submit" class="action-btn danger">Unschedule All My Assessments</button>
-          </form>
-          
-          <div class="drag-instructions">
-            <i class="material-icons">open_with</i>
-            Drag events out of the calendar to unschedule them
+          <div id="debug-section">
+            <h4>Debug Tools</h4>
+            <form id="unschedule-all-form" action="/unschedule_all_assessments" method="POST" onsubmit="return confirm('Are you sure you want to unschedule all your assessments?');">
+              <button type="submit" class="action-btn danger">Unschedule All My Assessments</button>
+            </form>
+            
+            <form id="unschedule-all-system-form" action="/unschedule_all_system_assessments" method="POST" onsubmit="return confirm('WARNING: This will unschedule ALL assessments in the system for ALL staff members. Are you sure you want to proceed?');">
+              <button type="submit" class="action-btn danger">Unschedule All</button>
+            </form>
+            
+            <form id="reschedule-all-form" action="/autoschedule" method="POST" onsubmit="return confirm('Are you sure you want to reschedule all assessments? This may take some time.');">
+              <button type="submit" class="action-btn success">Reschedule All</button>
+            </form>
+            
+            <form id="reset-constraints-form" action="/reset_all_constraints" method="POST" onsubmit="return confirm('WARNING: This will reset ALL assessments time constraints to default values (Week 1-15). This is useful when scheduling keeps failing due to conflicting constraints. Continue?');">
+              <button type="submit" class="action-btn warning">Reset All Constraints</button>
+            </form>
           </div>
         {% else %}
           <p>No scheduled assessments found.</p>
+          
+          <div id="debug-section">
+            <h4>Debug Tools</h4>
+            <form id="reschedule-all-form" action="/autoschedule" method="POST" onsubmit="return confirm('Are you sure you want to reschedule all assessments? This may take some time.');">
+              <button type="submit" class="action-btn success">Reschedule All</button>
+            </form>
+            
+            <form id="reset-constraints-form" action="/reset_all_constraints" method="POST" onsubmit="return confirm('WARNING: This will reset ALL assessments time constraints to default values (Week 1-15). This is useful when scheduling keeps failing due to conflicting constraints. Continue?');">
+              <button type="submit" class="action-btn warning">Reset All Constraints</button>
+            </form>
+          </div>
         {% endif %}
-        
-        <form id="unschedule-all-system-form" action="/unschedule_all_system_assessments" method="POST" onsubmit="return confirm('WARNING: This will unschedule ALL assessments in the system for ALL staff members. Are you sure you want to proceed?');">
-          <button type="submit" class="action-btn danger" style="margin-top: 10px;">Unschedule All</button>
-        </form>
       </div>
     </div>
   </div>
@@ -748,25 +1038,24 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
 <script>
-  // Essential variables for calendar functionality
-  // These variables are populated by the server-side template
   var staff_exams = JSON.parse('{{ staff_exams | tojson | safe }}');
   var myCourses = JSON.parse('{{ staff_courses | tojson | safe }}');
   var semester = JSON.parse('{{ semester | tojson | safe }}');
   var otherExams = JSON.parse('{{ other_exams | tojson | safe }}');
   var scheduledAssessments = JSON.parse('{{ scheduled_assessments | tojson | safe }}');
   var unscheduledAssessments = JSON.parse('{{ unscheduled_assessments | tojson | safe }}');
+  var myAssessments = JSON.parse('{{ my_assessments | tojson | safe }}');
   
-  // Calculate semester duration in weeks
-  var semesterWeeks = 15;  // Default if semester dates not available
+  var semesterWeeks = 15;
   if (semester && semester.start_date && semester.end_date) {
     const startDate = new Date(semester.start_date);
     const endDate = new Date(semester.end_date);
     const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
     semesterWeeks = Math.ceil(daysDiff / 7);
+    console.log("Semester date range:", semester.start_date, "to", semester.end_date);
+    console.log("Days difference:", daysDiff, "Semester weeks:", semesterWeeks);
   }
   
-  // Initialize collapsible panels
   document.addEventListener('DOMContentLoaded', function() {
     const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
     
@@ -778,7 +1067,6 @@
       });
     });
     
-    // Show more/less functionality
     const showMoreBtn = document.getElementById('show-more-btn');
     const showLessBtn = document.getElementById('show-less-btn');
     const allAssessments = document.getElementById('all-assessments');
@@ -798,18 +1086,13 @@
     }
   });
 
-  // Function to apply blue-bg class to blue background elements
   function applyBlueBackgroundClass() {
-    // Get all assessment items
     const assessmentItems = document.querySelectorAll('.assessment-item, .draggable-assessment');
     
-    // Check each item's background color
     assessmentItems.forEach(item => {
       const style = window.getComputedStyle(item);
       const bgColor = style.backgroundColor;
       
-      // Check if the background is blue (tertiary color)
-      // This checks for RGB values that are likely blue
       if (bgColor.includes('rgb(92, 70, 180)') || 
           bgColor.includes('rgb(94, 114, 228)') || 
           bgColor.includes('rgb(52, 152, 219)') ||
@@ -822,16 +1105,12 @@
     });
   }
   
-  // Run when DOM is loaded
   document.addEventListener('DOMContentLoaded', function() {
-    // Initial application
     applyBlueBackgroundClass();
     
-    // Run again after a short delay to catch dynamically created elements
     setTimeout(applyBlueBackgroundClass, 1000);
   });
   
-  // Also run when theme is toggled
   document.addEventListener('themeToggled', applyBlueBackgroundClass);
 </script>
 <script src="{{url_for('static', filename='index.js')}}"></script>

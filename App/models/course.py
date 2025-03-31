@@ -8,8 +8,9 @@ class Course(db.Model):
     level = db.Column(db.String(1), nullable=True)
     credits = db.Column(db.Integer, nullable=True)
     semester = db.Column(db.String(10), nullable=True)
-    lecturer_id = mapped_column(db.ForeignKey("staff.id"), nullable=True)   
-    lecturer = relationship("Staff", back_populates="courses", lazy="joined")
+    
+    lecturer_assignments = relationship("CourseLecturer", back_populates="course", cascade="all, delete-orphan")
+    semester_assignments = relationship("SemesterCourse", back_populates="course", cascade="all, delete-orphan")
 
     def __init__(self, code, name, level=None, credits=None, semester=None):
         self.code = code.upper()
@@ -17,6 +18,10 @@ class Course(db.Model):
         self.level = level
         self.credits = credits
         self.semester = semester
+        
+    @property
+    def semesters(self):
+        return [assignment.semester for assignment in self.semester_assignments]
 
     def __repr__(self):
         return f"{self.code} : {self.name}"
@@ -28,7 +33,6 @@ class Course(db.Model):
             'level': self.level,
             'credits': self.credits,
             'semester': self.semester,
-            'lecturer_id': self.lecturer_id
+            'lecturers': [assignment.lecturer.id for assignment in self.lecturer_assignments],
+            'semesters': [assignment.semester_id for assignment in self.semester_assignments]
         }
-    
-    
