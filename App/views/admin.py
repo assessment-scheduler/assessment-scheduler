@@ -77,7 +77,19 @@ def get_upload_files_page():
 @admin_required
 def get_new_semester_form():
     courses = get_all_courses()
-    return render_template('add_semester.html', all_courses=courses)
+    semesters = get_all_semesters()
+    # Convert semesters to serializable format
+    serialized_semesters = [{
+        'id': s.id,
+        'start_date': s.start_date.isoformat(),
+        'end_date': s.end_date.isoformat(),
+        'sem_num': s.sem_num,
+        'max_assessments': s.max_assessments,
+        'constraint_value': s.constraint_value,
+        'active': s.active,
+        'solver_type': s.solver_type
+    } for s in semesters]
+    return render_template('add_semester.html', all_courses=courses, semesters=serialized_semesters)
 
 @admin_views.route('/add_semester', methods=['POST'])
 @admin_required
@@ -133,7 +145,19 @@ def get_update_semester(semester_id):
         return redirect(url_for('admin_views.get_upload_page'))
     
     courses = get_all_courses()
-    return render_template('add_semester.html', semester=semester, all_courses=courses)
+    semesters = get_all_semesters()
+    # Convert semesters to serializable format
+    serialized_semesters = [{
+        'id': s.id,
+        'start_date': s.start_date.isoformat(),
+        'end_date': s.end_date.isoformat(),
+        'sem_num': s.sem_num,
+        'max_assessments': s.max_assessments,
+        'constraint_value': s.constraint_value,
+        'active': s.active,
+        'solver_type': s.solver_type
+    } for s in semesters]
+    return render_template('add_semester.html', semester=semester, all_courses=courses, semesters=serialized_semesters)
 
 @admin_views.route('/update_semester/<int:semester_id>', methods=['POST'])
 @admin_required

@@ -135,6 +135,17 @@
     font-size: 0.8rem;
     color: var(--hint-color);
   }
+
+  .error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: none;
+  }
+
+  .date-input.error {
+    border-color: #dc3545;
+  }
 </style>
 {% endblock %}
 
@@ -142,15 +153,17 @@
 <div id="semesterForm">
   <h2>{{ 'Update Semester' if semester else 'Add Semester' }}</h2>
   
-  <form action="{{ url_for('admin_views.update_semester_action', semester_id=semester.id) if semester else url_for('admin_views.add_semester_action') }}" method="POST">
+  <form action="{{ url_for('admin_views.update_semester_action', semester_id=semester.id) if semester else url_for('admin_views.add_semester_action') }}" method="POST" id="semesterForm">
     <div class="field_containers">
       <label for="start_date" class="input-label">Start Date</label>
-      <input type="date" id="start_date" name="start_date" required value="{{ semester.start_date.strftime('%Y-%m-%d') if semester else '' }}">
+      <input type="date" id="start_date" name="start_date" required value="{{ semester.start_date.strftime('%Y-%m-%d') if semester else '' }}" class="date-input">
+      <div class="error-message" id="start_date_error"></div>
     </div>
     
     <div class="field_containers">
       <label for="end_date" class="input-label">End Date</label>
-      <input type="date" id="end_date" name="end_date" required value="{{ semester.end_date.strftime('%Y-%m-%d') if semester else '' }}">
+      <input type="date" id="end_date" name="end_date" required value="{{ semester.end_date.strftime('%Y-%m-%d') if semester else '' }}" class="date-input">
+      <div class="error-message" id="end_date_error"></div>
     </div>
     
     <div class="field_containers">
@@ -211,14 +224,84 @@
 </div>
 
 <script>
-  // Form validation
-  document.querySelector('form').addEventListener('submit', function(e) {
-    const startDate = new Date(document.getElementById('start_date').value);
-    const endDate = new Date(document.getElementById('end_date').value);
+  // Get existing semesters data from the server
+  const existingSemesters = {{ semesters|tojson|safe if semesters else '[]' }};
+  const currentSemesterId = {{ semester.id if semester else 'null' }};
+
+  function checkDateOverlap(startDate, endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
     
-    if (endDate <= startDate) {
+    // Basic validation
+    if (end <= start) {
+      return {
+        hasOverlap: true,
+        message: 'End date must be after start date.'
+      };
+    }
+    
+    // Check for overlapping semesters
+    for (const semester of existingSemesters) {
+      // Skip the current semester when updating
+      if (currentSemesterId && semester.id === currentSemesterId) {
+        continue;
+      }
+      
+      const existingStart = new Date(semester.start_date);
+      const existingEnd = new Date(semester.end_date);
+      
+      if ((start < existingEnd && end > existingStart)) {
+        return {
+          hasOverlap: true,
+          message: `Dates overlap with existing semester (${existingStart.toLocaleDateString()} - ${existingEnd.toLocaleDateString()})`
+        };
+      }
+    }
+    
+    return { hasOverlap: false };
+  }
+
+  function validateDates() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+    const startDateError = document.getElementById('start_date_error');
+    const endDateError = document.getElementById('end_date_error');
+    
+    // Reset error states
+    startDateInput.classList.remove('error');
+    endDateInput.classList.remove('error');
+    startDateError.style.display = 'none';
+    endDateError.style.display = 'none';
+    
+    if (!startDate || !endDate) {
+      return true;
+    }
+    
+    const result = checkDateOverlap(startDate, endDate);
+    
+    if (result.hasOverlap) {
+      startDateInput.classList.add('error');
+      endDateInput.classList.add('error');
+      startDateError.textContent = result.message;
+      endDateError.textContent = result.message;
+      startDateError.style.display = 'block';
+      endDateError.style.display = 'block';
+      return false;
+    }
+    
+    return true;
+  }
+
+  // Add event listeners for date inputs
+  document.getElementById('start_date').addEventListener('change', validateDates);
+  document.getElementById('end_date').addEventListener('change', validateDates);
+
+  // Form validation
+  document.getElementById('semesterForm').addEventListener('submit', function(e) {
+    if (!validateDates()) {
       e.preventDefault();
-      alert('End date must be after start date.');
       return false;
     }
     

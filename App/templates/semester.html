@@ -307,6 +307,7 @@
           <th>Semester</th>
           <th>Start Date</th>
           <th>End Date</th>
+          <th>Duration</th>
           <th>Max Assessments</th>
           <th>Solver</th>
           <th>Courses</th>
@@ -321,6 +322,7 @@
           <td>{{ semester.sem_num }}</td>
           <td>{{ semester.start_date.strftime('%Y-%m-%d') }}</td>
           <td>{{ semester.end_date.strftime('%Y-%m-%d') }}</td>
+          <td>{{ ((semester.end_date - semester.start_date).days + 1) // 7 }} weeks</td>
           <td>{{ semester.max_assessments }}</td>
           <td>{{ semester.solver_type }}</td>
           <td>
