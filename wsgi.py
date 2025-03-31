@@ -360,7 +360,14 @@ def kris_solve():
         solver = KrisSolver()
         courses = solver.compile_course_data()
         print(f"\nTotal courses with assessments: {len(courses)}")
-        print("\nCourse and assessment details:")
+        
+        # Print which assessments are proctored
+        print("\nProctored assessments:")
+        for course in courses:
+            code = course['code']
+            for assessment in course['assessments']:
+                is_proctored = assessment.get('proctored', False)
+                print(f"  {code}-{assessment['name']}: {'Proctored' if is_proctored else 'Not proctored'}")
         
         matrix = solver.compile_class_matrix()
         phi_matrix = get_phi_matrix(matrix)
@@ -373,6 +380,49 @@ def kris_solve():
             print("No active semester found")
             return None
             
+        # Get courses in solver order - THIS IS CRITICAL
+        course_codes = [course['code'] for course in courses]
+        print("\nCourses in solver order:")
+        for idx, code in enumerate(course_codes):
+            print(f"  [{idx}] {code}")
+        
+        # Get raw timetable data from CSV to see the actual lecture days
+        import csv
+        csv_data = {}
+        try:
+            with open('App/uploads/course_timetable.csv', 'r') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    course_code = row['CourseID']
+                    days_str = row['Days']
+                    day_numbers = []
+                    for day in days_str.split(';'):
+                        day_mapping = {'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5}
+                        day_number = day_mapping.get(day.strip(), None)
+                        if day_number:
+                            day_numbers.append(day_number)
+                    csv_data[course_code] = day_numbers
+            print("\nRaw CSV data:")
+            for code, days in csv_data.items():
+                day_names = [['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'][d-1] for d in days]
+                print(f"  {code}: {days} ({', '.join(day_names)})")
+        except Exception as e:
+            print(f"Error reading CSV: {e}")
+        
+        # Create the timetable dictionary MANUALLY from the CSV data
+        timetable = {}
+        print("\nBuilding timetable dictionary:")
+        for course_idx, course_code in enumerate(course_codes):
+            if course_code in csv_data:
+                for day in csv_data[course_code]:
+                    timetable[(course_idx, day)] = True
+                    day_name = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'][day-1]
+                    print(f"  Added: Course {course_code} (idx {course_idx}) on day {day} ({day_name})")
+            else:
+                print(f"  WARNING: No timetable data for {course_code}")
+        
+        print(f"\nFinal timetable: {timetable}")
+        
         k = get_semester_duration(semester.id)
         d = semester.max_assessments
         M = semester.constraint_value
@@ -384,7 +434,8 @@ def kris_solve():
         
         print("\n=== Starting Kris Model Solving ===")
         
-        schedule = solver._run_solver_algorithm(courses, matrix, phi_matrix, k, d, M)
+        # Pass timetable to the solver
+        schedule = solver._run_solver_algorithm(courses, matrix, phi_matrix, k, d, M, timetable)
         
         if not schedule:
             print("Failed to generate a valid schedule")

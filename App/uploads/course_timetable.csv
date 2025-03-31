@@ -1,0 +1,44 @@
+CourseID,CourseName,Days,LectureTime
+COMP1600,Introduction to Computing Concepts,Tue;Fri,15:00
+COMP1601,Introduction to Computer Programming I,Mon;Fri,12:00
+COMP1602,Introduction to Computer Programming II,Tue,9:30
+COMP1603,Introduction to Computer Programming III,Mon;Tue,10:00
+COMP1604,Mathematics for Computing,Mon;Tue,15:30
+INFO1600,Introduction to Information Technology Concepts,Tue,12:30
+INFO1601,Introduction to WWW Programming,Wed,15:00
+MATH1115,Fundamental Mathematics for the General Sciences I,Tue;Wed,8:00
+COMP2601,Computer Architecture,Wed,12:00
+COMP2602,Computer Networks,Mon,16:00
+COMP2603,Object-Oriented Programming I,Thu;Fri,8:30
+COMP2604,Operating Systems,Tue;Wed,9:30
+COMP2605,Enterprise Database Systems,Fri,14:30
+COMP2606,Software Engineering I,Tue,9:00
+COMP2611,Data Structures,Tue;Fri,8:00
+INFO2602,Web Programming and Technologies I,Thu,11:00
+INFO2604,Information Systems Security,Wed,11:30
+MATH2250,Industrial Statistics,Mon;Wed,14:30
+COMP3601,Design and Analysis of Algorithms,Tue;Wed,8:30
+COMP3602,Theory of Computing,Mon;Tue,14:30
+COMP3603,Human-Computer Interaction,Thu;Fri,12:30
+INFO3604,Project,Wed;Fri,8:30
+COMP3605,Introduction to Data Analytics,Thu;Fri,14:30
+COMP3606,Wireless and Mobile Computing,Tue,16:00
+COMP3607,Object-Oriented Programming II,Tue;Wed,8:30
+COMP3608,Intelligent Systems,Thu,10:00
+COMP3609,Game Programming,Fri,13:30
+COMP3610,Big Data Analytics,Tue;Wed,11:30
+COMP3611,Modelling and Simulation,Mon,11:00
+COMP3612,Special Topics in Computer Science,Mon;Wed,11:30
+COMP3613,Software Engineering II,Thu,8:00
+INFO2605,Professional Ethics and Law,Thu;Fri,13:00
+INFO3600,Business Information Systems,Tue,9:30
+INFO3605,Fundamentals of LAN Technologies,Wed;Thu,9:30
+INFO3606,Cloud Computing,Fri,10:30
+INFO3607,Fundamentals of WAN Technologies,Wed,15:30
+INFO3608,E-Commerce,Mon;Tue,13:00
+INFO3609,Internship I,Fri,15:30
+INFO3610,Internship II,Thu,14:00
+INFO3611,Database Administration,Thu;Fri,13:30
+FOUN1105,Scientific and Technical Writing,Tue;Thu,8:30
+FOUN1101,Caribbean Civilization,Wed;Fri,12:30
+FOUN1301,Law and Gov,Mon,8:00
