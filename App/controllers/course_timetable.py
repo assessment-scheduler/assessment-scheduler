@@ -2,17 +2,7 @@ from ..database import db
 from ..models import CourseTimetable
 
 def create_timetable_entry(course_code, day_of_week, time_slot):
-    """
-    Create a new timetable entry for a course.
-    
-    Args:
-        course_code (str): Course code
-        day_of_week (int): Day of the week (1=Monday, 2=Tuesday, etc.)
-        time_slot (str): Time slot (e.g. "09:00")
-        
-    Returns:
-        CourseTimetable: The created timetable entry
-    """
+
     entry = CourseTimetable(course_code, day_of_week, time_slot)
     
     db.session.add(entry)
@@ -21,33 +11,15 @@ def create_timetable_entry(course_code, day_of_week, time_slot):
     return entry
 
 def get_timetable_entries_by_course(course_code):
-    """
-    Get all timetable entries for a specific course.
-    
-    Args:
-        course_code (str): Course code
-        
-    Returns:
-        list: List of timetable entries
-    """
+
     return CourseTimetable.query.filter_by(course_code=course_code).all()
 
 def get_timetable_entries():
-    """
-    Get all timetable entries.
-    
-    Returns:
-        list: List of all timetable entries
-    """
+
     return CourseTimetable.query.all()
 
 def get_day_mapping():
-    """
-    Get a mapping of day names to day numbers.
-    
-    Returns:
-        dict: Dictionary mapping day names to numbers
-    """
+
     return {
         'Monday': 1,
         'Mon': 1,
@@ -62,16 +34,7 @@ def get_day_mapping():
     }
 
 def convert_to_timetable_format(entries, course_codes=None):
-    """
-    Convert timetable entries to the format needed for kris.py.
-    
-    Args:
-        entries (list): List of CourseTimetable objects
-        course_codes (list, optional): List of course codes in the order used by the solver
-        
-    Returns:
-        dict: Dictionary mapping (course_idx, day_of_week) to True
-    """
+
     timetable = {}
     
     # Create debug dictionary to print before returning
