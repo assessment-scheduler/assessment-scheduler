@@ -23,6 +23,7 @@ from ..controllers import (
     unschedule_assessment_only,
     reset_all_assessment_constraints
 )
+from ..controllers.assessment_clash import evaluate_assessment_date
 import time
 
 assessment_views = Blueprint(
@@ -619,6 +620,8 @@ def schedule_assessment():
         
         # Check if this is a rescheduling operation
         is_rescheduling = request.form.get("is_rescheduling") == "true"
+        # Check if this is just an evaluation request
+        is_evaluation_only = request.form.get("evaluation_only") == "true"
 
         email = get_jwt_identity()
         user = get_user_by_email(email)
@@ -636,6 +639,14 @@ def schedule_assessment():
         if not semester:
             flash("No active semester found", "error")
             return redirect(url_for("assessment_views.get_calendar_page"))
+
+        # If evaluation only, we'll return the clash data
+        if is_evaluation_only:
+            clash_evaluation = evaluate_assessment_date(assessment.course_code, assessment_date)
+            return jsonify({
+                "success": True,
+                "evaluation": clash_evaluation
+            })
 
         # If manually set in the form, use those values
         start_week = request.form.get("start_week")
@@ -676,3 +687,31 @@ def schedule_assessment():
     except Exception as e:
         flash(f"An error occurred: {str(e)}", "error")
         return redirect(url_for("assessment_views.get_calendar_page"))
+
+
+@assessment_views.route("/evaluate_assessment_date", methods=["POST"])
+@staff_required
+def evaluate_assessment_date_api():
+    try:
+        assessment_id = request.json.get("assessment_id")
+        date_str = request.json.get("date")
+        assessment_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        
+        email = get_jwt_identity()
+        user = get_user_by_email(email)
+        assessment = get_assessment_by_id(assessment_id)
+
+        if not assessment:
+            return jsonify({"success": False, "error": "Assessment not found"})
+
+        if not is_course_lecturer(user.id, assessment.course_code):
+            return jsonify({"success": False, "error": "You do not have permission to schedule assessments for this course"})
+
+        clash_evaluation = evaluate_assessment_date(assessment.course_code, assessment_date)
+        return jsonify({
+            "success": True,
+            "evaluation": clash_evaluation
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})

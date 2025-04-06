@@ -1,5 +1,9 @@
 var weekCounter = 0;
 
+// Global variables for handling assessment scheduling
+let pendingScheduleData = null;
+let pendingEvent = null;
+
 document.addEventListener("DOMContentLoaded", function () {
   let eventsLoaded = false;
   
@@ -979,96 +983,194 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  function saveEvent(data, tempEvent = null) {
-    console.log("saveEvent called with data:", data);
+  function saveEvent(data, event) {
+    // Store the pending schedule data and event
+    pendingScheduleData = data;
+    pendingEvent = event;
     
-    // Save current calendar state before form submission
-    if (calendar) {
-      localStorage.setItem('calendarViewType', calendar.view.type);
-      localStorage.setItem('calendarCurrentDate', calendar.getDate().toISOString());
-      
-      // Also save filter states
-      const currentLevel = levelFilter ? levelFilter.value : "0";
-      const currentCourse = courseFilter ? courseFilter.value : "all";
-      const currentType = typeFilter ? typeFilter.value : "all";
-      
-      localStorage.setItem('calendarLevelFilter', currentLevel);
-      localStorage.setItem('calendarCourseFilter', currentCourse);
-      localStorage.setItem('calendarTypeFilter', currentType);
-    }
+    // First evaluate the clash value for this assessment date
+    evaluateAssessmentClash(data.assessment_id, data.assessment_date);
+  }
 
-    if (!data.assessment_date && tempEvent && tempEvent.start) {
-      data.assessment_date = tempEvent.start.toISOString().split('T')[0];
+  function evaluateAssessmentClash(assessmentId, date) {
+    // Show loading state
+    document.body.classList.add('loading');
+    
+    fetch('/evaluate_assessment_date', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        assessment_id: assessmentId,
+        date: date
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      document.body.classList.remove('loading');
       
-      if (semester && semester.start_date) {
-        const offsets = calculateWeekAndDayOffsets(tempEvent.start, semester.start_date);
-        data.start_week = offsets.startWeek;
-        data.start_day = offsets.startDay;
-        data.end_week = offsets.endWeek;
-        data.end_day = offsets.endDay;
+      if (data.success) {
+        displayClashEvaluation(data.evaluation);
+      } else {
+        // If error, just proceed with scheduling
+        console.error('Failed to evaluate clash:', data.error);
+        commitScheduleEvent();
       }
+    })
+    .catch(error => {
+      document.body.classList.remove('loading');
+      console.error('Error evaluating clash:', error);
+      // On error, proceed with scheduling
+      commitScheduleEvent();
+    });
+  }
+
+  function displayClashEvaluation(evaluation) {
+    const modal = document.getElementById('clash-modal');
+    const overlay = document.getElementById('clash-modal-overlay');
+    const avgClashValue = document.getElementById('avg-clash-value');
+    const clashEvaluation = document.getElementById('clash-evaluation');
+    const detailsList = document.getElementById('clash-details-list');
+    
+    // Update the UI with evaluation data
+    avgClashValue.textContent = evaluation.average_clash_value.toFixed(1);
+    
+    // Set the evaluation badge and class
+    clashEvaluation.textContent = evaluation.evaluation.charAt(0).toUpperCase() + evaluation.evaluation.slice(1);
+    clashEvaluation.className = 'evaluation-badge ' + evaluation.evaluation;
+    
+    // Clear and populate the details list
+    detailsList.innerHTML = '';
+    if (evaluation.details && evaluation.details.length > 0) {
+      evaluation.details.forEach(detail => {
+        const item = document.createElement('div');
+        item.className = 'clash-details-item';
+        
+        const courseInfo = document.createElement('div');
+        courseInfo.className = 'clash-course-info';
+        courseInfo.innerHTML = `
+          <div class="clash-course-code">${detail.course_code}</div>
+          <div class="clash-overlap">${detail.overlap_count} students overlap</div>
+        `;
+        
+        const assessmentInfo = document.createElement('div');
+        assessmentInfo.className = 'clash-assessment-info';
+        assessmentInfo.innerHTML = `
+          <div>${detail.assessment_name}</div>
+          <div>${new Date(detail.assessment_date).toLocaleDateString()} (${detail.days_difference} days difference)</div>
+        `;
+        
+        item.appendChild(courseInfo);
+        item.appendChild(assessmentInfo);
+        detailsList.appendChild(item);
+      });
+    } else {
+      const noData = document.createElement('div');
+      noData.textContent = 'No overlapping assessments found.';
+      detailsList.appendChild(noData);
     }
-
-    // Check if this is a rescheduling operation
-    const isRescheduling = tempEvent && tempEvent.extendedProps && tempEvent.extendedProps.isRescheduling;
     
-    // Create and submit the form
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/schedule_assessment';
-    form.style.display = 'none';
+    // Setup event listeners
+    document.getElementById('confirm-schedule-btn').onclick = function() {
+      closeClashModal();
+      commitScheduleEvent();
+    };
     
-    // Add the assessment_id field
-    const idField = document.createElement('input');
-    idField.type = 'hidden';
-    idField.name = 'assessment_id';
-    idField.value = data.assessment_id || (tempEvent ? tempEvent.id : '');
-    form.appendChild(idField);
-
-    // Add the date field
-    const dateField = document.createElement('input');
-    dateField.type = 'hidden';
-    dateField.name = 'assessment_date';
-    dateField.value = data.assessment_date;
-    form.appendChild(dateField);
-
-    // Add the week and day offset fields
-    const startWeekField = document.createElement('input');
-    startWeekField.type = 'hidden';
-    startWeekField.name = 'start_week';
-    startWeekField.value = data.start_week;
-    form.appendChild(startWeekField);
-
-    const startDayField = document.createElement('input');
-    startDayField.type = 'hidden';
-    startDayField.name = 'start_day';
-    startDayField.value = data.start_day;
-    form.appendChild(startDayField);
-
-    const endWeekField = document.createElement('input');
-    endWeekField.type = 'hidden';
-    endWeekField.name = 'end_week';
-    endWeekField.value = data.end_week;
-    form.appendChild(endWeekField);
-
-    const endDayField = document.createElement('input');
-    endDayField.type = 'hidden';
-    endDayField.name = 'end_day';
-    endDayField.value = data.end_day;
-    form.appendChild(endDayField);
+    document.getElementById('cancel-schedule-btn').onclick = function() {
+      closeClashModal();
+      cancelScheduleEvent();
+    };
     
-    // Add an extra field to indicate this is a rescheduling
-    if (isRescheduling) {
-      const reschedulingField = document.createElement('input');
-      reschedulingField.type = 'hidden';
-      reschedulingField.name = 'is_rescheduling';
-      reschedulingField.value = 'true';
-      form.appendChild(reschedulingField);
+    document.getElementById('close-clash-modal').onclick = closeClashModal;
+    
+    // Show the modal
+    modal.classList.remove('hidden');
+    overlay.classList.remove('hidden');
+  }
+
+  function closeClashModal() {
+    const modal = document.getElementById('clash-modal');
+    const overlay = document.getElementById('clash-modal-overlay');
+    
+    modal.classList.add('hidden');
+    overlay.classList.add('hidden');
+  }
+
+  function cancelScheduleEvent() {
+    // Remove the pending event from the calendar
+    if (pendingEvent && pendingEvent.remove) {
+      pendingEvent.remove();
     }
+    
+    // Reset the pending data
+    pendingScheduleData = null;
+    pendingEvent = null;
+  }
 
-    // Add the form to the document and submit it
-    document.body.appendChild(form);
-    form.submit();
+  function commitScheduleEvent() {
+    if (!pendingScheduleData) {
+      console.error('No pending schedule data to commit');
+      return;
+    }
+    
+    const formData = new FormData();
+    for (const key in pendingScheduleData) {
+      formData.append(key, pendingScheduleData[key]);
+    }
+    
+    fetch('/schedule_assessment', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {
+      if (response.ok) {
+        // Show success icon on the event
+        if (pendingEvent.setProp) {
+          pendingEvent.setProp('classNames', ['scheduled-success']);
+          
+          // Add success indicator to the DOM element
+          const eventEl = pendingEvent.el;
+          if (eventEl) {
+            const successIndicator = document.createElement('div');
+            successIndicator.className = 'drop-success-indicator';
+            successIndicator.innerHTML = '✓';
+            eventEl.appendChild(successIndicator);
+            
+            // Remove indicator after 2 seconds
+            setTimeout(() => {
+              successIndicator.remove();
+            }, 2000);
+          }
+        }
+        
+        // Reset pending data
+        pendingScheduleData = null;
+        pendingEvent = null;
+        
+        // Reload the page after a short delay to update the UI
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } else {
+        // Show error state
+        if (pendingEvent.setProp) {
+          pendingEvent.setProp('classNames', ['scheduling-error']);
+        }
+        // Reset pending data
+        pendingScheduleData = null;
+        pendingEvent = null;
+      }
+    })
+    .catch(error => {
+      console.error('Error scheduling assessment:', error);
+      // Show error state and reset
+      if (pendingEvent && pendingEvent.setProp) {
+        pendingEvent.setProp('classNames', ['scheduling-error']);
+      }
+      pendingScheduleData = null;
+      pendingEvent = null;
+    });
   }
 
   function unscheduleEvent(eventId) {

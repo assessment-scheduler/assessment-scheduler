@@ -1430,6 +1430,202 @@
     background-color: var(--card-blue);
     color: white;
   }
+  
+  /* Assessment Clash Evaluation Modal */
+  .clash-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--card-color);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 1001;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+  }
+  
+  .clash-modal.hidden {
+    display: none;
+  }
+  
+  #clash-summary {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: var(--secondary-color);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+  }
+  
+  .clash-value-container, .clash-evaluation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .clash-label {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+  }
+  
+  .clash-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--text-color);
+  }
+  
+  .evaluation-badge {
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-weight: bold;
+    font-size: 16px;
+    color: white;
+  }
+  
+  .evaluation-badge.excellent {
+    background-color: #4cd964;
+  }
+  
+  .evaluation-badge.good {
+    background-color: #5e72e4;
+  }
+  
+  .evaluation-badge.fair {
+    background-color: #ff9500;
+  }
+  
+  .evaluation-badge.poor {
+    background-color: #ff3b30;
+  }
+  
+  #clash-details {
+    margin-bottom: 20px;
+  }
+  
+  #clash-details h4 {
+    margin-bottom: 10px;
+    color: var(--text-color);
+    font-size: 16px;
+  }
+  
+  .clash-details-item {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: var(--secondary-color);
+    border-radius: 6px;
+    border-left: 4px solid var(--tertiary-color);
+  }
+  
+  .clash-course-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+  
+  .clash-course-code {
+    font-weight: bold;
+    color: var(--text-color);
+  }
+  
+  .clash-overlap {
+    color: var(--tertiary-color);
+    font-weight: bold;
+  }
+  
+  .clash-assessment-info {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+  
+  .clash-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    gap: 10px;
+  }
+  
+  .action-btn.primary {
+    background-color: var(--tertiary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .action-btn.secondary {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .action-btn.primary:hover {
+    background-color: var(--accent-color);
+    transform: translateY(-2px);
+  }
+  
+  .action-btn.secondary:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+  }
+  
+  /* Loading indicator */
+  body.loading::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  body.loading::before {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 5px solid var(--tertiary-color);
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+    z-index: 10000;
+  }
+  
+  /* Success and error states for scheduled assessments */
+  .scheduled-success {
+    box-shadow: 0 0 10px rgba(76, 217, 100, 0.8) !important;
+    border-left: 4px solid #4cd964 !important;
+    transition: all 0.3s ease;
+  }
+  
+  .scheduling-error {
+    box-shadow: 0 0 10px rgba(255, 59, 48, 0.8) !important;
+    border-left: 4px solid #ff3b30 !important;
+    transition: all 0.3s ease;
+  }
 </style>
 {% endblock %}
 
@@ -1686,5 +1882,34 @@
 </script>
 <script src="{{url_for('static', filename='index.js')}}"></script>
 <script src="{{url_for('static', filename='js/mobileMenu.js')}}"></script>
+
+<!-- Assessment Clash Evaluation Modal -->
+<div class="popup-overlay" id="clash-modal-overlay"></div>
+<div id="clash-modal" class="clash-modal hidden">
+  <div class="popup-header">
+    <div class="popup-title">Assessment Clash Evaluation</div>
+    <button class="close-btn" id="close-clash-modal">&times;</button>
+  </div>
+  <div id="clash-content">
+    <div id="clash-summary">
+      <div class="clash-value-container">
+        <div class="clash-label">Average Clash Value:</div>
+        <div class="clash-value" id="avg-clash-value">0</div>
+      </div>
+      <div class="clash-evaluation">
+        <div class="clash-label">Date Evaluation:</div>
+        <div class="evaluation-badge" id="clash-evaluation">Good</div>
+      </div>
+    </div>
+    <div id="clash-details">
+      <h4>Top Overlapping Courses</h4>
+      <div id="clash-details-list"></div>
+    </div>
+    <div class="clash-actions">
+      <button id="confirm-schedule-btn" class="action-btn primary">Schedule Anyway</button>
+      <button id="cancel-schedule-btn" class="action-btn secondary">Cancel</button>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
