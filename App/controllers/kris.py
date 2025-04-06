@@ -10,10 +10,7 @@ def week_day_to_k(week, day):
 
 
 def load_timetable_data(timetable_file):
-    """
-    Load course timetable data from a CSV file.
-    Returns a dictionary mapping (course_idx, day_of_week) to True if a lecture exists.
-    """
+
     timetable_df = pd.read_csv(timetable_file)
     timetable = {}
     
@@ -31,15 +28,7 @@ def load_timetable_data(timetable_file):
 
 
 def get_timetable_from_db(course_codes=None):
-    """
-    Get timetable data from the database.
-    
-    Args:
-        course_codes (list, optional): List of course codes to filter by. If None, all courses are included.
-        
-    Returns:
-        tuple: (timetable, code_to_idx) where timetable is a dict mapping (course_idx, day_of_week) to True
-    """
+
     entries = get_timetable_entries()
     
     if course_codes:
