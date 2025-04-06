@@ -1,5 +1,9 @@
 var weekCounter = 0;
 
+// Global variables for handling assessment scheduling
+let pendingScheduleData = null;
+let pendingEvent = null;
+
 document.addEventListener("DOMContentLoaded", function () {
   let eventsLoaded = false;
   
@@ -350,30 +354,6 @@ document.addEventListener("DOMContentLoaded", function () {
       document.querySelectorAll('.fc-day').forEach(day => {
         day.classList.remove('drop-target-highlight');
       });
-      
-      // Check if the element was dropped outside of a valid calendar area
-      const isOutsideCalendar = document.querySelector('.fc-event-dragging') === null;
-      const isOwnedAssessment = info.event.extendedProps?.isOwnedAssessment;
-      
-      if (isOutsideCalendar && isOwnedAssessment) {
-        console.log("Assessment dragged outside calendar:", info.event.id);
-        const eventId = info.event.id;
-        
-        if (confirm('Are you sure you want to unschedule this assessment?')) {
-          // Add visual feedback before removal
-          info.el.classList.add('being-removed');
-          info.el.style.opacity = '0';
-          info.el.style.transform = 'scale(0.8)';
-          
-          // Small delay for visual effect
-          setTimeout(() => {
-            // Remove the event from the calendar
-            info.event.remove();
-            // Call the unschedule endpoint
-            unscheduleEvent(eventId);
-          }, 300);
-        }
-      }
     },
     
     // Configure the "more" events popover
@@ -503,8 +483,25 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>
       `;
       
+      // Add delete button for owned assessments
+      if (isOwnedAssessment) {
+        html += `<button class="delete-assessment-btn" title="Unschedule assessment">&times;</button>`;
+      }
+      
       if (eventContent) {
         eventContent.innerHTML = html;
+      }
+      
+      // Add event listener for delete button
+      const deleteBtn = eventEl.querySelector('.delete-assessment-btn');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Show confirmation dialog
+          showUnscheduleConfirmation(info.event.id, courseCode, assessmentName);
+        });
       }
       
       // Use our unified card styling
@@ -523,7 +520,7 @@ document.addEventListener("DOMContentLoaded", function () {
         eventEl.style.cursor = 'default';
         eventEl.style.pointerEvents = 'none';
       } else {
-        eventEl.title = 'Click to unschedule or drag to reschedule';
+        eventEl.title = 'Drag to reschedule';
         eventEl.style.cursor = 'pointer';
       }
     },
@@ -583,15 +580,8 @@ document.addEventListener("DOMContentLoaded", function () {
     },
     initialDate: semester && semester.start_date ? semester.start_date : undefined,
     eventClick: function(info) {
-      const isOwnedAssessment = info.event.extendedProps?.isOwnedAssessment;
-      
-      if (isOwnedAssessment) {
-        if (confirm('Would you like to unschedule this assessment?')) {
-      const eventId = info.event.id;
-          info.event.remove();
-      unscheduleEvent(eventId);
-    }
-      }
+      // Only handle the click if it's not on the delete button
+      // Button clicks are handled separately
     },
   });
 
@@ -610,27 +600,48 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("Rendering calendar...");
     calendar.render();
     
-    // Go to semester start date if available
     if (semester && semester.start_date) {
       console.log("Setting calendar initial date to semester start date:", semester.start_date);
       
-      // Check if we need to restore saved view position after refresh
+      const currentDate = new Date();
+      const semesterStartDate = new Date(semester.start_date);
+      const semesterEndDate = new Date(semester.end_date);
+      
       const savedDate = localStorage.getItem('calendarCurrentDate');
       const savedView = localStorage.getItem('calendarViewType');
       
       if (savedDate) {
+        const savedDateObj = new Date(savedDate);
+        if (savedDateObj >= semesterStartDate && savedDateObj <= semesterEndDate) {
         console.log("Restoring calendar to saved date:", savedDate);
-        calendar.gotoDate(new Date(savedDate));
+          calendar.gotoDate(savedDateObj);
       } else {
-        calendar.gotoDate(new Date(semester.start_date));
+          goToSemesterDate(calendar, currentDate, semesterStartDate, semesterEndDate);
+        }
+      } else {
+        goToSemesterDate(calendar, currentDate, semesterStartDate, semesterEndDate);
       }
       
-      // Restore saved view type or default to month view
       if (savedView) {
         console.log("Restoring saved view type:", savedView);
         calendar.changeView(savedView);
       } else {
         calendar.changeView('dayGridMonth');
+      }
+    }
+    
+    function goToSemesterDate(calendar, currentDate, semesterStartDate, semesterEndDate) {
+      if (currentDate >= semesterStartDate && currentDate <= semesterEndDate) {
+        console.log("Current date is within semester, showing current month");
+        calendar.gotoDate(currentDate);
+      } 
+      else if (currentDate < semesterStartDate) {
+        console.log("Current date is before semester, showing semester start month");
+        calendar.gotoDate(semesterStartDate);
+      } 
+      else {
+        console.log("Current date is after semester, showing semester end month");
+        calendar.gotoDate(semesterEndDate);
       }
     }
     
@@ -959,116 +970,406 @@ document.addEventListener("DOMContentLoaded", function () {
       start_week: offsets.startWeek,
       start_day: offsets.startDay,
       end_week: offsets.endWeek,
-      end_day: offsets.endDay
+      end_day: offsets.endDay,
+      is_rescheduling: true
     };
     
     // Add visual indicator that we're processing
     event.setProp('classNames', ['processing-drop']);
     
+    // Store the original event reference in case we need to revert
+    const originalEvent = event;
+    
     // Save the event - treat this as a rescheduling
-    saveEvent(data, {
-      id: event.id,
-      start: newDate,
-      extendedProps: {
-        isRescheduling: true
-      }
-    });
+    saveEvent(data, event);
   }
 
   function handleNewItem(info) {
     return;
   }
 
-  function saveEvent(data, tempEvent = null) {
-    console.log("saveEvent called with data:", data);
+  function saveEvent(data, event) {
+    // Store the pending schedule data and event
+    pendingScheduleData = data;
+    pendingEvent = event;
     
-    // Save current calendar state before form submission
-    if (calendar) {
-      localStorage.setItem('calendarViewType', calendar.view.type);
-      localStorage.setItem('calendarCurrentDate', calendar.getDate().toISOString());
-      
-      // Also save filter states
-      const currentLevel = levelFilter ? levelFilter.value : "0";
-      const currentCourse = courseFilter ? courseFilter.value : "all";
-      const currentType = typeFilter ? typeFilter.value : "all";
-      
-      localStorage.setItem('calendarLevelFilter', currentLevel);
-      localStorage.setItem('calendarCourseFilter', currentCourse);
-      localStorage.setItem('calendarTypeFilter', currentType);
-    }
+    // First evaluate the clash value for this assessment date
+    evaluateAssessmentClash(data.assessment_id, data.assessment_date);
+  }
 
-    if (!data.assessment_date && tempEvent && tempEvent.start) {
-      data.assessment_date = tempEvent.start.toISOString().split('T')[0];
+  function evaluateAssessmentClash(assessmentId, date) {
+    // Show loading state
+    document.body.classList.add('loading');
+    
+    fetch('/evaluate_assessment_date', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        assessment_id: assessmentId,
+        date: date
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      document.body.classList.remove('loading');
       
-      if (semester && semester.start_date) {
-        const offsets = calculateWeekAndDayOffsets(tempEvent.start, semester.start_date);
-        data.start_week = offsets.startWeek;
-        data.start_day = offsets.startDay;
-        data.end_week = offsets.endWeek;
-        data.end_day = offsets.endDay;
+      if (data.success) {
+        displayClashEvaluation(data.evaluation);
+      } else {
+        // If error, just proceed with scheduling
+        console.error('Failed to evaluate clash:', data.error);
+        commitScheduleEvent();
       }
+    })
+    .catch(error => {
+      document.body.classList.remove('loading');
+      console.error('Error evaluating clash:', error);
+      // On error, proceed with scheduling
+      commitScheduleEvent();
+    });
+  }
+
+  function displayClashEvaluation(data) {
+    const clashValue = document.getElementById('avg-clash-value');
+    const clashEvaluation = document.getElementById('clash-evaluation');
+    const clashDetailsList = document.getElementById('clash-details-list');
+    const highestClashValue = document.getElementById('highest-clash-value');
+    
+    // First, stop any pending redirect or action that might be in progress
+    if (window.redirectInProgress) {
+      clearTimeout(window.redirectInProgress);
+      window.redirectInProgress = null;
     }
-
-    // Check if this is a rescheduling operation
-    const isRescheduling = tempEvent && tempEvent.extendedProps && tempEvent.extendedProps.isRescheduling;
     
-    // Create and submit the form
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/schedule_assessment';
-    form.style.display = 'none';
-    
-    // Add the assessment_id field
-    const idField = document.createElement('input');
-    idField.type = 'hidden';
-    idField.name = 'assessment_id';
-    idField.value = data.assessment_id || (tempEvent ? tempEvent.id : '');
-    form.appendChild(idField);
-
-    // Add the date field
-    const dateField = document.createElement('input');
-    dateField.type = 'hidden';
-    dateField.name = 'assessment_date';
-    dateField.value = data.assessment_date;
-    form.appendChild(dateField);
-
-    // Add the week and day offset fields
-    const startWeekField = document.createElement('input');
-    startWeekField.type = 'hidden';
-    startWeekField.name = 'start_week';
-    startWeekField.value = data.start_week;
-    form.appendChild(startWeekField);
-
-    const startDayField = document.createElement('input');
-    startDayField.type = 'hidden';
-    startDayField.name = 'start_day';
-    startDayField.value = data.start_day;
-    form.appendChild(startDayField);
-
-    const endWeekField = document.createElement('input');
-    endWeekField.type = 'hidden';
-    endWeekField.name = 'end_week';
-    endWeekField.value = data.end_week;
-    form.appendChild(endWeekField);
-
-    const endDayField = document.createElement('input');
-    endDayField.type = 'hidden';
-    endDayField.name = 'end_day';
-    endDayField.value = data.end_day;
-    form.appendChild(endDayField);
-    
-    // Add an extra field to indicate this is a rescheduling
-    if (isRescheduling) {
-      const reschedulingField = document.createElement('input');
-      reschedulingField.type = 'hidden';
-      reschedulingField.name = 'is_rescheduling';
-      reschedulingField.value = 'true';
-      form.appendChild(reschedulingField);
+    // Set the average clash value with color coding
+    if (data.average_clash_value !== undefined) {
+      clashValue.textContent = Number(data.average_clash_value).toFixed(1);
+      
+      if (parseFloat(data.average_clash_value) <= 2.0) {
+        clashValue.style.color = '#4cd964'; // green
+      } else if (parseFloat(data.average_clash_value) <= 5.0) {
+        clashValue.style.color = '#5e72e4'; // blue
+      } else {
+        clashValue.style.color = '#ff3b30'; // red
+      }
+    } else {
+      clashValue.textContent = "0";
+      clashValue.style.color = '#4cd964'; // green
     }
+    
+    // Set the highest clash value with color coding
+    if (data.highest_clash_value !== undefined) {
+      highestClashValue.textContent = Number(data.highest_clash_value).toFixed(1);
+      
+      if (parseFloat(data.highest_clash_value) <= 2.0) {
+        highestClashValue.style.color = '#4cd964'; // green
+      } else if (parseFloat(data.highest_clash_value) <= 5.0) {
+        highestClashValue.style.color = '#5e72e4'; // blue
+      } else {
+        highestClashValue.style.color = '#ff3b30'; // red
+      }
+    } else {
+      highestClashValue.textContent = "0";
+      highestClashValue.style.color = '#4cd964'; // green
+    }
+    
+    // Set the evaluation badge and class
+    clashEvaluation.textContent = data.evaluation;
+    clashEvaluation.className = 'evaluation-badge ' + data.evaluation.toLowerCase();
+    
+    // Clear and populate the details list
+    clashDetailsList.innerHTML = '';
+    
+    if (data.details && data.details.length > 0) {
+      data.details.forEach(detail => {
+        const detailItem = document.createElement('div');
+        detailItem.className = 'clash-details-item';
+        
+        // Format day impact based on the day_factor
+        let dayImpact = '';
+        if (detail.day_factor >= 1.0) {
+          dayImpact = 'High impact (' + detail.days_difference + ' days difference)';
+        } else if (detail.day_factor >= 0.6) {
+          dayImpact = 'Medium impact (' + detail.days_difference + ' days difference)';
+        } else if (detail.day_factor >= 0.3) {
+          dayImpact = 'Low impact (' + detail.days_difference + ' days difference)';
+        } else {
+          dayImpact = 'Minimal impact (' + detail.days_difference + ' days difference)';
+        }
+        
+        const assessmentDate = new Date(detail.assessment_date);
+        const formattedDate = assessmentDate.toLocaleDateString();
+        
+        // Add proctored badge if assessment is proctored
+        const proctoredBadge = detail.is_proctored ? 
+          '<span class="badge proctored" style="margin-left: 10px;">Proctored</span>' : '';
+        
+        detailItem.innerHTML = `
+          <div class="clash-course-info">
+            <span class="clash-course-code">${detail.course_code}</span>
+            <span class="clash-overlap">${detail.overlap_count} students overlap</span>
+          </div>
+          <div class="clash-assessment-info">
+            <span class="clash-assessment-name">${detail.assessment_name}${proctoredBadge}</span>
+            <span class="clash-assessment-date">${formattedDate}</span>
+          </div>
+          <div class="clash-contribution">
+            <div class="clash-contrib-label">
+              <span>${dayImpact}</span>
+              <span class="clash-contrib-value">${Number(detail.clash_value).toFixed(1)} clash contribution</span>
+            </div>
+          </div>
+        `;
+        clashDetailsList.appendChild(detailItem);
+      });
+    } else {
+      clashDetailsList.innerHTML = '<p>No overlapping assessments found.</p>';
+    }
+    
+    // Remove any existing event listeners to prevent duplicates
+    const confirmBtn = document.getElementById('confirm-schedule-btn');
+    const cancelBtn = document.getElementById('cancel-schedule-btn');
+    const closeBtn = document.getElementById('close-clash-modal');
+    
+    // Create new buttons to replace the old ones (to remove any existing event listeners)
+    if (confirmBtn) {
+      const newConfirmBtn = confirmBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+      
+      // Add a new event handler with proper event prevention
+      newConfirmBtn.addEventListener('click', function(e) {
+        // Prevent default behavior and event bubbling
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // First close the modal
+        closeClashModal();
+        
+        // Add a short delay before committing to ensure UI updates properly
+        setTimeout(function() {
+          commitScheduleEvent();
+        }, 100);
+        
+        // Prevent any further action
+        return false;
+      });
+    }
+    
+    if (cancelBtn) {
+      const newCancelBtn = cancelBtn.cloneNode(true);
+      cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+      
+      newCancelBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeClashModal();
+        cancelScheduleEvent();
+        return false;
+      });
+    }
+    
+    if (closeBtn) {
+      const newCloseBtn = closeBtn.cloneNode(true);
+      closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+      
+      newCloseBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeClashModal();
+        cancelScheduleEvent();
+        return false;
+      });
+    }
+    
+    // Show the modal and overlay with proper z-index
+    const modal = document.getElementById('clash-modal');
+    const overlay = document.getElementById('clash-modal-overlay');
+    
+    // Ensure the modal has high z-index to stay on top
+    modal.style.zIndex = "2000";
+    overlay.style.zIndex = "1999";
+    
+    modal.classList.remove('hidden');
+    overlay.style.display = 'block';
+    
+    // Prevent clicks on the overlay from bubbling and add a proper click handler
+    overlay.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeClashModal();
+      cancelScheduleEvent();
+      return false;
+    };
+  }
 
-    // Add the form to the document and submit it
-    document.body.appendChild(form);
-    form.submit();
+  function closeClashModal() {
+    const modal = document.getElementById('clash-modal');
+    const overlay = document.getElementById('clash-modal-overlay');
+    
+    modal.classList.add('hidden');
+    overlay.classList.add('hidden');
+  }
+
+  function cancelScheduleEvent() {
+    // Revert the drag/drop UI without immediate page refresh
+    if (pendingEvent) {
+      if (pendingEvent.revert) {
+        pendingEvent.revert();
+      } else if (pendingEvent.remove) {
+        pendingEvent.remove();
+      }
+      
+      // Add visual feedback for the cancellation
+      const cancelIndicator = document.createElement('div');
+      cancelIndicator.style.position = 'fixed';
+      cancelIndicator.style.top = '20px';
+      cancelIndicator.style.left = '50%';
+      cancelIndicator.style.transform = 'translateX(-50%)';
+      cancelIndicator.style.padding = '10px 20px';
+      cancelIndicator.style.backgroundColor = '#ff9500';
+      cancelIndicator.style.color = 'white';
+      cancelIndicator.style.borderRadius = '4px';
+      cancelIndicator.style.zIndex = '9999';
+      cancelIndicator.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+      cancelIndicator.innerText = 'Scheduling cancelled';
+      
+      document.body.appendChild(cancelIndicator);
+      
+      // Fade out and remove
+      setTimeout(() => {
+        cancelIndicator.style.opacity = '0';
+        cancelIndicator.style.transition = 'opacity 0.5s ease';
+        setTimeout(() => {
+          document.body.removeChild(cancelIndicator);
+        }, 500);
+      }, 2000);
+    }
+    
+    // Reset the pending data
+    pendingScheduleData = null;
+    pendingEvent = null;
+  }
+
+  function commitScheduleEvent() {
+    if (!pendingScheduleData) {
+      console.error('No pending schedule data to commit');
+      return;
+    }
+    
+    // Add visual feedback during API call
+    if (pendingEvent && pendingEvent.setProp) {
+      pendingEvent.setProp('classNames', ['processing-drop']);
+    }
+    
+    // Send as JSON to our new API endpoint
+    fetch('/schedule_assessment_api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(pendingScheduleData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Show success icon on the event
+        if (pendingEvent && pendingEvent.setProp) {
+          pendingEvent.setProp('classNames', ['scheduled-success']);
+          
+          // Add success indicator to the DOM element
+          const eventEl = pendingEvent.el;
+          if (eventEl) {
+            const successIndicator = document.createElement('div');
+            successIndicator.className = 'drop-success-indicator';
+            successIndicator.innerHTML = '✓';
+            eventEl.appendChild(successIndicator);
+            
+            // Remove indicator after 2 seconds
+            setTimeout(() => {
+              successIndicator.remove();
+            }, 2000);
+          }
+        }
+        
+        // Show success message
+        const successMessage = document.createElement('div');
+        successMessage.className = 'flash-message success';
+        successMessage.style.position = 'fixed';
+        successMessage.style.top = '20px';
+        successMessage.style.left = '50%';
+        successMessage.style.transform = 'translateX(-50%)';
+        successMessage.style.padding = '15px 20px';
+        successMessage.style.zIndex = '9999';
+        successMessage.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        
+        const messageContent = document.createElement('span');
+        messageContent.className = 'msgContainer';
+        messageContent.innerText = data.message || 'Assessment scheduled successfully';
+        successMessage.appendChild(messageContent);
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'close-btn';
+        closeBtn.innerHTML = '×';
+        closeBtn.onclick = function() {
+          successMessage.style.display = 'none';
+        };
+        successMessage.appendChild(closeBtn);
+        
+        document.body.appendChild(successMessage);
+        
+        // Refresh page after a delay
+        setTimeout(() => {
+          // Fade out message first
+          successMessage.style.opacity = '0';
+          successMessage.style.transition = 'opacity 0.5s ease';
+          
+          // Then reload the page
+          setTimeout(() => {
+            document.body.removeChild(successMessage);
+            window.location.reload();
+          }, 500);
+        }, 2000);
+        
+        // Reset pending data
+        pendingScheduleData = null;
+        pendingEvent = null;
+      } else {
+        // Show error state
+        if (pendingEvent && pendingEvent.setProp) {
+          pendingEvent.setProp('classNames', ['scheduling-error']);
+        }
+        
+        // Display error message
+        alert(data.error || 'Failed to schedule assessment');
+        
+        // Reset pending data
+        pendingScheduleData = null;
+        pendingEvent = null;
+        
+        // Refresh the page to reset the UI
+        window.location.reload();
+      }
+    })
+    .catch(error => {
+      console.error('Error scheduling assessment:', error);
+      
+      // Show error state
+      if (pendingEvent && pendingEvent.setProp) {
+        pendingEvent.setProp('classNames', ['scheduling-error']);
+      }
+      
+      // Display error message
+      alert('An error occurred while scheduling the assessment');
+      
+      // Reset pending data
+      pendingScheduleData = null;
+      pendingEvent = null;
+      
+      // Refresh the page to reset the UI
+      window.location.reload();
+    });
   }
 
   function unscheduleEvent(eventId) {
@@ -1076,7 +1377,6 @@ document.addEventListener("DOMContentLoaded", function () {
       localStorage.setItem('calendarViewType', calendar.view.type);
       localStorage.setItem('calendarCurrentDate', calendar.getDate().toISOString());
       
-      // Also save filter states
       const currentLevel = levelFilter ? levelFilter.value : "0";
       const currentCourse = courseFilter ? courseFilter.value : "all";
       const currentType = typeFilter ? typeFilter.value : "all";
@@ -1210,4 +1510,62 @@ document.addEventListener("DOMContentLoaded", function () {
   // Check browser console for errors
   console.log("Draggable elements initialized:", 
     document.querySelectorAll(".draggable-assessment").length);
+
+  // Function to show the unschedule confirmation dialog
+  function showUnscheduleConfirmation(assessmentId, courseCode, assessmentName) {
+    const overlay = document.getElementById('unschedule-overlay');
+    const dialog = document.getElementById('unschedule-confirm');
+    const nameSpan = document.getElementById('assessment-name-confirm');
+    const idInput = document.getElementById('unschedule-assessment-id');
+    
+    // Set confirmation text and store the assessment ID
+    nameSpan.textContent = `${courseCode}-${assessmentName}`;
+    idInput.value = assessmentId;
+    
+    // Show the overlay and dialog
+    overlay.style.display = 'block';
+    dialog.style.display = 'block';
+    
+    // Add event listeners to buttons
+    const confirmBtn = document.getElementById('confirm-unschedule-btn');
+    const cancelBtn = document.getElementById('cancel-unschedule-btn');
+    
+    // Remove any existing listeners
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    
+    // Add new listeners
+    newConfirmBtn.addEventListener('click', function() {
+      // Close the dialog
+      closeUnscheduleConfirmation();
+      
+      // Unschedule the assessment
+      unscheduleEvent(idInput.value);
+    });
+    
+    newCancelBtn.addEventListener('click', closeUnscheduleConfirmation);
+    
+    // Close when clicking on the overlay
+    overlay.addEventListener('click', closeUnscheduleConfirmation);
+    
+    // Close on Escape key
+    document.addEventListener('keydown', function escapeHandler(e) {
+      if (e.key === 'Escape') {
+        closeUnscheduleConfirmation();
+        document.removeEventListener('keydown', escapeHandler);
+      }
+    });
+  }
+
+  // Function to close the unschedule confirmation dialog
+  function closeUnscheduleConfirmation() {
+    const overlay = document.getElementById('unschedule-overlay');
+    const dialog = document.getElementById('unschedule-confirm');
+    
+    overlay.style.display = 'none';
+    dialog.style.display = 'none';
+  }
 }); 

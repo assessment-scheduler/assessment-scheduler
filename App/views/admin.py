@@ -228,23 +228,22 @@ def set_active_semester(semester_id):
         # Get semester to check if it has courses
         semester = get_semester(semester_id)
         if semester and semester.course_assignments:
-            # Check if there are any unscheduled assessments
+            # Check if there are any assessments
             from ..models.assessment import Assessment
             
-            unscheduled_count = 0
+            assessment_count = 0
             for assignment in semester.course_assignments:
                 if assignment.course:
-                    unscheduled_assessments = Assessment.query.filter_by(
-                        course_code=assignment.course_code,
-                        scheduled=None
+                    course_assessments = Assessment.query.filter_by(
+                        course_code=assignment.course_code
                     ).count()
-                    unscheduled_count += unscheduled_assessments
+                    assessment_count += course_assessments
             
-            if unscheduled_count > 0:
-                flash(f"Started auto-scheduling {unscheduled_count} unscheduled assessments for {len(semester.course_assignments)} courses", "info")
+            if assessment_count > 0:
+                flash(f"Started rescheduling {assessment_count} assessments for {len(semester.course_assignments)} courses", "info")
                 flash("This process may take a moment to complete. Check the calendar page when complete.", "info")
             else:
-                flash("All assessments for this semester are already scheduled. No auto-scheduling needed.", "info")
+                flash("No assessments found for this semester's courses. Add assessments to schedule them.", "warning")
         else:
             flash("No courses found in this semester. Please add courses to schedule assessments.", "warning")
     else:
