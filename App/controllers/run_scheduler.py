@@ -5,14 +5,7 @@ from kris import solve_stage1, solve_stage2, print_schedule, get_timetable_from_
 
 
 def run_scheduler(assessment_csv, timetable_csv=None, enrollment_csv=None):
-    """
-    Run the assessment scheduler using data from CSV files.
-    
-    Args:
-        assessment_csv: Path to assessment data CSV
-        timetable_csv: Path to timetable data CSV (optional)
-        enrollment_csv: Path to enrollment data CSV (optional)
-    """
+
     print("\n===== LOADING DATA =====")
     print(f"Assessment CSV: {assessment_csv}")
     print(f"Timetable CSV: {timetable_csv if timetable_csv else 'Not specified, will try default course_timetable.csv'}")
