@@ -1128,64 +1128,18 @@ document.addEventListener("DOMContentLoaded", function () {
       clashDetailsList.innerHTML = '<p>No overlapping assessments found.</p>';
     }
     
-    // Remove any existing event listeners to prevent duplicates
-    const confirmBtn = document.getElementById('confirm-schedule-btn');
-    const cancelBtn = document.getElementById('cancel-schedule-btn');
-    const closeBtn = document.getElementById('close-clash-modal');
-    
-    // Create new buttons to replace the old ones (to remove any existing event listeners)
-    if (confirmBtn) {
-      const newConfirmBtn = confirmBtn.cloneNode(true);
-      confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-      
-      // Add a new event handler with proper event prevention
-      newConfirmBtn.addEventListener('click', function(e) {
-        // Prevent default behavior and event bubbling
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // First close the modal
-        closeClashModal();
-        
-        // Add a short delay before committing to ensure UI updates properly
-        setTimeout(function() {
-          commitScheduleEvent();
-        }, 100);
-        
-        // Prevent any further action
-        return false;
-      });
-    }
-    
-    if (cancelBtn) {
-      const newCancelBtn = cancelBtn.cloneNode(true);
-      cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-      
-      newCancelBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        closeClashModal();
-        cancelScheduleEvent();
-        return false;
-      });
-    }
-    
-    if (closeBtn) {
-      const newCloseBtn = closeBtn.cloneNode(true);
-      closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
-      
-      newCloseBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        closeClashModal();
-        cancelScheduleEvent();
-        return false;
-      });
-    }
-    
     // Show the modal and overlay with proper z-index
     const modal = document.getElementById('clash-modal');
     const overlay = document.getElementById('clash-modal-overlay');
+    
+    // Apply dark mode styling if needed
+    if (isDarkModeActive()) {
+      modal.classList.add('dark-mode');
+      overlay.classList.add('dark-mode');
+    } else {
+      modal.classList.remove('dark-mode');
+      overlay.classList.remove('dark-mode');
+    }
     
     // Ensure the modal has high z-index to stay on top
     modal.style.zIndex = "2000";
@@ -1194,11 +1148,64 @@ document.addEventListener("DOMContentLoaded", function () {
     modal.classList.remove('hidden');
     overlay.style.display = 'block';
     
-    // Prevent clicks on the overlay from bubbling and add a proper click handler
+    // Clear any existing event listeners
+    const confirmBtn = document.getElementById('confirm-schedule-btn');
+    const cancelBtn = document.getElementById('cancel-schedule-btn');
+    const closeBtn = document.getElementById('close-clash-modal');
+    
+    // Remove old event listeners by cloning and replacing
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    newConfirmBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Close modal first
+      document.getElementById('clash-modal').classList.add('hidden');
+      document.getElementById('clash-modal-overlay').style.display = 'none';
+      
+      // Wait a moment to ensure UI updates before committing
+      setTimeout(() => {
+        commitScheduleEvent();
+      }, 50);
+      
+      return false;
+    });
+    
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    newCancelBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      document.getElementById('clash-modal').classList.add('hidden');
+      document.getElementById('clash-modal-overlay').style.display = 'none';
+      
+      cancelScheduleEvent();
+      return false;
+    });
+    
+    const newCloseBtn = closeBtn.cloneNode(true);
+    closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+    newCloseBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      document.getElementById('clash-modal').classList.add('hidden');
+      document.getElementById('clash-modal-overlay').style.display = 'none';
+      
+      cancelScheduleEvent();
+      return false;
+    });
+    
+    // Prevent clicks on the overlay from bubbling
     overlay.onclick = function(e) {
       e.preventDefault();
       e.stopPropagation();
-      closeClashModal();
+      
+      document.getElementById('clash-modal').classList.add('hidden');
+      document.getElementById('clash-modal-overlay').style.display = 'none';
+      
       cancelScheduleEvent();
       return false;
     };
@@ -1263,7 +1270,7 @@ document.addEventListener("DOMContentLoaded", function () {
       pendingEvent.setProp('classNames', ['processing-drop']);
     }
     
-    // Send as JSON to our new API endpoint
+    // Send as JSON to our API endpoint
     fetch('/schedule_assessment_api', {
       method: 'POST',
       headers: {
@@ -1277,98 +1284,118 @@ document.addEventListener("DOMContentLoaded", function () {
         // Show success icon on the event
         if (pendingEvent && pendingEvent.setProp) {
           pendingEvent.setProp('classNames', ['scheduled-success']);
-          
-          // Add success indicator to the DOM element
-          const eventEl = pendingEvent.el;
-          if (eventEl) {
-            const successIndicator = document.createElement('div');
-            successIndicator.className = 'drop-success-indicator';
-            successIndicator.innerHTML = '✓';
-            eventEl.appendChild(successIndicator);
-            
-            // Remove indicator after 2 seconds
-            setTimeout(() => {
-              successIndicator.remove();
-            }, 2000);
-          }
         }
         
-        // Show success message
+        // Create success message that matches Flask flash messages
         const successMessage = document.createElement('div');
-        successMessage.className = 'flash-message success';
+        successMessage.className = 'alert alert-success';
         successMessage.style.position = 'fixed';
-        successMessage.style.top = '20px';
+        successMessage.style.top = '80px';
         successMessage.style.left = '50%';
         successMessage.style.transform = 'translateX(-50%)';
-        successMessage.style.padding = '15px 20px';
+        successMessage.style.padding = '12px 20px';
+        successMessage.style.borderRadius = '4px';
+        successMessage.style.boxShadow = '0 4px 10px rgba(0,0,0,0.2)';
+        successMessage.style.backgroundColor = '#4cd964';
+        successMessage.style.color = 'white';
         successMessage.style.zIndex = '9999';
-        successMessage.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-        
-        const messageContent = document.createElement('span');
-        messageContent.className = 'msgContainer';
-        messageContent.innerText = data.message || 'Assessment scheduled successfully';
-        successMessage.appendChild(messageContent);
-        
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'close-btn';
-        closeBtn.innerHTML = '×';
-        closeBtn.onclick = function() {
-          successMessage.style.display = 'none';
-        };
-        successMessage.appendChild(closeBtn);
+        successMessage.style.minWidth = '300px';
+        successMessage.style.textAlign = 'center';
+        successMessage.innerHTML = data.message || 'Assessment scheduled successfully';
         
         document.body.appendChild(successMessage);
-        
-        // Refresh page after a delay
-        setTimeout(() => {
-          // Fade out message first
-          successMessage.style.opacity = '0';
-          successMessage.style.transition = 'opacity 0.5s ease';
-          
-          // Then reload the page
-          setTimeout(() => {
-            document.body.removeChild(successMessage);
-            window.location.reload();
-          }, 500);
-        }, 2000);
         
         // Reset pending data
         pendingScheduleData = null;
         pendingEvent = null;
+        
+        // Refresh page after message is shown
+        setTimeout(() => {
+          successMessage.style.opacity = '0';
+          successMessage.style.transition = 'opacity 0.3s ease';
+          
+          setTimeout(() => {
+            window.location.reload();
+          }, 300);
+        }, 2000);
       } else {
-        // Show error state
+        // Show error state and message
         if (pendingEvent && pendingEvent.setProp) {
           pendingEvent.setProp('classNames', ['scheduling-error']);
         }
         
-        // Display error message
-        alert(data.error || 'Failed to schedule assessment');
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'alert alert-danger';
+        errorMessage.style.position = 'fixed';
+        errorMessage.style.top = '80px';
+        errorMessage.style.left = '50%';
+        errorMessage.style.transform = 'translateX(-50%)';
+        errorMessage.style.padding = '12px 20px';
+        errorMessage.style.borderRadius = '4px';
+        errorMessage.style.boxShadow = '0 4px 10px rgba(0,0,0,0.2)';
+        errorMessage.style.backgroundColor = '#ff3b30';
+        errorMessage.style.color = 'white';
+        errorMessage.style.zIndex = '9999';
+        errorMessage.style.minWidth = '300px';
+        errorMessage.style.textAlign = 'center';
+        errorMessage.innerHTML = data.error || 'Error scheduling assessment';
+        
+        document.body.appendChild(errorMessage);
         
         // Reset pending data
         pendingScheduleData = null;
         pendingEvent = null;
         
-        // Refresh the page to reset the UI
-        window.location.reload();
+        // Refresh after showing error
+        setTimeout(() => {
+          errorMessage.style.opacity = '0';
+          errorMessage.style.transition = 'opacity 0.3s ease';
+          
+          setTimeout(() => {
+            window.location.reload();
+          }, 300);
+        }, 2000);
       }
     })
     .catch(error => {
       console.error('Error scheduling assessment:', error);
       
-      // Show error state
+      // Show error state and message
       if (pendingEvent && pendingEvent.setProp) {
         pendingEvent.setProp('classNames', ['scheduling-error']);
       }
       
-      // Display error message
-      alert('An error occurred while scheduling the assessment');
+      const errorMessage = document.createElement('div');
+      errorMessage.className = 'alert alert-danger';
+      errorMessage.style.position = 'fixed';
+      errorMessage.style.top = '80px';
+      errorMessage.style.left = '50%';
+      errorMessage.style.transform = 'translateX(-50%)';
+      errorMessage.style.padding = '12px 20px';
+      errorMessage.style.borderRadius = '4px';
+      errorMessage.style.boxShadow = '0 4px 10px rgba(0,0,0,0.2)';
+      errorMessage.style.backgroundColor = '#ff3b30';
+      errorMessage.style.color = 'white';
+      errorMessage.style.zIndex = '9999';
+      errorMessage.style.minWidth = '300px';
+      errorMessage.style.textAlign = 'center';
+      errorMessage.innerHTML = 'An error occurred while scheduling the assessment';
+      
+      document.body.appendChild(errorMessage);
       
       // Reset pending data
       pendingScheduleData = null;
       pendingEvent = null;
       
-      // Refresh the page to reset the UI
-      window.location.reload();
+      // Refresh after showing error
+      setTimeout(() => {
+        errorMessage.style.opacity = '0';
+        errorMessage.style.transition = 'opacity 0.3s ease';
+        
+        setTimeout(() => {
+          window.location.reload();
+        }, 300);
+      }, 2000);
     });
   }
 
@@ -1568,4 +1595,104 @@ document.addEventListener("DOMContentLoaded", function () {
     overlay.style.display = 'none';
     dialog.style.display = 'none';
   }
+
+  // Add this function to check if dark mode is active
+  function isDarkModeActive() {
+    return document.body.classList.contains('dark-mode') || 
+           document.documentElement.classList.contains('dark-mode') || 
+           localStorage.getItem('darkMode') === 'true';
+  }
+
+  // Update showUnscheduleConfirm function to add dark mode class if needed
+  function showUnscheduleConfirm(assessmentId, assessmentName) {
+    const confirmDialog = document.getElementById('unschedule-confirm');
+    const overlay = document.getElementById('unschedule-overlay');
+    const nameSpan = document.getElementById('assessment-name-confirm');
+    const idInput = document.getElementById('unschedule-assessment-id');
+    
+    if (confirmDialog && overlay && nameSpan && idInput) {
+      nameSpan.textContent = assessmentName;
+      idInput.value = assessmentId;
+      
+      // Apply dark mode if active
+      if (isDarkModeActive()) {
+        confirmDialog.classList.add('dark-mode');
+        overlay.classList.add('dark-mode');
+      } else {
+        confirmDialog.classList.remove('dark-mode');
+        overlay.classList.remove('dark-mode');
+      }
+      
+      confirmDialog.style.display = 'block';
+      overlay.style.display = 'block';
+      
+      // Add event listeners to buttons
+      const confirmBtn = document.getElementById('confirm-unschedule-btn');
+      const cancelBtn = document.getElementById('cancel-unschedule-btn');
+      
+      if (confirmBtn) {
+        confirmBtn.onclick = function() {
+          unscheduleEvent(assessmentId);
+          confirmDialog.style.display = 'none';
+          overlay.style.display = 'none';
+        };
+      }
+      
+      if (cancelBtn) {
+        cancelBtn.onclick = function() {
+          confirmDialog.style.display = 'none';
+          overlay.style.display = 'none';
+        };
+      }
+      
+      // Close on overlay click
+      overlay.onclick = function() {
+        confirmDialog.style.display = 'none';
+        overlay.style.display = 'none';
+      };
+    }
+  }
+
+  // Add theme change listener to update modals if they're visible
+  document.addEventListener('themeToggled', function() {
+    const isDark = isDarkModeActive();
+    
+    // Update the clash modal if visible
+    const clashModal = document.getElementById('clash-modal');
+    const clashOverlay = document.getElementById('clash-modal-overlay');
+    
+    if (clashModal && !clashModal.classList.contains('hidden')) {
+      if (isDark) {
+        clashModal.classList.add('dark-mode');
+        clashOverlay.classList.add('dark-mode');
+      } else {
+        clashModal.classList.remove('dark-mode');
+        clashOverlay.classList.remove('dark-mode');
+      }
+    }
+    
+    // Update unschedule confirm if visible
+    const unscheduleConfirm = document.getElementById('unschedule-confirm');
+    const unscheduleOverlay = document.getElementById('unschedule-overlay');
+    
+    if (unscheduleConfirm && unscheduleConfirm.style.display !== 'none') {
+      if (isDark) {
+        unscheduleConfirm.classList.add('dark-mode');
+        unscheduleOverlay.classList.add('dark-mode');
+      } else {
+        unscheduleConfirm.classList.remove('dark-mode');
+        unscheduleOverlay.classList.remove('dark-mode');
+      }
+    }
+    
+    // Update any active loading indicator
+    const loadingIndicator = document.querySelector('.loading-indicator');
+    if (loadingIndicator) {
+      if (isDark) {
+        loadingIndicator.classList.add('dark-mode');
+      } else {
+        loadingIndicator.classList.remove('dark-mode');
+      }
+    }
+  });
 }); 
