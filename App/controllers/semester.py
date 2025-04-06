@@ -1,8 +1,11 @@
 from typing import List, Optional, Union
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from ..database import db
 from ..models.semester import Semester
 from ..models.semester_course import SemesterCourse
+from ..models.course import Course
+from ..models.course_timetable import CourseTimetable
+from ..models.solver_factory import get_solver
 import traceback
 
 def parse_date(date_value: Union[str, date]) -> date:
@@ -144,40 +147,37 @@ def set_active(semester_id: int) -> bool:
             return True
         
         from ..models.assessment import Assessment
+        from ..controllers.assessment import update_assessment
         
-        unscheduled_count = 0
+        all_assessments_count = 0
         for assignment in semester.course_assignments:
             if assignment.course:
-                unscheduled_assessments = Assessment.query.filter_by(
-                    course_code=assignment.course_code,
-                    scheduled=None
-                ).count()
-                unscheduled_count += unscheduled_assessments
+                course_assessments = Assessment.query.filter_by(course_code=assignment.course_code).all()
+                all_assessments_count += len(course_assessments)
+                
+                for assessment in course_assessments:
+                    assessment.scheduled = None
+                
+        db.session.commit()
         
-        if unscheduled_count == 0:
-            print(f"No unscheduled assessments found for semester {semester_id}. Skipping auto-scheduling.")
+        print(f"Reset scheduling for {all_assessments_count} assessments for semester {semester_id}")
+        
+        if all_assessments_count == 0:
+            print(f"No assessments found for semester {semester_id}. Skipping auto-scheduling.")
             return True
             
-        print(f"Found {unscheduled_count} unscheduled assessments for semester {semester_id}")
+        print(f"Rescheduling {all_assessments_count} assessments for semester {semester_id}")
         
         try:
             solver = semester.get_solver()
-            if solver is None:
-                print(f"Could not get solver for semester {semester_id}. Solver type: {semester.solver_type}")
-                return True
-            
-            print(f"Starting auto-scheduling for semester {semester_id} with {len(semester.course_assignments)} courses")
-            
             schedule = solver.solve()
             
             if schedule:
-                print(f"Successfully scheduled {len(schedule)} assessments for semester {semester_id}")
+                print(f"Successfully rescheduled {len(schedule)} assessments for semester {semester_id}")
             else:
-                print(f"Could not find optimal schedule for semester {semester_id} - no assessments were scheduled")
-                print("This may be due to constraints being too restrictive or insufficient data")
+                print(f"Failed to reschedule assessments for semester {semester_id}")
         except Exception as e:
-            import traceback
-            print(f"Error while auto-scheduling for semester {semester_id}: {str(e)}")
+            print(f"Error while rescheduling assessments for semester {semester_id}: {str(e)}")
             print("Traceback:", traceback.format_exc())
             
         return True

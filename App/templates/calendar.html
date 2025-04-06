@@ -1328,6 +1328,8 @@
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 999;
+    cursor: default;
+    pointer-events: auto !important;
   }
   
   .popup-overlay.active {
@@ -1448,6 +1450,7 @@
     z-index: 1001;
     transition: all 0.3s ease;
     border: 1px solid var(--border-color);
+    pointer-events: auto !important;
   }
   
   .clash-modal.hidden {
@@ -1482,6 +1485,70 @@
     color: var(--text-color);
   }
   
+  .clash-scale-info {
+    margin: 15px 0;
+    padding: 10px;
+    background-color: var(--secondary-color);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+  }
+  
+  .scale-label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: var(--text-color);
+  }
+  
+  .scale-ranges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .scale-range {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: white;
+  }
+  
+  .scale-range.excellent {
+    background-color: #4cd964;
+  }
+  
+  .scale-range.good {
+    background-color: #5e72e4;
+  }
+  
+  .scale-range.poor {
+    background-color: #ff3b30;
+  }
+  
+  .highest-clash {
+    margin-top: 10px;
+    padding: 5px 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  #highest-clash-label {
+    font-size: 13px;
+    color: var(--text-color);
+  }
+  
+  #highest-clash-value {
+    font-weight: bold;
+    font-size: 15px;
+    color: var(--text-color);
+    padding: 2px 8px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+  }
+  
   .evaluation-badge {
     padding: 5px 12px;
     border-radius: 15px;
@@ -1496,10 +1563,6 @@
   
   .evaluation-badge.good {
     background-color: #5e72e4;
-  }
-  
-  .evaluation-badge.fair {
-    background-color: #ff9500;
   }
   
   .evaluation-badge.poor {
@@ -1545,6 +1608,30 @@
     justify-content: space-between;
     color: var(--text-muted);
     font-size: 12px;
+    margin-bottom: 5px;
+  }
+  
+  .clash-contribution {
+    padding-top: 5px;
+    border-top: 1px dashed var(--border-color);
+    margin-top: 5px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  
+  .clash-contrib-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .clash-contrib-value {
+    font-weight: bold;
+    color: var(--text-color);
+    background: var(--secondary-color);
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
   }
   
   .clash-actions {
@@ -1583,48 +1670,94 @@
     background-color: var(--secondary-color);
     transform: translateY(-2px);
   }
-  
-  /* Loading indicator */
-  body.loading::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 9999;
+
+  .delete-assessment-btn {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+    color: #ff0000;
+    background: transparent;
+    border: none;
+    z-index: 10;
   }
-  
-  body.loading::before {
-    content: '';
+
+  .delete-assessment-btn:hover {
+    color: darkred;
+  }
+
+  /* Unschedule confirmation dialog */
+  .unschedule-confirm {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    border: 5px solid var(--tertiary-color);
-    border-top-color: transparent;
-    animation: spin 1s linear infinite;
-    z-index: 10000;
+    background-color: var(--card-color);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+    z-index: 1002;
+    border: 1px solid var(--border-color);
+    text-align: center;
   }
-  
-  /* Success and error states for scheduled assessments */
-  .scheduled-success {
-    box-shadow: 0 0 10px rgba(76, 217, 100, 0.8) !important;
-    border-left: 4px solid #4cd964 !important;
-    transition: all 0.3s ease;
+
+  .unschedule-confirm h3 {
+    margin-top: 0;
+    font-size: 18px;
+    color: var(--text-color);
   }
-  
-  .scheduling-error {
-    box-shadow: 0 0 10px rgba(255, 59, 48, 0.8) !important;
-    border-left: 4px solid #ff3b30 !important;
-    transition: all 0.3s ease;
+
+  .unschedule-confirm p {
+    margin-bottom: 20px;
+    color: var(--text-muted);
+  }
+
+  .confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .confirm-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    font-weight: 500;
+  }
+
+  .confirm-btn.confirm {
+    background-color: #ff3b30;
+    color: white;
+  }
+
+  .confirm-btn.cancel {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+  }
+
+  .confirm-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .confirm-btn.confirm:hover {
+    background-color: #e02c25;
+  }
+
+  .confirm-btn.cancel:hover {
+    background-color: var(--border-color);
   }
 </style>
 {% endblock %}
@@ -1893,7 +2026,7 @@
   <div id="clash-content">
     <div id="clash-summary">
       <div class="clash-value-container">
-        <div class="clash-label">Average Clash Value:</div>
+        <div class="clash-label">Weighted Clash Index:</div>
         <div class="clash-value" id="avg-clash-value">0</div>
       </div>
       <div class="clash-evaluation">
@@ -1901,8 +2034,20 @@
         <div class="evaluation-badge" id="clash-evaluation">Good</div>
       </div>
     </div>
+    <div class="clash-scale-info">
+      <div class="scale-label">Clash Index Scale:</div>
+      <div class="scale-ranges">
+        <span class="scale-range excellent">≤2.0: Excellent</span>
+        <span class="scale-range good">2.1-5.0: Good</span>
+        <span class="scale-range poor">>5.0: Poor</span>
+      </div>
+      <div class="highest-clash">
+        <span id="highest-clash-label">Highest individual clash: </span>
+        <span id="highest-clash-value" class="highest-value">0</span>
+      </div>
+    </div>
     <div id="clash-details">
-      <h4>Top Overlapping Courses</h4>
+      <h4>Top Overlapping Assessments</h4>
       <div id="clash-details-list"></div>
     </div>
     <div class="clash-actions">
@@ -1910,6 +2055,18 @@
       <button id="cancel-schedule-btn" class="action-btn secondary">Cancel</button>
     </div>
   </div>
+</div>
+
+<!-- Unschedule Confirmation Dialog -->
+<div class="popup-overlay" id="unschedule-overlay" style="display: none;"></div>
+<div id="unschedule-confirm" class="unschedule-confirm" style="display: none;">
+  <h3>Unschedule Assessment</h3>
+  <p>Are you sure you want to unschedule <span id="assessment-name-confirm"></span>?</p>
+  <div class="confirm-actions">
+    <button id="confirm-unschedule-btn" class="confirm-btn confirm">Unschedule</button>
+    <button id="cancel-unschedule-btn" class="confirm-btn cancel">Cancel</button>
+  </div>
+  <input type="hidden" id="unschedule-assessment-id" value="">
 </div>
 
 {% endblock %}
