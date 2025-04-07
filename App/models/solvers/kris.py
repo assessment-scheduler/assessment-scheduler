@@ -14,7 +14,9 @@ from ...controllers import (
     get_all_courses,
     get_active_semester,
     get_semester_duration,
+    get_timetable_from_db,
 )
+from ...controllers.course_timetable import get_timetable_entries, convert_to_timetable_format
 
 
 class KrisSolver(Solver):
@@ -154,7 +156,8 @@ class KrisSolver(Solver):
             return False
 
     def _run_solver_algorithm(self, courses: List[Dict[str, Any]], matrix: List[List[int]], 
-                             phi_matrix: List[List[int]], k: int, d: int, M: int) -> Optional[List[Tuple]]:
+                             phi_matrix: List[List[int]], k: int, d: int, M: int,
+                             timetable: Optional[Dict] = None) -> Optional[List[Tuple]]:
         try:
             if not courses:
                 print("No unscheduled assessments found")
@@ -187,7 +190,7 @@ class KrisSolver(Solver):
             if total_assessments > (k * 5 * d):  
                 print(f"Warning: More assessments ({total_assessments}) than available slots ({k * 5 * d})")
 
-            U_star, stage1_status, stage1_info = solve_stage1(courses, matrix, k, M)
+            U_star, stage1_status, stage1_info = solve_stage1(courses, matrix, k, M, timetable)
             
             if not stage1_status or U_star is None:
                 print(f"Stage 1 failed: Could not find valid assessment spacing.")
@@ -199,7 +202,7 @@ class KrisSolver(Solver):
                 
             try:
                 schedule, Y_star, probability = solve_stage2(
-                    courses, matrix, phi_matrix, U_star, k, d, M
+                    courses, matrix, phi_matrix, U_star, k, d, M, timetable
                 )
             except Exception as stage2_error:
                 print(f"Error in Stage 2: {str(stage2_error)}")
@@ -243,6 +246,50 @@ class KrisSolver(Solver):
                 print("No courses with unscheduled assessments found")
                 return None
                 
+            # Get course codes IN SOLVER ORDER - this is critical
+            course_codes = [course['code'] for course in courses]
+            print("Course codes in solver order:")
+            for idx, code in enumerate(course_codes):
+                print(f"  [{idx}] {code}")
+            
+            # Create timetable directly from CSV data using SOLVER'S course ordering
+            timetable = {}
+            try:
+                import csv
+                import os
+                
+                timetable_path = os.path.join('App', 'uploads', 'course_timetable.csv')
+                if os.path.exists(timetable_path):
+                    with open(timetable_path, 'r') as f:
+                        reader = csv.DictReader(f)
+                        for row in reader:
+                            course_code = row['CourseID']
+                            days_str = row['Days']
+                            
+                            # Only process courses that are in the solver
+                            if course_code in course_codes:
+                                # Use index from solver's course list
+                                solver_idx = course_codes.index(course_code)
+                                
+                                # Process days
+                                for day in days_str.split(';'):
+                                    day_mapping = {
+                                        'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5
+                                    }
+                                    day_number = day_mapping.get(day.strip(), None)
+                                    
+                                    if day_number:
+                                        timetable[(solver_idx, day_number)] = True
+                                        print(f"Added timetable entry: {course_code} (idx {solver_idx}) on day {day_number}")
+                
+                    print(f"Created timetable with {len(timetable)} entries")
+                else:
+                    print(f"Warning: Timetable file {timetable_path} not found")
+                    timetable = None
+            except Exception as e:
+                print(f"Warning: Could not create timetable: {e}")
+                timetable = None
+            
             matrix = self.compile_class_matrix()
             if not matrix:
                 print("Failed to generate course matrix")
@@ -273,14 +320,15 @@ class KrisSolver(Solver):
                 return None
                 
             print(f"Trying to schedule with constraint value M={M}")
-            schedule = self._run_solver_algorithm(courses, matrix, phi_matrix, k, d, M)
+            # Pass timetable to the solver algorithm
+            schedule = self._run_solver_algorithm(courses, matrix, phi_matrix, k, d, M, timetable)
             
             if not schedule and M not in constraint_values:
                 for M_value in constraint_values:
                     if M_value <= M:
                         continue
                     print(f"Trying again with larger constraint value M={M_value}")
-                    schedule = self._run_solver_algorithm(courses, matrix, phi_matrix, k, d, M_value)
+                    schedule = self._run_solver_algorithm(courses, matrix, phi_matrix, k, d, M_value, timetable)
                     if schedule:
                         print(f"Successfully found schedule with M={M_value}")
                         break

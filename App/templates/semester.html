@@ -307,6 +307,7 @@
           <th>Semester</th>
           <th>Start Date</th>
           <th>End Date</th>
+          <th>Duration</th>
           <th>Max Assessments</th>
           <th>Solver</th>
           <th>Courses</th>
@@ -321,6 +322,7 @@
           <td>{{ semester.sem_num }}</td>
           <td>{{ semester.start_date.strftime('%Y-%m-%d') }}</td>
           <td>{{ semester.end_date.strftime('%Y-%m-%d') }}</td>
+          <td>{{ ((semester.end_date - semester.start_date).days + 1) // 7 }} weeks</td>
           <td>{{ semester.max_assessments }}</td>
           <td>{{ semester.solver_type }}</td>
           <td>
@@ -375,7 +377,8 @@
   <div id="setActiveConfirmModal" class="modal">
     <div class="modal-content">
       <h3>Confirm Set Active</h3>
-      <p>Are you sure you want to set this semester as active? This may take some time.</p>
+      <p>Are you sure you want to set this semester as active?</p>
+      <p><strong>Warning:</strong> This will reschedule ALL assessments for courses in this semester, including ones that are already scheduled.</p>
       <div class="modal-buttons">
         <form id="setActiveSemesterForm" action="/set_active_semester/0" method="POST">
           <button type="submit" class="confirm-delete-btn">Yes, Set Active</button>

@@ -44,7 +44,7 @@
   }
   
   .draggable-assessment:hover {
-    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
     transform: translateY(-2px);
     background: var(--accent-color);
   }
@@ -156,16 +156,27 @@
   }
   
   .fc-event {
-    border: none !important;
-    margin: 2px !important;
-    padding: 5px !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
-    color: white !important;
+    border-left: 4px solid var(--tertiary-color);
+    background-color: var(--card-color);
+    color: var(--text-color);
+    border-radius: 4px;
+    padding: 4px 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    margin: 2px 0;
+    height: auto;
+    min-height: 50px;
+    width: 100%;
+  }
+  
+  .fc-event:hover,
+  .calendar-event:hover {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
   }
   
   .fc-event-main {
-    padding: 3px 5px !important;
-    color: white !important;
+    padding: 4px;
   }
   
   .fc-event-time {
@@ -313,6 +324,44 @@
     color: var(--tertiary-color);
   }
   
+  .drag-tips {
+    background-color: rgba(103, 78, 204, 0.1);
+    padding: 12px 15px;
+    border-radius: 6px;
+    margin-top: 15px;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    border-left: 3px solid var(--tertiary-color);
+  }
+  
+  .dark-mode .drag-tips {
+    background-color: rgba(103, 78, 204, 0.2);
+  }
+  
+  .drag-tips h4 {
+    margin: 0 0 8px 0;
+    font-size: 1rem;
+    color: var(--tertiary-color);
+  }
+  
+  .drag-tips ul {
+    margin: 0;
+    padding-left: 5px;
+    list-style-type: none;
+  }
+  
+  .drag-tips li {
+    padding: 5px 0;
+    display: flex;
+    align-items: flex-start;
+  }
+  
+  .tip-icon {
+    display: inline-block;
+    margin-right: 8px;
+    font-size: 1.1rem;
+  }
+  
   .date-range-info {
     background-color: rgba(0, 0, 0, 0.05);
     padding: 10px;
@@ -425,16 +474,6 @@
   #all-assessments .draggable-assessment:hover .assessment-details,
   #all-assessments .draggable-assessment:hover .course-code {
     color: white !important;
-  }
-  
-  #show-more-btn, #show-less-btn {
-    margin-top: 10px;
-    background-color: var(--tertiary-color);
-    color: white;
-  }
-  
-  #show-more-btn:hover, #show-less-btn:hover {
-    background-color: var(--accent-color);
   }
   
   @media (max-width: 992px) {
@@ -728,37 +767,6 @@
     background-color: rgba(103, 78, 204, 0.1) !important;
   }
   
-  #debug-section {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: rgba(0, 0, 0, 0.05);
-    border-radius: 5px;
-    border: 1px dashed var(--border-color);
-  }
-  
-  #debug-section h4 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 14px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 8px;
-  }
-  
-  #debug-section form {
-    margin-bottom: 8px;
-  }
-  
-  #debug-section form:last-child {
-    margin-bottom: 0;
-  }
-  
-  .dark-mode #debug-section {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  
   .draggable-assessment.status-unscheduled {
     cursor: grab;
     border: 1px solid var(--tertiary-color);
@@ -773,6 +781,23 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     transform: translateY(-3px) scale(1.02);
     background-color: rgba(103, 78, 204, 0.9);
+  }
+  
+  /* Drag handle icon styling */
+  .draggable-assessment.status-unscheduled::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 5px;
+    background-color: var(--accent-color);
+    border-radius: 4px 0 0 4px;
+    transition: all 0.2s ease;
+  }
+  
+  .draggable-assessment.status-unscheduled:hover::before {
+    width: 8px;
   }
   
   .draggable-assessment.status-unscheduled::after {
@@ -791,7 +816,24 @@
     transform: scale(1.2);
   }
   
-  .draggable-assessment.scheduled {
+  /* Improvements for calendar day cells */
+  .fc-daygrid-day {
+    transition: all 0.2s ease !important;
+  }
+  
+  .fc-daygrid-day:hover {
+    background-color: rgba(103, 78, 204, 0.1) !important;
+    box-shadow: inset 0 0 0 1px rgba(103, 78, 204, 0.3) !important;
+  }
+  
+  /* Today highlight */
+  .fc-day-today {
+    background-color: rgba(103, 78, 204, 0.15) !important;
+    box-shadow: inset 0 0 0 2px rgba(103, 78, 204, 0.4) !important;
+  }
+  
+  .fc-day-today:hover {
+    background-color: rgba(103, 78, 204, 0.2) !important;
   }
   
   /* Popover styling for days with many events */
@@ -856,6 +898,1251 @@
     opacity: 1 !important;
     background-color: var(--accent-color) !important;
   }
+  
+  /* Enhanced drag and drop styles */
+  .draggable-assessment.is-dragging {
+    opacity: 0.7;
+    transform: scale(1.05);
+    box-shadow: 0 6px 10px rgba(0,0,0,0.3);
+    z-index: 9999;
+  }
+  
+  .assessment-mirror {
+    opacity: 0.9 !important;
+    z-index: 10000 !important;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
+    border: 2px dashed var(--tertiary-color) !important;
+    background-color: var(--accent-color) !important;
+  }
+  
+  .potential-drop-target {
+    transition: all 0.2s ease;
+  }
+  
+  .drop-target-highlight {
+    background-color: rgba(103, 78, 204, 0.1) !important;
+    box-shadow: inset 0 0 0 2px var(--tertiary-color) !important;
+  }
+  
+  .active-drop-target {
+    background-color: rgba(103, 78, 204, 0.2) !important;
+    box-shadow: inset 0 0 0 3px var(--accent-color) !important;
+  }
+  
+  .being-dragged {
+    z-index: 9999 !important;
+    opacity: 0.9 !important;
+  }
+  
+  .being-removed {
+    transition: all 0.3s ease !important;
+  }
+  
+  .processing-drop {
+    background-color: rgba(74, 136, 199, 0.2) !important;
+    animation: pulse-border 1.5s infinite ease-in-out;
+  }
+  
+  @keyframes pulse-border {
+    0% { border-left-width: 4px; }
+    50% { border-left-width: 8px; }
+    100% { border-left-width: 4px; }
+  }
+  
+  .drop-success {
+    animation: pulse-success 1s ease;
+  }
+  
+  .drop-error {
+    animation: pulse-error 1s ease;
+  }
+  
+  @keyframes pulse-success {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  @keyframes pulse-error {
+    0% { transform: scale(1); background-color: rgba(255, 59, 48, 0.7); }
+    50% { transform: scale(1.05); background-color: rgba(255, 59, 48, 0.8); }
+    100% { transform: scale(1); }
+  }
+  
+  .event-loading {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 16px;
+    height: 16px;
+  }
+  
+  .loading-spinner {
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top: 2px solid white;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .drop-success-indicator {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 16px;
+    height: 16px;
+    background-color: #4cd964;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    animation: fade-in 0.3s ease;
+  }
+  
+  @keyframes fade-in {
+    0% { opacity: 0; transform: scale(0); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  
+  /* Mobile enhancements for drag and drop */
+  @media (max-width: 768px) {
+    .assessment-mirror {
+      max-width: 200px !important;
+    }
+    
+    .fc-event {
+      touch-action: none !important; /* Prevent scroll when trying to drag */
+    }
+    
+    .draggable-assessment {
+      margin-bottom: 15px !important; /* More space for touch targets */
+    }
+    
+    .draggable-assessment::after {
+      content: '↹';
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px !important;
+      color: rgba(255,255,255,0.8);
+    }
+  }
+  
+  .drop-preview {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    right: 5px;
+    height: auto;
+    background-color: rgba(103, 78, 204, 0.2);
+    border: 2px dashed var(--tertiary-color);
+    border-radius: 4px;
+    padding: 4px;
+    color: var(--tertiary-color);
+    font-size: 11px;
+    text-align: center;
+    pointer-events: none;
+    z-index: 5;
+    animation: pulse 1.5s infinite ease-in-out;
+  }
+  
+  @keyframes pulse {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+  }
+  
+  /* Style for dates outside semester range */
+  .outside-semester {
+    opacity: 0.5 !important;
+    background-color: #f0f0f0 !important;
+    color: #999 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+  }
+  
+  .outside-semester .fc-daygrid-day-number {
+    color: #999 !important;
+  }
+  
+  /* Style for dates outside semester in dark mode */
+  [data-bs-theme="dark"] .outside-semester {
+    background-color: #2a2a2a !important;
+    color: #666 !important;
+  }
+  
+  [data-bs-theme="dark"] .outside-semester .fc-daygrid-day-number {
+    color: #666 !important;
+  }
+  
+  /* Updated card styles with unified color palette */
+  :root {
+    /* Define a unified color palette */
+    --card-purple: #674ECC;
+    --card-purple-light: #e2dcf8;
+    --card-purple-dark: #563db3;
+    --card-blue: #4a88c7;
+    --card-blue-light: #d9e9f7;
+    --card-blue-dark: #3d70a9;
+    --card-accent: #9C9FE2;
+    --card-accent-light: #e4e5f5;
+    --card-accent-dark: #7a7dc7;
+  }
+  
+  /* Base card style that all cards will inherit */
+  .assessment-item,
+  .draggable-assessment {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    border-left: 4px solid var(--card-purple);
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  .assessment-item:hover,
+  .draggable-assessment:hover {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+  
+  /* Text colors for all cards in light mode */
+  .assessment-item .assessment-name,
+  .draggable-assessment .assessment-name {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+  }
+  
+  .assessment-item .assessment-details,
+  .draggable-assessment .assessment-details {
+    color: #666;
+    font-size: 0.8rem;
+  }
+  
+  /* Status badge styling - unified for all cards */
+  .status-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-right: 4px;
+    color: white;
+  }
+  
+  .status-badge.scheduled {
+    background-color: var(--card-blue);
+  }
+  
+  .status-badge.unscheduled {
+    background-color: var(--card-purple);
+  }
+  
+  .badge.proctored {
+    background-color: var(--card-accent);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+  
+  /* Special styling for unscheduled items - Light mode */
+  .draggable-assessment.status-unscheduled {
+    cursor: grab;
+    background-color: var(--card-purple);
+    border-left-color: var(--card-purple-dark);
+    color: white;
+  }
+  
+  .draggable-assessment.status-unscheduled .assessment-name,
+  .draggable-assessment.status-unscheduled .assessment-details {
+    color: white;
+  }
+  
+  /* Special styling for scheduled items - Light mode */
+  .draggable-assessment.scheduled {
+    cursor: grab;
+    background-color: var(--card-blue);
+    border-left-color: var(--card-blue-dark);
+    color: white;
+  }
+  
+  .draggable-assessment.scheduled .assessment-name,
+  .draggable-assessment.scheduled .assessment-details {
+    color: white;
+  }
+  
+  /* Hover states - Light mode */
+  .draggable-assessment.status-unscheduled:hover {
+    background-color: var(--card-purple-dark);
+  }
+  
+  .draggable-assessment.scheduled:hover {
+    background-color: var(--card-blue-dark);
+  }
+  
+  /* Special styling for proctored items */
+  .draggable-assessment.proctored.status-unscheduled {
+    border-left-color: var(--card-accent);
+  }
+  
+  .draggable-assessment.proctored.scheduled {
+    border-left-color: var(--card-accent);
+  }
+  
+  /* Dark mode adjustments - Not needed since we're using the same colors */
+  [data-bs-theme="dark"] .assessment-item,
+  [data-bs-theme="dark"] .draggable-assessment {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Active drag state */
+  .draggable-assessment.is-dragging,
+  .assessment-item.is-dragging {
+    opacity: 0.8;
+    transform: scale(0.98);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Calendar events - match the card colors */
+  .fc-event[style*="background-color: var(--tertiary-color)"] {
+    background-color: var(--card-purple) !important;
+    border-left-color: var(--card-purple-dark);
+  }
+  
+  /* Proctored events on calendar */
+  .fc-event[style*="background-color: #674ECC"],
+  .fc-event[style*="background-color: rgb(103, 78, 204)"] {
+    background-color: var(--card-purple) !important;
+    border-left-color: var(--card-accent);
+  }
+  
+  /* Consistent heading styles across all assessment lists */
+  #unscheduled-list h3,
+  #scheduled-list h3 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
+  }
+  
+  /* Style for the show more/less buttons */
+  #show-more-btn, 
+  #show-less-btn {
+    margin-top: 10px;
+    background-color: var(--card-blue);
+    color: white;
+    border: none;
+    transition: all 0.2s ease;
+  }
+  
+  #show-more-btn:hover, 
+  #show-less-btn:hover {
+    background-color: var(--card-blue-dark);
+    transform: translateY(-2px);
+  }
+  
+  /* Popup style for all assessments */
+  #all-assessments {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+  }
+  
+  /* Popup background overlay */
+  .popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    cursor: default;
+    pointer-events: auto !important;
+  }
+  
+  .popup-overlay.active {
+    display: block;
+  }
+  
+  #all-assessments.hidden {
+    display: none;
+  }
+  
+  /* Dark mode adjustments for popup */
+  [data-bs-theme="dark"] #all-assessments {
+    background-color: #2d3748;
+    border-color: #4a5568;
+  }
+  
+  /* Add a title to the popup */
+  #all-assessments .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  #all-assessments .popup-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--text-color);
+  }
+  
+  /* Close button in popup header */
+  #all-assessments .close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--text-color);
+    opacity: 0.7;
+    transition: all 0.2s ease;
+  }
+  
+  #all-assessments .close-btn:hover {
+    opacity: 1;
+  }
+  
+  /* Style for scheduled assessment cards in the popup */
+  #all-assessments .assessment-item, 
+  #all-assessments .draggable-assessment {
+    background-color: var(--card-blue);
+    color: white;
+    border-left-color: var(--card-blue-dark);
+  }
+  
+  #all-assessments .assessment-item .assessment-name,
+  #all-assessments .draggable-assessment .assessment-name,
+  #all-assessments .assessment-item .assessment-details,
+  #all-assessments .draggable-assessment .assessment-details {
+    color: white;
+  }
+  
+  #all-assessments .assessment-item:hover,
+  #all-assessments .draggable-assessment:hover {
+    background-color: var(--card-blue-dark);
+  }
+  
+  /* Proctored items in popup */
+  #all-assessments .assessment-item.proctored,
+  #all-assessments .draggable-assessment.proctored {
+    border-left-color: var(--card-accent);
+  }
+  
+  /* Make the popup scrollbar more attractive */
+  #all-assessments::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  #all-assessments::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  #all-assessments::-webkit-scrollbar-thumb {
+    background: var(--card-blue);
+    border-radius: 10px;
+  }
+  
+  #all-assessments::-webkit-scrollbar-thumb:hover {
+    background: var(--card-blue-dark);
+  }
+  
+  /* Dark mode scrollbar */
+  [data-bs-theme="dark"] #all-assessments::-webkit-scrollbar-track {
+    background: #2d3748;
+  }
+  
+  /* Ensure the count badge in the scheduled list matches our color scheme */
+  .count-badge {
+    background-color: var(--card-blue);
+    color: white;
+  }
+  
+  /* Assessment Clash Evaluation Modal */
+  .clash-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--card-color);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 1001;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+    pointer-events: auto !important;
+  }
+  
+  .clash-modal.hidden {
+    display: none;
+  }
+  
+  #clash-summary {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: var(--secondary-color);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+  }
+  
+  .clash-value-container, .clash-evaluation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .clash-label {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+  }
+  
+  .clash-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--text-color);
+  }
+  
+  .clash-scale-info {
+    margin: 15px 0;
+    padding: 10px;
+    background-color: var(--secondary-color);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+  }
+  
+  .scale-label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: var(--text-color);
+  }
+  
+  .scale-ranges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .scale-range {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: white;
+  }
+  
+  .scale-range.excellent {
+    background-color: #4cd964;
+  }
+  
+  .scale-range.good {
+    background-color: #5e72e4;
+  }
+  
+  .scale-range.poor {
+    background-color: #ff3b30;
+  }
+  
+  .highest-clash {
+    margin-top: 10px;
+    padding: 5px 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  #highest-clash-label {
+    font-size: 13px;
+    color: var(--text-color);
+  }
+  
+  #highest-clash-value {
+    font-weight: bold;
+    font-size: 15px;
+    color: var(--text-color);
+    padding: 2px 8px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+  }
+  
+  .evaluation-badge {
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-weight: bold;
+    font-size: 16px;
+    color: white;
+  }
+  
+  .evaluation-badge.excellent {
+    background-color: #4cd964;
+  }
+  
+  .evaluation-badge.good {
+    background-color: #5e72e4;
+  }
+  
+  .evaluation-badge.poor {
+    background-color: #ff3b30;
+  }
+  
+  #clash-details {
+    margin-bottom: 20px;
+  }
+  
+  #clash-details h4 {
+    margin-bottom: 10px;
+    color: var(--text-color);
+    font-size: 16px;
+  }
+  
+  .clash-details-item {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: var(--secondary-color);
+    border-radius: 6px;
+    border-left: 4px solid var(--tertiary-color);
+  }
+  
+  .clash-course-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+  
+  .clash-course-code {
+    font-weight: bold;
+    color: var(--text-color);
+  }
+  
+  .clash-overlap {
+    color: var(--tertiary-color);
+    font-weight: bold;
+  }
+  
+  .clash-assessment-info {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+  
+  .clash-contribution {
+    padding-top: 5px;
+    border-top: 1px dashed var(--border-color);
+    margin-top: 5px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  
+  .clash-contrib-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .clash-contrib-value {
+    font-weight: bold;
+    color: var(--text-color);
+    background: var(--secondary-color);
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+  }
+  
+  .clash-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    gap: 10px;
+  }
+  
+  .action-btn.primary {
+    background-color: var(--tertiary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .action-btn.secondary {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .action-btn.primary:hover {
+    background-color: var(--accent-color);
+    transform: translateY(-2px);
+  }
+  
+  .action-btn.secondary:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+  }
+
+  .delete-assessment-btn {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+    color: #ff0000;
+    background: transparent;
+    border: none;
+    z-index: 10;
+  }
+
+  .delete-assessment-btn:hover {
+    color: darkred;
+  }
+
+  /* Unschedule confirmation dialog */
+  .unschedule-confirm {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--card-color);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+    z-index: 1002;
+    border: 1px solid var(--border-color);
+    text-align: center;
+  }
+
+  .unschedule-confirm h3 {
+    margin-top: 0;
+    font-size: 18px;
+    color: var(--text-color);
+  }
+
+  .unschedule-confirm p {
+    margin-bottom: 20px;
+    color: var(--text-muted);
+  }
+
+  .confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .confirm-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    font-weight: 500;
+  }
+
+  .confirm-btn.confirm {
+    background-color: #ff3b30;
+    color: white;
+  }
+
+  .confirm-btn.cancel {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+  }
+
+  .confirm-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .confirm-btn.confirm:hover {
+    background-color: #e02c25;
+  }
+
+  .confirm-btn.cancel:hover {
+    background-color: var(--border-color);
+  }
+  
+  /* Clash Modal Styles with Dark Mode Support */
+  .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1999;
+    display: none;
+  }
+  
+  .clash-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--modal-bg, white);
+    border: 1px solid var(--modal-border, #ddd);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px var(--modal-shadow, rgba(0, 0, 0, 0.2));
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 2000;
+    transition: all 0.3s ease;
+    color: var(--modal-text, #333);
+  }
+  
+  .clash-modal.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, -60%);
+  }
+  
+  .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--modal-border, #ddd);
+  }
+  
+  .popup-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--modal-title, #333);
+  }
+  
+  .close-btn {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--modal-close, #666);
+    transition: color 0.2s;
+  }
+  
+  .close-btn:hover {
+    color: var(--modal-close-hover, #333);
+  }
+  
+  #clash-summary {
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--summary-bg, #f8f9fa);
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid var(--summary-border, #eee);
+  }
+  
+  .clash-value-container, .clash-evaluation {
+    text-align: center;
+  }
+  
+  .clash-label {
+    font-size: 0.9rem;
+    color: var(--label-color, #666);
+    margin-bottom: 5px;
+  }
+  
+  .clash-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+  }
+  
+  .clash-scale-info {
+    background-color: var(--scale-bg, #f8f9fa);
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid var(--scale-border, #eee);
+  }
+  
+  .scale-label {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: var(--scale-title, #333);
+  }
+  
+  .scale-ranges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .scale-range {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  
+  .scale-range.excellent {
+    background-color: rgba(76, 217, 100, 0.15);
+    color: var(--excellent-color, #4cd964);
+    border: 1px solid var(--excellent-border, rgba(76, 217, 100, 0.3));
+  }
+  
+  .scale-range.good {
+    background-color: rgba(94, 114, 228, 0.15);
+    color: var(--good-color, #5e72e4);
+    border: 1px solid var(--good-border, rgba(94, 114, 228, 0.3));
+  }
+  
+  .scale-range.poor {
+    background-color: rgba(255, 59, 48, 0.15);
+    color: var(--poor-color, #ff3b30);
+    border: 1px solid var(--poor-border, rgba(255, 59, 48, 0.3));
+  }
+  
+  .highest-clash {
+    margin-top: 10px;
+    font-weight: 500;
+    color: var(--highest-clash-color, #333);
+  }
+  
+  .highest-value {
+    font-weight: bold;
+  }
+  
+  .evaluation-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+  }
+  
+  .evaluation-badge.excellent {
+    background-color: rgba(76, 217, 100, 0.15);
+    color: var(--excellent-color, #4cd964);
+    border: 1px solid var(--excellent-border, rgba(76, 217, 100, 0.3));
+  }
+  
+  .evaluation-badge.good {
+    background-color: rgba(94, 114, 228, 0.15);
+    color: var(--good-color, #5e72e4);
+    border: 1px solid var(--good-border, rgba(94, 114, 228, 0.3));
+  }
+  
+  .evaluation-badge.poor {
+    background-color: rgba(255, 59, 48, 0.15);
+    color: var(--poor-color, #ff3b30);
+    border: 1px solid var(--poor-border, rgba(255, 59, 48, 0.3));
+  }
+  
+  #clash-details {
+    margin-bottom: 20px;
+  }
+  
+  #clash-details h4 {
+    margin-bottom: 10px;
+    color: var(--details-title, #333);
+  }
+  
+  .clash-details-item {
+    border: 1px solid var(--item-border, #eee);
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: var(--item-bg, white);
+  }
+  
+  .clash-course-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+  
+  .clash-course-code {
+    font-weight: bold;
+    color: var(--code-color, #333);
+  }
+  
+  .clash-overlap {
+    color: var(--overlap-color, #666);
+  }
+  
+  .clash-assessment-info {
+    margin-bottom: 10px;
+  }
+  
+  .clash-assessment-name {
+    display: block;
+    font-weight: 500;
+    color: var(--assessment-name, #333);
+  }
+  
+  .clash-assessment-date {
+    color: var(--assessment-date, #666);
+    font-size: 0.9rem;
+  }
+  
+  .clash-contribution {
+    background-color: var(--contrib-bg, #f8f9fa);
+    padding: 8px 12px;
+    border-radius: 4px;
+  }
+  
+  .clash-contrib-label {
+    display: flex;
+    justify-content: space-between;
+    color: var(--contrib-text, #666);
+    font-size: 0.9rem;
+  }
+  
+  .clash-contrib-value {
+    font-weight: bold;
+  }
+  
+  .clash-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  .action-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+  }
+  
+  .action-btn.primary {
+    background-color: var(--tertiary-color, #5e72e4);
+    color: white;
+  }
+  
+  .action-btn.primary:hover {
+    background-color: var(--tertiary-dark, #4a5bd0);
+  }
+  
+  .action-btn.secondary {
+    background-color: var(--btn-secondary, #e2e8f0);
+    color: var(--btn-secondary-text, #333);
+  }
+  
+  .action-btn.secondary:hover {
+    background-color: var(--btn-secondary-hover, #cbd5e0);
+  }
+  
+  .badge.proctored {
+    background-color: var(--proctored-bg, #f6ad55);
+    color: var(--proctored-text, white);
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+  
+  /* Dark mode variables */
+  :root {
+    --modal-bg: white;
+    --modal-border: #ddd;
+    --modal-shadow: rgba(0, 0, 0, 0.2);
+    --modal-text: #333;
+    --modal-title: #333;
+    --modal-close: #666;
+    --modal-close-hover: #333;
+    --summary-bg: #f8f9fa;
+    --summary-border: #eee;
+    --label-color: #666;
+    --scale-bg: #f8f9fa;
+    --scale-border: #eee;
+    --scale-title: #333;
+    --excellent-color: #4cd964;
+    --excellent-border: rgba(76, 217, 100, 0.3);
+    --good-color: #5e72e4;
+    --good-border: rgba(94, 114, 228, 0.3);
+    --poor-color: #ff3b30;
+    --poor-border: rgba(255, 59, 48, 0.3);
+    --highest-clash-color: #333;
+    --details-title: #333;
+    --item-border: #eee;
+    --item-bg: white;
+    --code-color: #333;
+    --overlap-color: #666;
+    --assessment-name: #333;
+    --assessment-date: #666;
+    --contrib-bg: #f8f9fa;
+    --contrib-text: #666;
+    --tertiary-dark: #4a5bd0;
+    --btn-secondary: #e2e8f0;
+    --btn-secondary-text: #333;
+    --btn-secondary-hover: #cbd5e0;
+    --proctored-bg: #f6ad55;
+    --proctored-text: white;
+  }
+  
+  /* Dark mode overrides */
+  .dark-mode {
+    --modal-bg: #2d3748;
+    --modal-border: #4a5568;
+    --modal-shadow: rgba(0, 0, 0, 0.4);
+    --modal-text: #e2e8f0;
+    --modal-title: #f7fafc;
+    --modal-close: #a0aec0;
+    --modal-close-hover: #f7fafc;
+    --summary-bg: #1a202c;
+    --summary-border: #4a5568;
+    --label-color: #a0aec0;
+    --scale-bg: #1a202c;
+    --scale-border: #4a5568;
+    --scale-title: #f7fafc;
+    --excellent-color: #68d391;
+    --excellent-border: rgba(104, 211, 145, 0.3);
+    --good-color: #7f9cf5;
+    --good-border: rgba(127, 156, 245, 0.3);
+    --poor-color: #fc8181;
+    --poor-border: rgba(252, 129, 129, 0.3);
+    --highest-clash-color: #e2e8f0;
+    --details-title: #f7fafc;
+    --item-border: #4a5568;
+    --item-bg: #2d3748;
+    --code-color: #f7fafc;
+    --overlap-color: #a0aec0;
+    --assessment-name: #f7fafc;
+    --assessment-date: #a0aec0;
+    --contrib-bg: #1a202c;
+    --contrib-text: #a0aec0;
+    --tertiary-dark: #7886d7;
+    --btn-secondary: #4a5568;
+    --btn-secondary-text: #e2e8f0;
+    --btn-secondary-hover: #2d3748;
+    --proctored-bg: #dd6b20;
+    --proctored-text: #feebc8;
+  }
+  
+  /* Unschedule confirmation dialog styles with dark mode support */
+  .unschedule-confirm {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--modal-bg, white);
+    border: 1px solid var(--modal-border, #ddd);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px var(--modal-shadow, rgba(0, 0, 0, 0.2));
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+    z-index: 2000;
+    text-align: center;
+    color: var(--modal-text, #333);
+  }
+  
+  .unschedule-confirm h3 {
+    margin-top: 0;
+    color: var(--modal-title, #333);
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+  }
+  
+  .unschedule-confirm p {
+    margin-bottom: 20px;
+    color: var(--modal-text, #333);
+  }
+  
+  .confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+  }
+  
+  .confirm-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+  }
+  
+  .confirm-btn.confirm {
+    background-color: var(--danger-color, #ff3b30);
+    color: white;
+  }
+  
+  .confirm-btn.confirm:hover {
+    background-color: var(--danger-dark, #e02e24);
+  }
+  
+  .confirm-btn.cancel {
+    background-color: var(--btn-secondary, #e2e8f0);
+    color: var(--btn-secondary-text, #333);
+  }
+  
+  .confirm-btn.cancel:hover {
+    background-color: var(--btn-secondary-hover, #cbd5e0);
+  }
+  
+  /* Add these to your dark mode variables */
+  .dark-mode .unschedule-confirm {
+    --danger-color: #fc8181;
+    --danger-dark: #f56565;
+  }
 </style>
 {% endblock %}
 
@@ -891,7 +2178,7 @@
         <h3>My Assessments</h3>
         {% if my_assessments %}
           {% for assessment in my_assessments %}
-            <div class="draggable-assessment {% if assessment.proctored %}proctored{% endif %} {% if assessment.scheduled %}scheduled{% else %}status-unscheduled can-drag{% endif %}" 
+            <div class="draggable-assessment {% if assessment.proctored %}proctored{% endif %} {% if assessment.scheduled %}scheduled can-drag{% else %}status-unscheduled can-drag{% endif %}" 
                 data-assessment-id="{{ assessment.id }}" 
                 data-course-code="{{ assessment.course_code }}" 
                 data-percentage="{{ assessment.percentage }}"
@@ -918,12 +2205,6 @@
         {% else %}
           <p>No assessments found.</p>
         {% endif %}
-        
-        <div class="drag-instructions">
-          <i class="material-icons">touch_app</i>
-          <strong>Assessments marked with "Unscheduled" can be dragged</strong><br>
-          Drag unscheduled assessments to the calendar to schedule them
-        </div>
         
         <div class="drag-instructions">
           <i class="material-icons">info</i>
@@ -973,7 +2254,12 @@
           {% if scheduled_assessments|length > 3 %}
             <button id="show-more-btn" class="action-btn">Show All ({{ scheduled_assessments|length }}) Assessments</button>
             
+            <div class="popup-overlay"></div>
             <div id="all-assessments" class="all-assessments hidden">
+              <div class="popup-header">
+                <div class="popup-title">All Scheduled Assessments ({{ scheduled_assessments|length }})</div>
+                <button class="close-btn" id="close-popup-btn">&times;</button>
+              </div>
               {% for assessment in scheduled_assessments %}
                 <div class="assessment-item draggable-assessment {% if assessment.proctored %}proctored{% endif %}" 
                     data-assessment-id="{{ assessment.id }}" 
@@ -993,42 +2279,16 @@
                   </div>
                 </div>
               {% endfor %}
-              
-              <button id="show-less-btn" class="action-btn">Show Less</button>
             </div>
           {% endif %}
           
-          <div id="debug-section">
-            <h4>Debug Tools</h4>
+          <div>
             <form id="unschedule-all-form" action="/unschedule_all_assessments" method="POST" onsubmit="return confirm('Are you sure you want to unschedule all your assessments?');">
               <button type="submit" class="action-btn danger">Unschedule All My Assessments</button>
-            </form>
-            
-            <form id="unschedule-all-system-form" action="/unschedule_all_system_assessments" method="POST" onsubmit="return confirm('WARNING: This will unschedule ALL assessments in the system for ALL staff members. Are you sure you want to proceed?');">
-              <button type="submit" class="action-btn danger">Unschedule All</button>
-            </form>
-            
-            <form id="reschedule-all-form" action="/autoschedule" method="POST" onsubmit="return confirm('Are you sure you want to reschedule all assessments? This may take some time.');">
-              <button type="submit" class="action-btn success">Reschedule All</button>
-            </form>
-            
-            <form id="reset-constraints-form" action="/reset_all_constraints" method="POST" onsubmit="return confirm('WARNING: This will reset ALL assessments time constraints to default values (Week 1-15). This is useful when scheduling keeps failing due to conflicting constraints. Continue?');">
-              <button type="submit" class="action-btn warning">Reset All Constraints</button>
             </form>
           </div>
         {% else %}
           <p>No scheduled assessments found.</p>
-          
-          <div id="debug-section">
-            <h4>Debug Tools</h4>
-            <form id="reschedule-all-form" action="/autoschedule" method="POST" onsubmit="return confirm('Are you sure you want to reschedule all assessments? This may take some time.');">
-              <button type="submit" class="action-btn success">Reschedule All</button>
-            </form>
-            
-            <form id="reset-constraints-form" action="/reset_all_constraints" method="POST" onsubmit="return confirm('WARNING: This will reset ALL assessments time constraints to default values (Week 1-15). This is useful when scheduling keeps failing due to conflicting constraints. Continue?');">
-              <button type="submit" class="action-btn warning">Reset All Constraints</button>
-            </form>
-          </div>
         {% endif %}
       </div>
     </div>
@@ -1115,5 +2375,58 @@
 </script>
 <script src="{{url_for('static', filename='index.js')}}"></script>
 <script src="{{url_for('static', filename='js/mobileMenu.js')}}"></script>
+
+<!-- Assessment Clash Evaluation Modal -->
+<div class="popup-overlay" id="clash-modal-overlay"></div>
+<div id="clash-modal" class="clash-modal hidden">
+  <div class="popup-header">
+    <div class="popup-title">Assessment Clash Evaluation</div>
+    <button class="close-btn" id="close-clash-modal">&times;</button>
+  </div>
+  <div id="clash-content">
+    <div id="clash-summary">
+      <div class="clash-value-container">
+        <div class="clash-label">Weighted Clash Index:</div>
+        <div class="clash-value" id="avg-clash-value">0</div>
+      </div>
+      <div class="clash-evaluation">
+        <div class="clash-label">Date Evaluation:</div>
+        <div class="evaluation-badge" id="clash-evaluation">Good</div>
+      </div>
+    </div>
+    <div class="clash-scale-info">
+      <div class="scale-label">Clash Index Scale:</div>
+      <div class="scale-ranges">
+        <span class="scale-range excellent">≤2.0: Excellent</span>
+        <span class="scale-range good">2.1-5.0: Good</span>
+        <span class="scale-range poor">>5.0: Poor</span>
+      </div>
+      <div class="highest-clash">
+        <span id="highest-clash-label">Highest individual clash: </span>
+        <span id="highest-clash-value" class="highest-value">0</span>
+      </div>
+    </div>
+    <div id="clash-details">
+      <h4>Top Overlapping Assessments</h4>
+      <div id="clash-details-list"></div>
+    </div>
+    <div class="clash-actions">
+      <button id="confirm-schedule-btn" class="action-btn primary">Schedule</button>
+      <button id="cancel-schedule-btn" class="action-btn secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Unschedule Confirmation Dialog -->
+<div class="popup-overlay" id="unschedule-overlay" style="display: none;"></div>
+<div id="unschedule-confirm" class="unschedule-confirm" style="display: none;">
+  <h3>Unschedule Assessment</h3>
+  <p>Are you sure you want to unschedule <span id="assessment-name-confirm"></span>?</p>
+  <div class="confirm-actions">
+    <button id="confirm-unschedule-btn" class="confirm-btn confirm">Unschedule</button>
+    <button id="cancel-unschedule-btn" class="confirm-btn cancel">Cancel</button>
+  </div>
+  <input type="hidden" id="unschedule-assessment-id" value="">
+</div>
 
 {% endblock %}

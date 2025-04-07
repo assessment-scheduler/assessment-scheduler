@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 from datetime import timedelta, datetime
@@ -23,6 +23,7 @@ from ..controllers import (
     unschedule_assessment_only,
     reset_all_assessment_constraints
 )
+from ..controllers.assessment_clash import evaluate_assessment_date
 import time
 
 assessment_views = Blueprint(
@@ -447,34 +448,121 @@ def get_calendar_page():
         return render_template("calendar.html", error="general_error")
 
 
+@assessment_views.route("/unschedule_all_system_assessments", methods=["POST"])
+@staff_required
+def unschedule_all_system_assessments():
+    try:
+        assessments = get_all_assessments()
+        scheduled_count = 0
+        
+        for assessment in assessments:
+            if assessment.scheduled:
+                scheduled_count += 1
+                unschedule_assessment_only(assessment.id)
+        
+        # Check if this is an AJAX request
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        if scheduled_count > 0:
+            message = f"Successfully unscheduled {scheduled_count} assessments across all courses"
+            if is_ajax:
+                return jsonify({"success": True, "message": message, "count": scheduled_count})
+            flash(message, "success")
+        else:
+            message = "No scheduled assessments found in the system"
+            if is_ajax:
+                return jsonify({"success": True, "message": message, "count": 0})
+            flash(message, "info")
+            
+        return redirect(url_for("assessment_views.get_calendar_page") + "?refresh=" + str(int(time.time())))
+
+    except Exception as e:
+        error_message = f"An error occurred: {str(e)}"
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({"success": False, "error": error_message}), 500
+        flash(error_message, "error")
+        return redirect(url_for("assessment_views.get_calendar_page"))
+
+
+@assessment_views.route("/reset_all_constraints", methods=["POST"])
+@staff_required
+def reset_all_constraints():
+    try:
+        reset_count = reset_all_assessment_constraints()
+        
+        # Check if this is an AJAX request
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        if reset_count > 0:
+            message = f"Successfully reset constraints for {reset_count} assessments. Scheduling should now be more flexible."
+            if is_ajax:
+                return jsonify({"success": True, "message": message, "count": reset_count})
+            flash(message, "success")
+        else:
+            message = "No assessments found to reset"
+            if is_ajax:
+                return jsonify({"success": True, "message": message, "count": 0})
+            flash(message, "info")
+            
+        return redirect(url_for("assessment_views.get_calendar_page") + "?refresh=" + str(int(time.time())))
+
+    except Exception as e:
+        error_message = f"An error occurred: {str(e)}"
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({"success": False, "error": error_message}), 500
+        flash(error_message, "error")
+        return redirect(url_for("assessment_views.get_calendar_page"))
+
+
 @assessment_views.route("/autoschedule", methods=["POST"])
 @staff_required
 def autoschedule_assessments():
     try:
+        # Check if this is an AJAX request
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
         active_semester = get_active_semester()
         if not active_semester:
-            flash("No active semester found. Please set an active semester first.", "error")
+            message = "No active semester found. Please set an active semester first."
+            if is_ajax:
+                return jsonify({"success": False, "error": message})
+            flash(message, "error")
             return redirect(url_for('assessment_views.get_calendar_page'))
 
         all_assessments = get_all_assessments()
         unscheduled = [a for a in all_assessments if not a.scheduled]
         
         if not unscheduled:
-            flash("No unscheduled assessments found to schedule.", "info")
+            message = "No unscheduled assessments found to schedule."
+            if is_ajax:
+                return jsonify({"success": True, "message": message, "count": 0})
+            flash(message, "info")
             return redirect(url_for('assessment_views.get_calendar_page'))
 
         semester_weeks = get_semester_duration(active_semester.id)
         max_slots = semester_weeks * 5 * active_semester.max_assessments
         
         if len(unscheduled) > max_slots:
-            flash(f"Too many assessments ({len(unscheduled)}) for available slots ({max_slots}).", "error")
-            flash(f"Please try one of the following:", "error")
-            flash(f"1. Increase the maximum assessments per day (currently {active_semester.max_assessments})", "error")
-            flash(f"2. Reduce the number of assessments by scheduling some manually", "error")
-            flash(f"3. Extend the semester duration (currently {semester_weeks} weeks)", "error")
+            error_messages = [
+                f"Too many assessments ({len(unscheduled)}) for available slots ({max_slots}).",
+                "Please try one of the following:",
+                f"1. Increase the maximum assessments per day (currently {active_semester.max_assessments})",
+                "2. Reduce the number of assessments by scheduling some manually",
+                f"3. Extend the semester duration (currently {semester_weeks} weeks)"
+            ]
+            
+            if is_ajax:
+                return jsonify({
+                    "success": False, 
+                    "error": error_messages[0],
+                    "details": error_messages
+                })
+                
+            for msg in error_messages:
+                flash(msg, "error")
             return redirect(url_for('assessment_views.get_calendar_page'))
         
-        if len(unscheduled) > 100:
+        if len(unscheduled) > 100 and not is_ajax:
             flash(f"Attempting to schedule {len(unscheduled)} assessments. This may take a while...", "warning")
 
         # Use the new solver framework instead of the old functions
@@ -482,20 +570,46 @@ def autoschedule_assessments():
         schedule = solver.solve()
         
         if not schedule:
-            flash("Could not find a valid schedule. This could be due to:", "error")
-            flash("1. Too many assessments for the semester duration", "error")
-            flash("2. Maximum assessments per day is too restrictive", "error")
-            flash("3. Conflicting assessment time windows", "error")
-            flash("Try adjusting these parameters or reducing the number of assessments.", "error")
+            error_messages = [
+                "Could not find a valid schedule. This could be due to:",
+                "1. Too many assessments for the semester duration",
+                "2. Maximum assessments per day is too restrictive",
+                "3. Conflicting assessment time windows",
+                "Try adjusting these parameters or reducing the number of assessments."
+            ]
+            
+            if is_ajax:
+                return jsonify({
+                    "success": False, 
+                    "error": error_messages[0],
+                    "details": error_messages
+                })
+                
+            for msg in error_messages:
+                flash(msg, "error")
             return redirect(url_for('assessment_views.get_calendar_page'))
 
-        flash("Successfully scheduled all assessments! The calendar has been updated.", "success")
+        success_message = f"Successfully scheduled {len(unscheduled)} assessments! The calendar has been updated."
+        
+        if is_ajax:
+            return jsonify({
+                "success": True,
+                "message": success_message,
+                "count": len(unscheduled)
+            })
+            
+        flash(success_message, "success")
         return redirect(url_for('assessment_views.get_calendar_page'))
 
     except Exception as e:
         print(f"Error in autoschedule: {str(e)}")
         traceback.print_exc()
-        flash(f"An unexpected error occurred while scheduling assessments: {str(e)}", "error")
+        
+        error_message = f"An unexpected error occurred while scheduling assessments: {str(e)}"
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({"success": False, "error": error_message}), 500
+            
+        flash(error_message, "error")
         flash(f"Please try again with fewer assessments or contact support if the problem persists.", "error")
         return redirect(url_for('assessment_views.get_calendar_page'))
 
@@ -566,43 +680,173 @@ def unschedule_all_assessments():
         return redirect(url_for("assessment_views.get_calendar_page"))
 
 
-@assessment_views.route("/unschedule_all_system_assessments", methods=["POST"])
+@assessment_views.route("/schedule_assessment", methods=["POST"])
 @staff_required
-def unschedule_all_system_assessments():
+def schedule_assessment():
     try:
-        assessments = get_all_assessments()
-        scheduled_count = 0
+        assessment_id = request.form.get("assessment_id")
+        assessment_date = datetime.strptime(
+            request.form.get("assessment_date"), "%Y-%m-%d"
+        ).date()
         
-        for assessment in assessments:
-            if assessment.scheduled:
-                scheduled_count += 1
-                unschedule_assessment_only(assessment.id)
+        # Check if this is a rescheduling operation
+        is_rescheduling = request.form.get("is_rescheduling") == "true"
+        # Check if this is just an evaluation request
+        is_evaluation_only = request.form.get("evaluation_only") == "true"
         
-        if scheduled_count > 0:
-            flash(f"Successfully unscheduled {scheduled_count} assessments across all courses", "success")
+        email = get_jwt_identity()
+        user = get_user_by_email(email)
+        assessment = get_assessment_by_id(assessment_id)
+
+        if not assessment:
+            flash("Assessment not found", "error")
+            return redirect(url_for("assessment_views.get_calendar_page"))
+
+        if not is_course_lecturer(user.id, assessment.course_code):
+            flash("You do not have permission to schedule assessments for this course", "error")
+            return redirect(url_for("assessment_views.get_calendar_page"))
+
+        semester = get_active_semester()
+        if not semester:
+            flash("No active semester found", "error")
+            return redirect(url_for("assessment_views.get_calendar_page"))
+
+        # If evaluation only, we'll return the clash data
+        if is_evaluation_only:
+            clash_evaluation = evaluate_assessment_date(assessment.course_code, assessment_date)
+            return jsonify({
+                "success": True,
+                "evaluation": clash_evaluation
+            })
+
+        # If manually set in the form, use those values
+        start_week = request.form.get("start_week")
+        start_day = request.form.get("start_day")
+        end_week = request.form.get("end_week")
+        end_day = request.form.get("end_day")
+        
+        # Calculate from the date if not provided
+        if not start_week or not start_day or not end_week or not end_day:
+            days_diff = (assessment_date - semester.start_date).days
+            start_week = (days_diff // 7) + 1
+            start_day = (days_diff % 7) + 1
+            end_week = start_week
+            end_day = start_day
+
+        result = update_assessment(
+            assessment_id,
+            assessment.name,
+            assessment.percentage,
+            start_week,
+            start_day,
+            end_week,
+            end_day,
+            assessment.proctored,
+            assessment_date,
+        )
+
+        if result:
+            if is_rescheduling:
+                flash("Assessment rescheduled successfully", "success")
+            else:
+                flash("Assessment scheduled successfully", "success")
+            return redirect(url_for("assessment_views.get_calendar_page"))
         else:
-            flash("No scheduled assessments found in the system", "info")
-            
-        return redirect(url_for("assessment_views.get_calendar_page") + "?refresh=" + str(int(time.time())))
+            flash("Failed to schedule assessment", "error")
+            return redirect(url_for("assessment_views.get_calendar_page"))
 
     except Exception as e:
         flash(f"An error occurred: {str(e)}", "error")
         return redirect(url_for("assessment_views.get_calendar_page"))
 
 
-@assessment_views.route("/reset_all_constraints", methods=["POST"])
+@assessment_views.route("/schedule_assessment_api", methods=["POST"])
 @staff_required
-def reset_all_constraints():
+def schedule_assessment_api():
     try:
-        reset_count = reset_all_assessment_constraints()
+        assessment_id = request.json.get("assessment_id")
+        date_str = request.json.get("assessment_date")
+        start_week = request.json.get("start_week")
+        start_day = request.json.get("start_day")
+        end_week = request.json.get("end_week")
+        end_day = request.json.get("end_day")
+        is_rescheduling = request.json.get("is_rescheduling", False)
         
-        if reset_count > 0:
-            flash(f"Successfully reset constraints for {reset_count} assessments. Scheduling should now be more flexible.", "success")
-        else:
-            flash("No assessments found to reset", "info")
+        assessment_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        
+        email = get_jwt_identity()
+        user = get_user_by_email(email)
+        assessment = get_assessment_by_id(assessment_id)
+
+        if not assessment:
+            return jsonify({"success": False, "error": "Assessment not found"})
+
+        if not is_course_lecturer(user.id, assessment.course_code):
+            return jsonify({"success": False, "error": "You do not have permission to schedule assessments for this course"})
+
+        semester = get_active_semester()
+        if not semester:
+            return jsonify({"success": False, "error": "No active semester found"})
             
-        return redirect(url_for("assessment_views.get_calendar_page") + "?refresh=" + str(int(time.time())))
+        # Calculate from the date if not provided
+        if not start_week or not start_day or not end_week or not end_day:
+            days_diff = (assessment_date - semester.start_date).days
+            start_week = (days_diff // 7) + 1
+            start_day = (days_diff % 7) + 1
+            end_week = start_week
+            end_day = start_day
+
+        # Log values for debugging
+        current_app.logger.info(f"Scheduling assessment {assessment_id} on {assessment_date} with weeks/days: {start_week}/{start_day} to {end_week}/{end_day}")
+
+        result = update_assessment(
+            assessment_id,
+            assessment.name,
+            assessment.percentage,
+            start_week,
+            start_day,
+            end_week,
+            end_day,
+            assessment.proctored,
+            assessment_date,
+        )
+
+        if result:
+            message = "Assessment rescheduled successfully" if is_rescheduling else "Assessment scheduled successfully"
+            current_app.logger.info(f"Successfully scheduled assessment: {message}")
+            return jsonify({"success": True, "message": message})
+        else:
+            current_app.logger.error(f"Failed to schedule assessment {assessment_id}")
+            return jsonify({"success": False, "error": "Failed to schedule assessment"})
 
     except Exception as e:
-        flash(f"An error occurred: {str(e)}", "error")
-        return redirect(url_for("assessment_views.get_calendar_page"))
+        current_app.logger.error(f"Error in schedule_assessment_api: {str(e)}")
+        return jsonify({"success": False, "error": str(e)})
+
+
+@assessment_views.route("/evaluate_assessment_date", methods=["POST"])
+@staff_required
+def evaluate_assessment_date_api():
+    try:
+        assessment_id = request.json.get("assessment_id")
+        date_str = request.json.get("date")
+        assessment_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        
+        email = get_jwt_identity()
+        user = get_user_by_email(email)
+        assessment = get_assessment_by_id(assessment_id)
+
+        if not assessment:
+            return jsonify({"success": False, "error": "Assessment not found"})
+
+        if not is_course_lecturer(user.id, assessment.course_code):
+            return jsonify({"success": False, "error": "You do not have permission to schedule assessments for this course"})
+
+        clash_evaluation = evaluate_assessment_date(assessment.course_code, assessment_date)
+        return jsonify({
+            "success": True,
+            "evaluation": clash_evaluation
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})

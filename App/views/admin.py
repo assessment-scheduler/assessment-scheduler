@@ -77,7 +77,19 @@ def get_upload_files_page():
 @admin_required
 def get_new_semester_form():
     courses = get_all_courses()
-    return render_template('add_semester.html', all_courses=courses)
+    semesters = get_all_semesters()
+    # Convert semesters to serializable format
+    serialized_semesters = [{
+        'id': s.id,
+        'start_date': s.start_date.isoformat(),
+        'end_date': s.end_date.isoformat(),
+        'sem_num': s.sem_num,
+        'max_assessments': s.max_assessments,
+        'constraint_value': s.constraint_value,
+        'active': s.active,
+        'solver_type': s.solver_type
+    } for s in semesters]
+    return render_template('add_semester.html', all_courses=courses, semesters=serialized_semesters)
 
 @admin_views.route('/add_semester', methods=['POST'])
 @admin_required
@@ -133,7 +145,19 @@ def get_update_semester(semester_id):
         return redirect(url_for('admin_views.get_upload_page'))
     
     courses = get_all_courses()
-    return render_template('add_semester.html', semester=semester, all_courses=courses)
+    semesters = get_all_semesters()
+    # Convert semesters to serializable format
+    serialized_semesters = [{
+        'id': s.id,
+        'start_date': s.start_date.isoformat(),
+        'end_date': s.end_date.isoformat(),
+        'sem_num': s.sem_num,
+        'max_assessments': s.max_assessments,
+        'constraint_value': s.constraint_value,
+        'active': s.active,
+        'solver_type': s.solver_type
+    } for s in semesters]
+    return render_template('add_semester.html', semester=semester, all_courses=courses, semesters=serialized_semesters)
 
 @admin_views.route('/update_semester/<int:semester_id>', methods=['POST'])
 @admin_required
@@ -204,23 +228,22 @@ def set_active_semester(semester_id):
         # Get semester to check if it has courses
         semester = get_semester(semester_id)
         if semester and semester.course_assignments:
-            # Check if there are any unscheduled assessments
+            # Check if there are any assessments
             from ..models.assessment import Assessment
             
-            unscheduled_count = 0
+            assessment_count = 0
             for assignment in semester.course_assignments:
                 if assignment.course:
-                    unscheduled_assessments = Assessment.query.filter_by(
-                        course_code=assignment.course_code,
-                        scheduled=None
+                    course_assessments = Assessment.query.filter_by(
+                        course_code=assignment.course_code
                     ).count()
-                    unscheduled_count += unscheduled_assessments
+                    assessment_count += course_assessments
             
-            if unscheduled_count > 0:
-                flash(f"Started auto-scheduling {unscheduled_count} unscheduled assessments for {len(semester.course_assignments)} courses", "info")
+            if assessment_count > 0:
+                flash(f"Started rescheduling {assessment_count} assessments for {len(semester.course_assignments)} courses", "info")
                 flash("This process may take a moment to complete. Check the calendar page when complete.", "info")
             else:
-                flash("All assessments for this semester are already scheduled. No auto-scheduling needed.", "info")
+                flash("No assessments found for this semester's courses. Add assessments to schedule them.", "warning")
         else:
             flash("No courses found in this semester. Please add courses to schedule assessments.", "warning")
     else:

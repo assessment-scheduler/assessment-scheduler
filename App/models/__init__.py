@@ -1,12 +1,27 @@
-from .user import *
-from .admin import *
-from .course import *
-from .courseoverlap import *
-from .course_lecturer import *
-from .assessment import *
-from .solver import Solver
+from .admin import Admin
+from .user import User
+from .staff import Staff
+from .course import Course
+from .course_lecturer import CourseLecturer
+from .assessment import Assessment
+from .courseoverlap import CourseOverlap
+from .semester import Semester
 from .semester_course import SemesterCourse
-from .semester import *
-from .staff import *
-from .solver_factory import get_solver
-from .solvers import *
+from .course_timetable import CourseTimetable
+from .solver import Solver
+from .solver_factory import SolverFactory
+
+__all__ = [
+    'Admin', 
+    'User',
+    'Staff',
+    'Course',
+    'CourseLecturer',
+    'Assessment',
+    'CourseOverlap',
+    'Semester',
+    'SemesterCourse',
+    'CourseTimetable',
+    'Solver',
+    'SolverFactory'
+]

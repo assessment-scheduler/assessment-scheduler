@@ -49,45 +49,155 @@
         
         .register-link {
             text-align: center;
-            margin-top: 15px;
-            font-size: 0.9rem;
+            margin-top: 20px;
+            font-size: 0.95rem;
+            position: relative;
+            padding-top: 15px;
+        }
+        
+        .register-link:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 25%;
+            width: 50%;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.1);
         }
         
         .register-link a {
             color: var(--tertiary-color);
             text-decoration: none;
             font-weight: 600;
-            transition: opacity 0.2s;
+            transition: all 0.2s ease;
+            padding-bottom: 2px;
+            border-bottom: 1px dashed transparent;
         }
         
         .register-link a:hover {
-            opacity: 0.8;
-            text-decoration: underline;
+            opacity: 0.9;
+            border-bottom-color: var(--tertiary-color);
         }
         
         .flash-message {
-            padding: 10px 15px;
-            border-radius: 4px;
+            padding: 12px 16px;
+            border-radius: 8px;
             margin-bottom: 20px;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            position: relative;
+            animation: slideDown 0.3s ease-out forwards;
+            display: flex;
+            align-items: center;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .flash-message::before {
+            font-family: 'Material Icons';
+            margin-right: 8px;
+            font-size: 1.1rem;
         }
         
         .flash-error {
-            background-color: rgba(231, 76, 60, 0.2);
+            background-color: rgba(231, 76, 60, 0.1);
             border-left: 4px solid #e74c3c;
             color: #e74c3c;
         }
         
+        .flash-error::before {
+            content: "error";
+        }
+        
         .flash-success {
-            background-color: rgba(46, 204, 113, 0.2);
+            background-color: rgba(46, 204, 113, 0.1);
             border-left: 4px solid #2ecc71;
             color: #2ecc71;
         }
         
+        .flash-success::before {
+            content: "check_circle";
+        }
+        
         .flash-warning {
-            background-color: rgba(241, 196, 15, 0.2);
+            background-color: rgba(241, 196, 15, 0.1);
             border-left: 4px solid #f1c40f;
             color: #f1c40f;
+        }
+        
+        .flash-warning::before {
+            content: "warning";
+        }
+        
+        .animate-flash {
+            animation: flashPulse 2s ease-in-out;
+        }
+        
+        @keyframes flashPulse {
+            0% { transform: scale(1); }
+            5% { transform: scale(1.05); }
+            10% { transform: scale(1); }
+            15% { transform: scale(1.03); }
+            20% { transform: scale(1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Login credentials styling */
+        .login-credentials {
+            margin-top: 30px;
+            width: 100%;
+            max-width: 520px;
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+        
+        .credentials-section h3 {
+            font-size: 1.1rem;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--text-color);
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .credential-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background-color: var(--secondary-color);
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .credential-item:hover {
+            background-color: rgba(103, 78, 204, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .credential-label {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        .credential-value {
+            color: var(--tertiary-color);
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .dark-mode .credential-item {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .dark-mode .credential-value {
+            color: #9C9FE2;
         }
     </style>
 </head>
@@ -96,41 +206,52 @@
         <span class="material-icons">dark_mode</span>
     </button>
     
-    <!-- div to separate both sides -->
-    <div class="pageDiv">
-        <div class="leftSide">
-            <header>
-                <nav>
-                    <p class="logo">DCIT Assessment Scheduler</p>
-                </nav>
-            </header>
-            <div class="content">
-                <h1>Create the Optimal Assessment Schedule with ease!</h1>
-                <form action="/login" method="POST">
-                    <h2>Login</h2>
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                        <div class="flash-message flash-{{ category }}">
-                            {{ message }}
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-                    {% endwith %}
-                    <div class="field_containers">
-                        <label for="email">Email</label>
-                        <input type="text" id="email" name="email">
+    <!-- Login container -->
+    <div class="login-container">
+        <header>
+            <nav>
+                <p class="logo">DCIT Assessment Scheduler</p>
+            </nav>
+        </header>
+        <div class="content">
+            <h1>Create the Optimal Assessment Schedule with ease!</h1>
+            <form action="/login" method="POST">
+                <h2>Welcome Back</h2>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }} animate-flash">
+                        {{ message }}
                     </div>
-                    <div class="field_containers">
-                        <label for="password">Password</label>
-                        <input type="password" id="password", name="password">
+                    {% endfor %}
+                {% endif %}
+                {% endwith %}
+                <div class="field_containers">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your staff email">
+                </div>
+                <div class="field_containers">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password">
+                </div>
+                <button id="login_btn">Sign In</button>
+                <p class="register-link">Need an account? <a href="/signup">Register as Lecturer</a></p>
+            </form>
+            
+            <div class="login-credentials">
+                <div class="credentials-section">
+                    <h3>Demo Login Credentials</h3>
+                    <div class="credential-item">
+                        <span class="credential-label">Admin Login:</span>
+                        <span class="credential-value">admin, adminpass</span>
                     </div>
-                    <button id="login_btn">Login</button>
-                    <p class="register-link">Need an account? <a href="/register">Register as Lecturer</a></p>
-                </form>
+                    <div class="credential-item">
+                        <span class="credential-label">Staff Login:</span>
+                        <span class="credential-value">(your staff email), default</span>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="rightSide"></div>
     </div>
 
     <script>

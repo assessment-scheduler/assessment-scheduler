@@ -340,84 +340,84 @@
         <span class="material-icons">dark_mode</span>
     </button>
     
-    <div class="pageDiv">
-        <div class="leftSide">
-            <header>
-                <nav>
-                    <p class="logo">DCIT Assessment Scheduler</p>
-                </nav>
-            </header>
-            <div class="content">
-                <h1>Register as a Lecturer or Instructor</h1>
-                <form action="/register" method="POST" id="registerForm">
-                    <h2>Registration</h2>
-                    
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                        <div class="flash-message flash-{{ category }}">
-                            {{ message }}
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-                    {% endwith %}
-                    
-                    <div class="field_containers">
-                        <label for="staff_id">Staff ID</label>
-                        <input type="text" id="staff_id" name="staff_id" required placeholder="Enter your staff ID">
-                        <div class="field_hint">Enter your official staff ID (required)</div>
-                        <div class="error-message" id="staff_id_error"></div>
+    <!-- Register container -->
+    <div class="login-container">
+        <header>
+            <nav>
+                <p class="logo">DCIT Assessment Scheduler</p>
+            </nav>
+        </header>
+        <div class="content">
+            <h1>Join Our Assessment Scheduling Platform</h1>
+            <form action="/register" method="POST" id="registerForm">
+                <h2>Registration</h2>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
                     </div>
-                    
-                    <div class="form-row">
-                        <div class="field_containers">
-                            <label for="first_name">First Name</label>
-                            <input type="text" id="first_name" name="first_name" required placeholder="Your first name">
-                            <div class="error-message" id="first_name_error"></div>
-                        </div>
-                        
-                        <div class="field_containers">
-                            <label for="last_name">Last Name</label>
-                            <input type="text" id="last_name" name="last_name" required placeholder="Your last name">
-                            <div class="error-message" id="last_name_error"></div>
-                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% endwith %}
+                
+                <div class="field_containers">
+                    <label for="staff_id">Staff ID</label>
+                    <input type="text" id="staff_id" name="id" required placeholder="Enter your staff ID">
+                    <div class="field_hint">Enter your official staff ID (required)</div>
+                    <div class="error-message" id="staff_id_error"></div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="field_containers">
+                        <label for="first_name">First Name</label>
+                        <input type="text" id="first_name" name="first_name" required placeholder="Your first name">
+                        <div class="error-message" id="first_name_error"></div>
                     </div>
                     
                     <div class="field_containers">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required placeholder="your.email@institution.edu">
-                        <div class="field_hint">Use your institutional email address</div>
-                        <div class="error-message" id="email_error"></div>
+                        <label for="last_name">Last Name</label>
+                        <input type="text" id="last_name" name="last_name" required placeholder="Your last name">
+                        <div class="error-message" id="last_name_error"></div>
                     </div>
-                    
-                    <div class="field_containers password-note">
-                        <div class="info-message">
-                            <span class="material-icons">info</span>
-                            <div>
-                                <strong>Default Password</strong>
-                                <p>A default password ('default') will be assigned to your account. You will be prompted to change it after your first login for security reasons.</p>
-                            </div>
+                </div>
+                
+                <div class="field_containers">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="your.email@institution.edu">
+                    <div class="field_hint">Use your institutional email address</div>
+                    <div class="error-message" id="email_error"></div>
+                </div>
+                
+                <input type="hidden" name="password" value="default">
+                
+                <div class="field_containers password-note">
+                    <div class="info-message">
+                        <span class="material-icons">info</span>
+                        <div>
+                            <strong>Default Password</strong>
+                            <p>A default password ('default') will be assigned to your account. You will be prompted to change it after your first login for security reasons.</p>
                         </div>
                     </div>
-                    
-                    <div class="field_containers">
-                        <label for="department">Department</label>
-                        <input type="text" id="department" name="department" placeholder="e.g., DCIT">
-                        <div class="field_hint">E.g., DCIT, DMS, etc.</div>
-                    </div>
-                    
-                    <div class="field_containers">
-                        <label for="faculty">Faculty</label>
-                        <input type="text" id="faculty" name="faculty" placeholder="e.g., FST">
-                        <div class="field_hint">E.g., FST, FMS, etc.</div>
-                    </div>
-                    
-                    <button id="register_btn">Register Account</button>
-                    <p class="login-link">Already have an account? <a href="/login">Login</a></p>
-                </form>
-            </div>
+                </div>
+                
+                <div class="field_containers">
+                    <label for="department">Department</label>
+                    <input type="text" id="department" name="department" placeholder="e.g., DCIT">
+                    <div class="field_hint">E.g., DCIT, DMS, etc.</div>
+                </div>
+                
+                <div class="field_containers">
+                    <label for="faculty">Faculty</label>
+                    <input type="text" id="faculty" name="faculty" placeholder="e.g., FST">
+                    <div class="field_hint">E.g., FST, FMS, etc.</div>
+                </div>
+                
+                <button id="register_btn">Register Account</button>
+                <p class="login-link">Already have an account? <a href="/login">Login</a></p>
+            </form>
         </div>
-        <div class="rightSide"></div>
     </div>
 
     <script>
