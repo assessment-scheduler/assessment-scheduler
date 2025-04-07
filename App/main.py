@@ -16,7 +16,7 @@ from flask_jwt_extended import (
 )
 
 from App.controllers.auth import setup_flask_login, setup_jwt
-from App.database import init_db
+from App.database import init_db, db, create_db
 from App.config import config
 
 from App.views import views
@@ -66,12 +66,12 @@ def create_app(config_overrides={}):
         # Initialize extensions
         CORS(app, resources={r"/*": {"origins": "*"}})
         
-        # Setup authentication before database
+        # Initialize database first
+        init_db(app)
+        
+        # Setup authentication after database
         setup_flask_login(app)
         setup_jwt(app)
-        
-        # Initialize database
-        init_db(app)
         
         # Configure uploads
         photos = UploadSet('photos', TEXT + DOCUMENTS + IMAGES)
@@ -80,8 +80,9 @@ def create_app(config_overrides={}):
         # Register views last
         add_views(app)
         
-        # Push app context
-        app.app_context().push()
+        # Create database tables within app context
+        with app.app_context():
+            create_db()
         
         return app
         
