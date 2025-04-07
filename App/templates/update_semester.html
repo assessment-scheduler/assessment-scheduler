@@ -261,8 +261,7 @@
       <label for="solver_type">Solver Type:</label>
       <select id="solver_type" name="solver_type" class="form-control" required>
         <option value="kris" {% if semester.solver_type == 'kris' %}selected{% endif %}>Kris (Default)</option>
-        <option value="basic" {% if semester.solver_type == 'basic' %}selected{% endif %}>Basic</option>
-        <option value="advanced" {% if semester.solver_type == 'advanced' %}selected{% endif %}>Advanced</option>
+        <option value="prof" {% if semester.solver_type == 'prof' %}selected{% endif %}>Prof</option>
       </select>
     </div>
     

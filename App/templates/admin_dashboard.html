@@ -272,6 +272,21 @@
             <p>Reset and reinitialize the database with default data</p>
             <a href="{{ url_for('index_views.init_page') }}" class="btn">Database Tools</a>
         </div>
+        {% if active_semester %}
+        <div class="card">
+            <h2>Scheduling Control</h2>
+            <p>Current solver: <strong>{{ active_semester.solver_type }}</strong></p>
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+                <form action="/schedule" method="POST">
+                    <button type="submit" class="btn" style="width: 100%;">Run Scheduler</button>
+                </form>
+                <form action="/toggle_solver" method="POST">
+                    <button type="submit" class="btn" style="width: 100%; background-color: #4CAF50;">Toggle Solver Type</button>
+                </form>
+                <a href="/semester_courses/{{ active_semester.id }}" class="btn" style="background-color: #2196F3;">Manage Semester Courses</a>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

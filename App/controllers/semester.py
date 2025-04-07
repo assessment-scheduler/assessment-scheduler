@@ -205,11 +205,31 @@ def remove_course_from_semester(semester_id: int, course_code: str) -> bool:
         db.session.rollback()
         return False
 
+def set_semester_solver(semester_id: int, solver_type: str) -> bool:
+    # Set the solver type for a semester.
+    try:
+        semester = get_semester(semester_id)
+        if not semester:
+            print(f"Semester {semester_id} not found")
+            return False
+        
+        if solver_type not in ['kris', 'prof']:
+            print(f"Invalid solver type: {solver_type}")
+            return False
+            
+        semester.solver_type = solver_type
+        db.session.commit()
+        print(f"Semester {semester_id} solver set to {solver_type}")
+        return True
+    except Exception as e:
+        print(f"Error setting solver for semester {semester_id}: {str(e)}")
+        db.session.rollback()
+        return False
+
 def create_test_assessments_for_semester(semester_id: int, count_per_course: int = 3) -> int:
-    """
-    Creates test assessments for all courses in a semester.
-    Returns the number of assessments created.
-    """
+  
+    # Creates test assessments for all courses in a semester.
+    # Returns the number of assessments created.
     from .assessment import create_assessment
     
     semester = get_semester(semester_id)
