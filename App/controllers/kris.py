@@ -241,7 +241,8 @@ def build_stage2_model(courses, c, phi, U_star, K, d, M, timetable=None):
 def solve_stage2(courses, c, phi, U_star, K, d, M, timetable=None):
     model, x, y = build_stage2_model(courses, c, phi, U_star, K, d, M, timetable)
     solver = cp_model.CpSolver()
-    solver.parameters.max_time_in_seconds = 60  # Adjust if needed
+    from flask import current_app
+    solver.parameters.max_time_in_seconds = current_app.config['SOLVER_TIMEOUT']
     status = solver.Solve(model)
     if status == cp_model.OPTIMAL:
         Y_star = sum(solver.Value(y[k]) for k in range(1, K - d + 1))
