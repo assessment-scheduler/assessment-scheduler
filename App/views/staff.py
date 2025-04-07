@@ -21,7 +21,7 @@ staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
 
 @staff_views.route('/signup', methods=['GET'])
 def get_signup_page():
-    return render_template('signup.html')
+    return render_template('register.html')
 
 @staff_views.route('/register', methods=['POST'])
 def register_staff_action():
@@ -36,7 +36,7 @@ def register_staff_action():
         
         staff = create_staff(id, email, password, first_name, last_name, department, faculty)
         if staff:
-            flash('Registration successful! Please log in.', 'success')
+            flash(f'Account created successfully for {first_name} {last_name}! Please sign in with your credentials.', 'success')
             return redirect(url_for('auth_views.get_login_page'))
         else:
             flash('Registration failed. Email may already be in use.', 'error')

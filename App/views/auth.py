@@ -8,7 +8,8 @@ auth_views = Blueprint('auth_views', __name__, template_folder='../templates')
 
 @auth_views.route('/login', methods=['GET'])
 def get_login_page():
-    if request.referrer and 'logout' not in request.referrer:
+    # Only clear flashes if coming from a non-registration page
+    if request.referrer and 'register' not in request.referrer and 'signup' not in request.referrer:
         session.pop('_flashes', None)
     return render_template('login.html')
     

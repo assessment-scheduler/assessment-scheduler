@@ -44,7 +44,7 @@
   }
   
   .draggable-assessment:hover {
-    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
     transform: translateY(-2px);
     background: var(--accent-color);
   }
@@ -476,16 +476,6 @@
     color: white !important;
   }
   
-  #show-more-btn, #show-less-btn {
-    margin-top: 10px;
-    background-color: var(--tertiary-color);
-    color: white;
-  }
-  
-  #show-more-btn:hover, #show-less-btn:hover {
-    background-color: var(--accent-color);
-  }
-  
   @media (max-width: 992px) {
     #main {
       flex-direction: column;
@@ -775,37 +765,6 @@
   
   .fc-list-event:hover td {
     background-color: rgba(103, 78, 204, 0.1) !important;
-  }
-  
-  #debug-section {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: rgba(0, 0, 0, 0.05);
-    border-radius: 5px;
-    border: 1px dashed var(--border-color);
-  }
-  
-  #debug-section h4 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 14px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 8px;
-  }
-  
-  #debug-section form {
-    margin-bottom: 8px;
-  }
-  
-  #debug-section form:last-child {
-    margin-bottom: 0;
-  }
-  
-  .dark-mode #debug-section {
-    background-color: rgba(255, 255, 255, 0.1);
   }
   
   .draggable-assessment.status-unscheduled {
@@ -2323,39 +2282,13 @@
             </div>
           {% endif %}
           
-          <div id="debug-section">
-            <h4>Debug Tools</h4>
+          <div>
             <form id="unschedule-all-form" action="/unschedule_all_assessments" method="POST" onsubmit="return confirm('Are you sure you want to unschedule all your assessments?');">
               <button type="submit" class="action-btn danger">Unschedule All My Assessments</button>
-            </form>
-            
-            <form id="unschedule-all-system-form" action="/unschedule_all_system_assessments" method="POST" onsubmit="return confirm('WARNING: This will unschedule ALL assessments in the system for ALL staff members. Are you sure you want to proceed?');">
-              <button type="submit" class="action-btn danger">Unschedule All</button>
-            </form>
-            
-            <form id="reschedule-all-form" action="/autoschedule" method="POST">
-              <button type="button" id="execute-all-operations" class="action-btn success">Reschedule All</button>
-              <input type="hidden" name="auto_execute" value="false">
-            </form>
-            
-            <form id="reset-constraints-form" action="/reset_all_constraints" method="POST" onsubmit="return confirm('WARNING: This will reset ALL assessments time constraints to default values (Week 1-15). This is useful when scheduling keeps failing due to conflicting constraints. Continue?');">
-              <button type="submit" class="action-btn warning">Reset All Constraints</button>
             </form>
           </div>
         {% else %}
           <p>No scheduled assessments found.</p>
-          
-          <div id="debug-section">
-            <h4>Debug Tools</h4>
-            <form id="reschedule-all-form" action="/autoschedule" method="POST">
-              <button type="button" id="execute-all-operations" class="action-btn success">Reschedule All</button>
-              <input type="hidden" name="auto_execute" value="false">
-            </form>
-            
-            <form id="reset-constraints-form" action="/reset_all_constraints" method="POST" onsubmit="return confirm('WARNING: This will reset ALL assessments time constraints to default values (Week 1-15). This is useful when scheduling keeps failing due to conflicting constraints. Continue?');">
-              <button type="submit" class="action-btn warning">Reset All Constraints</button>
-            </form>
-          </div>
         {% endif %}
       </div>
     </div>
@@ -2409,165 +2342,6 @@
       showLessBtn.addEventListener('click', function() {
         allAssessments.classList.add('hidden');
         showMoreBtn.style.display = 'block';
-      });
-    }
-    
-    // Add event listener for the "Execute All Operations" button
-    const executeAllBtn = document.getElementById('execute-all-operations');
-    if (executeAllBtn) {
-      executeAllBtn.addEventListener('click', function() {
-        if (confirm('This will perform the following operations in sequence:\n\n1. Unschedule All Assessments\n2. Reset All Constraints\n3. Reschedule All Assessments\n\nThis process may take some time. Do you want to continue?')) {
-          executeAllOperations();
-        }
-      });
-    }
-    
-    // Function to execute all operations in sequence
-    function executeAllOperations() {
-      // Show loading indicator
-      const loadingIndicator = document.createElement('div');
-      loadingIndicator.className = 'loading-indicator';
-      loadingIndicator.innerHTML = `
-        <div class="loading-overlay"></div>
-        <div class="loading-content">
-          <div class="loading-spinner"></div>
-          <div class="loading-text">Processing operations...</div>
-          <div class="loading-status">Step 1/3: Unscheduling assessments</div>
-        </div>
-      `;
-      document.body.appendChild(loadingIndicator);
-      
-      // Style the loading indicator
-      const style = document.createElement('style');
-      style.textContent = `
-        .loading-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-color: rgba(0, 0, 0, 0.5);
-          z-index: 9998;
-        }
-        .loading-content {
-          position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          background-color: var(--bg-color, white);
-          color: var(--text-color, black);
-          padding: 20px;
-          border-radius: 8px;
-          box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-          z-index: 9999;
-          text-align: center;
-          min-width: 300px;
-          border: 1px solid var(--border-color, #ddd);
-        }
-        .loading-spinner {
-          display: inline-block;
-          width: 40px;
-          height: 40px;
-          border: 4px solid var(--spinner-bg-color, rgba(0, 0, 0, 0.1));
-          border-radius: 50%;
-          border-top-color: var(--tertiary-color, #5e72e4);
-          animation: spin 1s ease-in-out infinite;
-          margin: 0 auto 15px;
-        }
-        .loading-text {
-          font-size: 18px;
-          font-weight: bold;
-          margin-bottom: 15px;
-          color: var(--heading-color, inherit);
-        }
-        .loading-status {
-          font-size: 14px;
-          color: var(--muted-color, #666);
-          margin-top: 5px;
-        }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        
-        /* Light mode (default) */
-        :root {
-          --bg-color: white;
-          --text-color: #333;
-          --border-color: #ddd;
-          --spinner-bg-color: rgba(0, 0, 0, 0.1);
-          --heading-color: #333;
-          --muted-color: #666;
-        }
-        
-        /* Dark mode */
-        .dark-mode .loading-content {
-          --bg-color: #2d3748;
-          --text-color: #f7fafc;
-          --border-color: #4a5568;
-          --spinner-bg-color: rgba(255, 255, 255, 0.1);
-          --heading-color: #f7fafc;
-          --muted-color: #cbd5e0;
-        }
-      `;
-      document.head.appendChild(style);
-      
-      // Detect theme and add appropriate class
-      const isDarkMode = document.body.classList.contains('dark-mode') || 
-                         document.documentElement.classList.contains('dark-mode') || 
-                         localStorage.getItem('darkMode') === 'true';
-      
-      if (isDarkMode) {
-        loadingIndicator.classList.add('dark-mode');
-      }
-      
-      // Step 1: Unschedule All System Assessments
-      fetch('/unschedule_all_system_assessments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      })
-      .then(response => {
-        // Update status
-        document.querySelector('.loading-status').textContent = 'Step 2/3: Resetting constraints';
-        
-        // Step 2: Reset All Constraints
-        return fetch('/reset_all_constraints', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        });
-      })
-      .then(response => {
-        // Update status
-        document.querySelector('.loading-status').textContent = 'Step 3/3: Rescheduling assessments';
-        
-        // Step 3: Autoschedule All
-        return fetch('/autoschedule', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          body: 'auto_execute=true'
-        });
-      })
-      .then(response => {
-        // All operations completed, refresh the page
-        document.querySelector('.loading-text').textContent = 'All operations completed!';
-        document.querySelector('.loading-status').textContent = 'Refreshing page...';
-        
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      })
-      .catch(error => {
-        console.error('Error executing operations:', error);
-        alert('An error occurred while executing operations. Please check the console for details.');
-        document.body.removeChild(loadingIndicator);
       });
     }
   });
