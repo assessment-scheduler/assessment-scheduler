@@ -33,36 +33,58 @@ def configure_app(app, config, overrides):
             app.config[key] = config[key]
 
 def create_app(config_overrides={}):
-    app = Flask(__name__, static_url_path='/static')
-    configure_app(app, config, config_overrides)
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['TEMPLATES_AUTO_RELOAD'] = True
-    app.config['SEVER_NAME'] = '0.0.0.0'
-    app.config['PREFERRED_URL_SCHEME'] = 'https'
-    app.config['UPLOAD_FOLDER'] = 'App/uploads'  
-    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-    app.config['MAIL_PORT'] = 465
-    app.config['MAIL_USERNAME'] = 'assessment.scheduler.emails@gmail.com'
-    app.config['MAIL_PASSWORD'] = 'mygl qlni lqrz naxm' 
-    app.config['MAIL_USE_TLS'] = True 
-    app.config['MAIL_DEFAULT_SENDER'] = 'assessment.scheduler.emails@gmail.com'
-    app.config['JWT_ACCESS_COOKIE_NAME'] = 'access_token'
-    app.config["JWT_TOKEN_LOCATION"] = ["cookies", "headers"]
-    app.config["JWT_COOKIE_SECURE"] = True
-    app.config["JWT_COOKIE_CSRF_PROTECT"] = False
-    app.config['DEBUG'] = True
-    
-    # Initialize CORS
-    CORS(app)
-    
-    # Initialize database
-    init_db(app)
-    
-    # Setup authentication
-    setup_flask_login(app)
-    setup_jwt(app)
-    
-    # Register views
-    add_views(app)
-    
-    return app
+    try:
+        app = Flask(__name__, static_url_path='/static')
+        
+        # Configure app first
+        configure_app(app, config, config_overrides)
+        
+        # Basic Flask configurations
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        app.config['TEMPLATES_AUTO_RELOAD'] = True
+        app.config['SEVER_NAME'] = '0.0.0.0'
+        app.config['PREFERRED_URL_SCHEME'] = 'https'
+        app.config['UPLOAD_FOLDER'] = 'App/uploads'  
+        
+        # Mail configurations
+        app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+        app.config['MAIL_PORT'] = 465
+        app.config['MAIL_USERNAME'] = 'assessment.scheduler.emails@gmail.com'
+        app.config['MAIL_PASSWORD'] = 'mygl qlni lqrz naxm' 
+        app.config['MAIL_USE_TLS'] = True 
+        app.config['MAIL_DEFAULT_SENDER'] = 'assessment.scheduler.emails@gmail.com'
+        
+        # JWT configurations
+        app.config['JWT_ACCESS_COOKIE_NAME'] = 'access_token'
+        app.config["JWT_TOKEN_LOCATION"] = ["cookies", "headers"]
+        app.config["JWT_COOKIE_SECURE"] = True
+        app.config["JWT_COOKIE_CSRF_PROTECT"] = False
+        
+        # Development mode
+        app.config['DEBUG'] = True
+        
+        # Initialize extensions
+        CORS(app, resources={r"/*": {"origins": "*"}})
+        
+        # Setup authentication before database
+        setup_flask_login(app)
+        setup_jwt(app)
+        
+        # Initialize database
+        init_db(app)
+        
+        # Configure uploads
+        photos = UploadSet('photos', TEXT + DOCUMENTS + IMAGES)
+        configure_uploads(app, photos)
+        
+        # Register views last
+        add_views(app)
+        
+        # Push app context
+        app.app_context().push()
+        
+        return app
+        
+    except Exception as e:
+        print(f"Error during app initialization: {str(e)}")
+        raise
