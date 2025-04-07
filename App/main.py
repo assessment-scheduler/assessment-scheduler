@@ -51,16 +51,18 @@ def create_app(config_overrides={}):
     app.config["JWT_COOKIE_SECURE"] = True
     app.config["JWT_COOKIE_CSRF_PROTECT"] = False
     app.config['DEBUG'] = True
-    CORS(app)
-    photos = UploadSet('photos', TEXT + DOCUMENTS + IMAGES)
-    configure_uploads(app, photos)
-    add_views(app)
-    init_db(app)
-    jwt = setup_jwt(app)
-    setup_flask_login(app)
-    app.app_context().push()
     
-    # Initialize sample data - commented out to avoid errors during initialization
-    # init_sample_data()
+    # Initialize CORS
+    CORS(app)
+    
+    # Initialize database
+    init_db(app)
+    
+    # Setup authentication
+    setup_flask_login(app)
+    setup_jwt(app)
+    
+    # Register views
+    add_views(app)
     
     return app

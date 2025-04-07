@@ -36,7 +36,6 @@ def load_config():
     config["JWT_COOKIE_SECURE"] = True
     config["JWT_COOKIE_CSRF_PROTECT"] = False
     config['SOLVER_TIMEOUT'] = int(os.environ.get('SOLVER_TIMEOUT', 300))  # 5 minutes default timeout
-    CORS(app)
     return config
 
 config = load_config()
