@@ -432,13 +432,26 @@ def get_calendar_page():
 
         courses = staff_courses
         other_exams = []  # We don't need this anymore since we're using my_assessments
+        
+        # Filter courses to only include those from the active semester
+        filtered_courses = []
+        if active_semester and semester_course_codes:
+            for course in courses:
+                if course['code'] in semester_course_codes:
+                    filtered_courses.append(course)
+            print(f"Filtered courses for active semester: {semester_course_codes}")
+            print(f"Original courses: {[c['code'] for c in courses]}")
+            print(f"Filtered courses: {[c['code'] for c in filtered_courses]}")
+        else:
+            filtered_courses = courses
+            print("No active semester or semester course codes available for filtering")
 
         return render_template(
             "calendar.html",
             staff_exams=staff_exams,
             other_exams=other_exams,
             staff_courses=staff_courses,
-            courses=courses,
+            courses=filtered_courses,
             semester=semester,
             scheduled_assessments=scheduled_assessments,
             unscheduled_assessments=unscheduled_assessments,
