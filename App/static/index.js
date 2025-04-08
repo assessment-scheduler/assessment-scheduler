@@ -169,7 +169,8 @@ document.addEventListener("DOMContentLoaded", function () {
             course_code: eventEl.dataset.courseCode,
             percentage: eventEl.dataset.percentage,
             proctored: eventEl.dataset.proctored === "1" || eventEl.dataset.proctored === "True" || eventEl.dataset.proctored === "true",
-            isRescheduling: eventEl.classList.contains('scheduled')
+            isRescheduling: eventEl.classList.contains('scheduled'),
+            assessmentName: eventEl.dataset.name
           }
         };
       },
@@ -600,6 +601,11 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("Rendering calendar...");
     calendar.render();
     
+    // Apply filters on initial load
+    setTimeout(() => {
+      applyFilters();
+    }, 300);
+    
     if (semester && semester.start_date) {
       console.log("Setting calendar initial date to semester start date:", semester.start_date);
       
@@ -716,182 +722,130 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function loadSavedFilters() {
-    console.log("Loading saved filters from localStorage");
-    
-    if (levelFilter && localStorage.getItem('calendarLevelFilter')) {
-      levelFilter.value = localStorage.getItem('calendarLevelFilter');
-      console.log("Loaded level filter:", levelFilter.value);
-    }
-    
-    if (courseFilter && localStorage.getItem('calendarCourseFilter')) {
+    try {
+      // Restore saved filter values if available
+      const savedLevel = localStorage.getItem('calendarLevelFilter');
       const savedCourse = localStorage.getItem('calendarCourseFilter');
-      const courseExists = Array.from(courseFilter.options).some(option => option.value === savedCourse);
+      const savedType = localStorage.getItem('calendarTypeFilter');
       
-      if (courseExists) {
-        courseFilter.value = savedCourse;
-        console.log("Loaded course filter:", courseFilter.value);
-      } else {
-        console.log("Saved course doesn't exist in options:", savedCourse);
-      }
-    }
-    
-    if (typeFilter && localStorage.getItem('calendarTypeFilter')) {
-      typeFilter.value = localStorage.getItem('calendarTypeFilter');
-      console.log("Loaded type filter:", typeFilter.value);
-    }
-    
-    if (levelFilter && courseFilter && typeFilter) {
-      const selectedLevel = levelFilter.value;
-      const selectedCourse = courseFilter.value;
-      const selectedType = typeFilter.value;
+      if (savedLevel && levelFilter) levelFilter.value = savedLevel;
+      if (savedCourse && courseFilter) courseFilter.value = savedCourse;
+      if (savedType && typeFilter) typeFilter.value = savedType;
       
-      console.log("Applying saved filters:", { selectedLevel, selectedCourse, selectedType });
-      
-      if (selectedLevel !== "0" || selectedCourse !== "all" || selectedType !== "all") {
-        const filteredEvents = filterEvents(selectedLevel, selectedCourse, selectedType);
-        console.log("Initial filtered events count:", filteredEvents.length);
-            updateCalendarEvents(calendar, filteredEvents, false);
-      }
+      // Apply the saved filters
+      applyFilters();
+    } catch (error) {
+      console.error("Error loading saved filters:", error);
     }
   }
 
-  setTimeout(loadSavedFilters, 300);
+  // Apply filters when changed
+  if (levelFilter) levelFilter.addEventListener('change', applyFilters);
+  if (courseFilter) courseFilter.addEventListener('change', applyFilters);
+  if (typeFilter) typeFilter.addEventListener('change', applyFilters);
+  
+  // Load saved filters on init
+  setTimeout(loadSavedFilters, 200);
 
-  if (levelFilter) {
-    levelFilter.addEventListener("change", function () {
-      const selectedLevel = levelFilter.value;
-      const selectedCourse = courseFilter.value;
-      const selectedType = typeFilter.value;
+  function applyFilters() {
+    try {
+      const levelValue = levelFilter ? levelFilter.value : "0";
+      const courseValue = courseFilter ? courseFilter.value : "all";
+      const typeValue = typeFilter ? typeFilter.value : "all";
       
-      console.log("Level filter changed:", selectedLevel);
-      localStorage.setItem('calendarLevelFilter', selectedLevel);
+      console.log("Applying filters:", levelValue, courseValue, typeValue);
       
-      const filteredEvents = filterEvents(selectedLevel, selectedCourse, selectedType);
-      console.log(`Filtered events by level ${selectedLevel}:`, filteredEvents.length);
-      updateCalendarEvents(calendar, filteredEvents);
-    });
-  }
-
-  if (courseFilter) {
-    courseFilter.addEventListener("change", function () {
-      const selectedLevel = levelFilter.value;
-      const selectedCourse = courseFilter.value;
-      const selectedType = typeFilter.value;
+      // Save filter selections to localStorage
+      if (levelFilter) localStorage.setItem('calendarLevelFilter', levelValue);
+      if (courseFilter) localStorage.setItem('calendarCourseFilter', courseValue);
+      if (typeFilter) localStorage.setItem('calendarTypeFilter', typeValue);
       
-      console.log("Course filter changed:", selectedCourse);
-      localStorage.setItem('calendarCourseFilter', selectedCourse);
-      
-      const filteredEvents = filterEvents(selectedLevel, selectedCourse, selectedType);
-      console.log(`Filtered events by course ${selectedCourse}:`, filteredEvents.length);
-      updateCalendarEvents(calendar, filteredEvents);
-    });
-  }
-
-  if (typeFilter) {
-    typeFilter.addEventListener("change", function () {
-      const selectedLevel = levelFilter.value;
-      const selectedCourse = courseFilter.value;
-      const selectedType = typeFilter.value;
-      
-      console.log("Type filter changed:", selectedType);
-      localStorage.setItem('calendarTypeFilter', selectedType);
-      
-      const filteredEvents = filterEvents(selectedLevel, selectedCourse, selectedType);
-      console.log(`Filtered events by type ${selectedType}:`, filteredEvents.length);
-      updateCalendarEvents(calendar, filteredEvents);
-    });
-  }
-
-  function filterEvents(level, courseCode, type) {
-    let filteredEvents = scheduledAssessments || [];
-    
-    if (level !== "0") {
-      filteredEvents = filteredEvents.filter(item => {
-        return item.course_code && item.course_code.length >= 5 && item.course_code[4] === level;
-      });
-    }
-    
-    if (courseCode !== "all") {
-      if (courseCode === "My Courses") {
-        const myAssessmentIds = staff_exams.map(exam => exam.id.toString());
-        filteredEvents = filteredEvents.filter(item => myAssessmentIds.includes(item.id.toString()));
-      } else {
-        filteredEvents = filteredEvents.filter(item => item.course_code === courseCode);
-      }
-    }
-    
-    if (type !== "all") {
-      // Convert type to boolean or number based on the format in the data
-      const isProctored = type === "1";
-      filteredEvents = filteredEvents.filter(item => {
-        // Handle both boolean and numeric representations of proctored
-        if (typeof item.proctored === 'boolean') {
-          return item.proctored === isProctored;
-        } else {
-          return (item.proctored == 1) === isProctored;
-        }
-      });
-    }
-    
-    return filteredEvents;
-  }
-
-  function updateCalendarEvents(calendar, newEvents, removeExisting = true) {
-    console.log("Updating calendar with filtered events:", newEvents.length);
-    
-    if (removeExisting) {
-      calendar.removeAllEvents();
-      console.log("Removed all existing events from calendar");
-    }
-    
-    const updatedEvents = newEvents
-      .filter(assessment => assessment.scheduled !== null && assessment.scheduled !== undefined)
-      .map(assessment => {
-        let startDate = formatDate(assessment.scheduled);
-        if (!startDate) {
-          console.log("Assessment has invalid date:", assessment);
-          return null;
-        }
-        
-        const isOwnedAssessment = staff_exams.some(exam => exam.id === assessment.id) || 
-                                 (myCourses && myCourses.some(course => course.code === assessment.course_code));
-        
-        return {
-          id: assessment.id,
-          title: `${assessment.course_code}-${assessment.name} (${assessment.percentage}%)`,
-          start: startDate,
-          allDay: true,
-          backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
-          textColor: '#fff',
-          editable: isOwnedAssessment,
-          extendedProps: {
-            course_code: assessment.course_code,
-            percentage: assessment.percentage,
-            proctored: assessment.proctored,
-            assessmentName: assessment.name,
-            isOwnedAssessment: isOwnedAssessment
+      // Filter calendar events
+      if (calendar) {
+        const events = calendar.getEvents();
+        events.forEach(event => {
+          let visible = true;
+          
+          // Level filter
+          if (levelValue !== "0") {
+            const courseCode = event.extendedProps.course_code;
+            if (courseCode && courseCode.length >= 5) {
+              const courseLevel = courseCode.charAt(4);
+              if (courseLevel !== levelValue) {
+                visible = false;
+              }
+            }
           }
-        };
-      })
-      .filter(event => event !== null);
-    
-    console.log("Filtered events for calendar:", updatedEvents.length);
-    
-      updatedEvents.forEach(event => {
-      try {
-        const existingEvent = calendar.getEventById(event.id);
-        if (!existingEvent) {
-          calendar.addEvent(event);
-        }
-      } catch (error) {
-        console.error("Error adding event to calendar:", error, event);
+          
+          // Course filter 
+          if (courseValue !== "all") {
+            if (courseValue === "My Courses") {
+              // Only show events for the logged-in lecturer's courses
+              // These assessments can be identified by the isOwnedAssessment property
+              if (!event.extendedProps.isOwnedAssessment) {
+                visible = false;
+              }
+            } else if (event.extendedProps.course_code !== courseValue) {
+              visible = false;
+            }
+          }
+          
+          // Type filter
+          if (typeValue !== "all") {
+            if ((typeValue === "1" && !event.extendedProps.proctored) || 
+                (typeValue === "0" && event.extendedProps.proctored)) {
+              visible = false;
+            }
+          }
+          
+          // Apply visibility
+          if (visible) {
+            event.setProp('display', 'auto');
+          } else {
+            event.setProp('display', 'none');
+          }
+        });
       }
-    });
-    
-    // Ensure events are rendered
-    setTimeout(() => {
-      calendar.render();
-    }, 100);
+      
+      // Update the unscheduled assessments list based on filters
+      const assessmentItems = document.querySelectorAll('#unscheduled-list .draggable-assessment');
+      assessmentItems.forEach(item => {
+        let visible = true;
+        
+        // Level filter
+        if (levelValue !== "0") {
+          const courseCode = item.dataset.courseCode;
+          if (courseCode && courseCode.length >= 5) {
+            const courseLevel = courseCode.charAt(4);
+            if (courseLevel !== levelValue) {
+              visible = false;
+            }
+          }
+        }
+        
+        // Course filter - Note: All items in #unscheduled-list are already filtered to the user's courses
+        if (courseValue !== "all" && courseValue !== "My Courses") {
+          if (item.dataset.courseCode !== courseValue) {
+            visible = false;
+          }
+        }
+        
+        // Type filter
+        if (typeValue !== "all") {
+          const isProctored = item.dataset.proctored === "1" || 
+                             item.dataset.proctored === "True" || 
+                             item.dataset.proctored === "true";
+          if ((typeValue === "1" && !isProctored) || (typeValue === "0" && isProctored)) {
+            visible = false;
+          }
+        }
+        
+        // Apply visibility
+        item.style.display = visible ? 'block' : 'none';
+      });
+    } catch (error) {
+      console.error("Error applying filters:", error);
+    }
   }
 
   function calculateWeekAndDayOffsets(date, semesterStartDate) {
@@ -960,6 +914,23 @@ document.addEventListener("DOMContentLoaded", function () {
     
     console.log("Rescheduling event via drag:", event.id, "to", newDate.toISOString().split('T')[0]);
     
+    // Store the original event data and element info for possible recovery
+    const originalAssessmentId = event.id;
+    const originalElement = document.querySelector(`.draggable-assessment[data-assessment-id="${originalAssessmentId}"]`);
+    
+    // Save original assessment card details if available
+    if (originalElement) {
+      window._lastDraggedAssessment = {
+        id: originalAssessmentId,
+        courseCode: originalElement.dataset.courseCode,
+        name: originalElement.dataset.name,
+        percentage: originalElement.dataset.percentage,
+        proctored: originalElement.dataset.proctored,
+        html: originalElement.outerHTML
+      };
+      console.log("Stored original assessment data:", window._lastDraggedAssessment);
+    }
+    
     // Calculate week and day offsets
     const offsets = calculateWeekAndDayOffsets(newDate, semester.start_date);
     
@@ -993,8 +964,16 @@ document.addEventListener("DOMContentLoaded", function () {
     pendingScheduleData = data;
     pendingEvent = event;
     
+    // Keep track of the source element for better recovery
+    if (!window._lastDraggedAssessment) {
+      window._lastDraggedAssessment = {
+        id: data.assessment_id || data.id,
+        inProgress: true
+      };
+    }
+    
     // First evaluate the clash value for this assessment date
-    evaluateAssessmentClash(data.assessment_id, data.assessment_date);
+    evaluateAssessmentClash(data.assessment_id || data.id, data.assessment_date);
   }
 
   function evaluateAssessmentClash(assessmentId, date) {
@@ -1181,7 +1160,10 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById('clash-modal').classList.add('hidden');
       document.getElementById('clash-modal-overlay').style.display = 'none';
       
-      cancelScheduleEvent();
+      // Ensure we properly cancel the operation and restore the card
+      setTimeout(() => {
+        cancelScheduleEvent();
+      }, 50);
       return false;
     });
     
@@ -1194,7 +1176,10 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById('clash-modal').classList.add('hidden');
       document.getElementById('clash-modal-overlay').style.display = 'none';
       
-      cancelScheduleEvent();
+      // Ensure we properly cancel the operation and restore the card
+      setTimeout(() => {
+        cancelScheduleEvent();
+      }, 50);
       return false;
     });
     
@@ -1206,7 +1191,10 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById('clash-modal').classList.add('hidden');
       document.getElementById('clash-modal-overlay').style.display = 'none';
       
-      cancelScheduleEvent();
+      // Ensure we properly cancel the operation and restore the card
+      setTimeout(() => {
+        cancelScheduleEvent();
+      }, 50);
       return false;
     };
   }
@@ -1215,188 +1203,436 @@ document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById('clash-modal');
     const overlay = document.getElementById('clash-modal-overlay');
     
+    console.log("Closing clash modal, will cancel schedule event");
+    
+    // Hide the modal first
     modal.classList.add('hidden');
-    overlay.classList.add('hidden');
+    overlay.style.display = 'none';
+    
+    // Make sure we also cancel the scheduling operation with a proper delay
+    // to ensure the modal is fully closed first
+    setTimeout(() => {
+      cancelScheduleEvent();
+    }, 200);
   }
 
   function cancelScheduleEvent() {
-    // Revert the drag/drop UI without immediate page refresh
-    if (pendingEvent) {
-      if (pendingEvent.revert) {
-        pendingEvent.revert();
-      } else if (pendingEvent.remove) {
-        pendingEvent.remove();
+    console.log("=== CANCEL SCHEDULE EVENT STARTED ===");
+    console.log("Pending event:", pendingEvent);
+    console.log("Pending data:", pendingScheduleData);
+    
+    let assessmentId = null;
+    let courseCode = null;
+    let assessmentName = null;
+    
+    // PRIORITY: Use stored last dragged assessment if available
+    if (window._lastDraggedAssessment && window._lastDraggedAssessment.id) {
+      console.log("Using stored last dragged assessment:", window._lastDraggedAssessment);
+      assessmentId = window._lastDraggedAssessment.id;
+      courseCode = window._lastDraggedAssessment.courseCode;
+      assessmentName = window._lastDraggedAssessment.name;
+    } 
+    // Otherwise extract from pendingEvent or pendingScheduleData
+    else if (pendingEvent) {
+      try {
+        assessmentId = pendingEvent.id || pendingEvent.extendedProps?.id;
+        courseCode = pendingEvent.extendedProps?.course_code;
+        assessmentName = pendingEvent.extendedProps?.assessmentName;
+      } catch (e) {
+        console.error("Error extracting event data:", e);
       }
-      
-      // Add visual feedback for the cancellation
-      const cancelIndicator = document.createElement('div');
-      cancelIndicator.style.position = 'fixed';
-      cancelIndicator.style.top = '20px';
-      cancelIndicator.style.left = '50%';
-      cancelIndicator.style.transform = 'translateX(-50%)';
-      cancelIndicator.style.padding = '10px 20px';
-      cancelIndicator.style.backgroundColor = '#ff9500';
-      cancelIndicator.style.color = 'white';
-      cancelIndicator.style.borderRadius = '4px';
-      cancelIndicator.style.zIndex = '9999';
-      cancelIndicator.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-      cancelIndicator.innerText = 'Scheduling cancelled';
-      
-      document.body.appendChild(cancelIndicator);
-      
-      // Fade out and remove
-      setTimeout(() => {
-        cancelIndicator.style.opacity = '0';
-        cancelIndicator.style.transition = 'opacity 0.5s ease';
-        setTimeout(() => {
-          document.body.removeChild(cancelIndicator);
-        }, 500);
-      }, 2000);
+    } else if (pendingScheduleData) {
+      assessmentId = pendingScheduleData.assessment_id || pendingScheduleData.id;
     }
     
-    // Reset the pending data
+    console.log("Assessment for recovery - ID:", assessmentId, "Course:", courseCode, "Name:", assessmentName);
+    
+    // STEP 1: Try to revert the event in the calendar
+    let revertSuccess = false;
+    try {
+      if (pendingEvent && typeof pendingEvent.revert === 'function') {
+        console.log("Attempting to revert event in calendar");
+        pendingEvent.revert();
+        revertSuccess = true;
+        console.log("Event reverted successfully");
+      } else if (pendingEvent && typeof pendingEvent.remove === 'function') {
+        console.log("No revert function, removing event from calendar");
+        pendingEvent.remove();
+      }
+    } catch (error) {
+      console.error("Error handling event in calendar:", error);
+      
+      // If the revert/remove fails, try to force refresh the calendar
+      try {
+        calendar.refetchEvents();
+        console.log("Forced calendar refresh after failed revert");
+      } catch (refreshError) {
+        console.error("Error refreshing calendar:", refreshError);
+      }
+    }
+    
+    // STEP 2: Force manual restoration of the original element if we have it
+    if (window._lastDraggedAssessment && window._lastDraggedAssessment.html) {
+      // Only do this if the original element is no longer in the DOM
+      if (!isAssessmentCardVisible(assessmentId)) {
+        console.log("Restoring assessment card from saved HTML");
+        
+        const unscheduledList = document.getElementById('unscheduled-list');
+        if (unscheduledList) {
+          // Create a temporary container for the HTML
+          const temp = document.createElement('div');
+          temp.innerHTML = window._lastDraggedAssessment.html;
+          
+          // Get the assessment element
+          const savedEl = temp.firstChild;
+          
+          // Ensure it has the recovered class
+          savedEl.classList.add('recovered');
+          
+          // Add it back to the unscheduled list
+          const heading = unscheduledList.querySelector('h3');
+          if (heading && heading.nextSibling) {
+            unscheduledList.insertBefore(savedEl, heading.nextSibling);
+          } else {
+            unscheduledList.appendChild(savedEl);
+          }
+          
+          // Make it draggable
+          new FullCalendar.Draggable(savedEl, {
+            eventData: function() {
+              return {
+                id: savedEl.dataset.assessmentId,
+                title: `${savedEl.dataset.courseCode}-${savedEl.dataset.name} (${savedEl.dataset.percentage}%)`,
+                backgroundColor: savedEl.dataset.proctored === "1" || savedEl.dataset.proctored === "true" ? colors.Proctored : colors.Assignment,
+                textColor: '#fff',
+                extendedProps: {
+                  course_code: savedEl.dataset.courseCode,
+                  percentage: savedEl.dataset.percentage,
+                  proctored: savedEl.dataset.proctored,
+                  assessmentName: savedEl.dataset.name
+                }
+              };
+            }
+          });
+          
+          console.log("Assessment restored from saved HTML");
+        }
+      }
+    }
+    
+    // STEP 3: Check if the assessment card is visible in the unscheduled list
+    const recoveryNeeded = assessmentId && !isAssessmentCardVisible(assessmentId);
+    console.log("Recovery needed after HTML restore check:", recoveryNeeded);
+    
+    if (recoveryNeeded) {
+      console.log("Assessment card not found in DOM, attempting recovery via API");
+      
+      // STEP 4: Force regeneration of the assessment list via API
+      const loadingIndicator = document.createElement('div');
+      loadingIndicator.className = 'loading-indicator' + (isDarkModeActive() ? ' dark-mode' : '');
+      loadingIndicator.innerHTML = '<div class="spinner"></div><div class="loading-text">Recovering assessment...</div>';
+      document.body.appendChild(loadingIndicator);
+      
+      fetch('/api/my_semester_assessments')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            console.log("Successfully fetched assessments for recovery");
+            
+            // Make sure the assessment we're looking for is in the list
+            const foundAssessment = data.assessments.find(a => a.id == assessmentId);
+            
+            if (foundAssessment) {
+              console.log("Found assessment in API response:", foundAssessment);
+              
+              // Generate just the missing card manually if needed
+              if (!isAssessmentCardVisible(assessmentId)) {
+                manuallyAddAssessmentCard(foundAssessment);
+              }
+            } else {
+              console.warn("Assessment not found in API response, using fallback");
+              createFallbackAssessmentCard(assessmentId, courseCode, assessmentName);
+            }
+            
+            // Also update the full list in background
+            updateAssessmentList(data.assessments);
+          } else {
+            console.error("API error:", data.message);
+            createFallbackAssessmentCard(assessmentId, courseCode, assessmentName);
+          }
+        })
+        .catch(error => {
+          console.error("Error refreshing assessments:", error);
+          createFallbackAssessmentCard(assessmentId, courseCode, assessmentName);
+        })
+        .finally(() => {
+          // Remove loading indicator
+          if (loadingIndicator.parentNode) {
+            loadingIndicator.parentNode.removeChild(loadingIndicator);
+          }
+          
+          // Make sure we apply filters after recovery
+          setTimeout(applyFilters, 300);
+          
+          // Ensure any restored card is visible
+          if (assessmentId) {
+            const restoredCard = document.querySelector(`.draggable-assessment[data-assessment-id="${assessmentId}"]`);
+            if (restoredCard) {
+              restoredCard.style.display = 'block';
+              // Scroll to the card
+              restoredCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+          }
+        });
+    } else {
+      console.log("Assessment card already visible, no API recovery needed");
+      // Make sure the card is visible
+      if (assessmentId) {
+        const visibleCard = document.querySelector(`.draggable-assessment[data-assessment-id="${assessmentId}"]`);
+        if (visibleCard) {
+          visibleCard.style.display = 'block';
+          // Highlight the card
+          visibleCard.classList.add('recovered');
+        }
+      }
+    }
+    
+    // STEP 5: Show cancel feedback briefly
+    const cancelIndicator = document.createElement('div');
+    cancelIndicator.className = 'schedule-feedback cancel';
+    cancelIndicator.innerHTML = '<i class="fas fa-times-circle"></i> Scheduling cancelled';
+    document.body.appendChild(cancelIndicator);
+    
+    setTimeout(() => {
+      if (cancelIndicator.parentNode) {
+        cancelIndicator.parentNode.removeChild(cancelIndicator);
+      }
+    }, 3000);
+    
+    // STEP 6: Reset all pending state
     pendingScheduleData = null;
     pendingEvent = null;
+    window._lastDraggedAssessment = null;
+    
+    console.log("=== CANCEL SCHEDULE EVENT COMPLETED ===");
   }
-
-  function commitScheduleEvent() {
-    if (!pendingScheduleData) {
-      console.error('No pending schedule data to commit');
+  
+  // Helper function to check if an assessment card is visible in the DOM
+  function isAssessmentCardVisible(assessmentId) {
+    const card = document.querySelector(`.draggable-assessment[data-assessment-id="${assessmentId}"]`);
+    return card !== null && getComputedStyle(card).display !== 'none';
+  }
+  
+  // Helper function to create a fallback assessment card when API fails
+  function createFallbackAssessmentCard(assessmentId, courseCode, assessmentName) {
+    if (!assessmentId) return;
+    
+    console.log("Creating fallback assessment card:", assessmentId, courseCode, assessmentName);
+    
+    // Default values if information is missing
+    courseCode = courseCode || 'UNKNOWN';
+    assessmentName = assessmentName || 'Assessment';
+    
+    const unscheduledList = document.getElementById('unscheduled-list');
+    if (!unscheduledList) return;
+    
+    // Check if card already exists
+    if (isAssessmentCardVisible(assessmentId)) {
+      console.log("Card already exists, not creating fallback");
       return;
     }
     
-    // Add visual feedback during API call
-    if (pendingEvent && pendingEvent.setProp) {
-      pendingEvent.setProp('classNames', ['processing-drop']);
+    // Create a new card element
+    const assessmentEl = document.createElement('div');
+    assessmentEl.className = 'draggable-assessment status-unscheduled can-drag recovered';
+    assessmentEl.dataset.assessmentId = assessmentId;
+    assessmentEl.dataset.courseCode = courseCode;
+    assessmentEl.dataset.name = assessmentName;
+    assessmentEl.dataset.scheduled = 'false';
+    
+    assessmentEl.innerHTML = `
+      <span class="assessment-name">${courseCode}-${assessmentName}</span>
+      <div class="assessment-details">
+        <div class="badge-container">
+          <span class="status-badge unscheduled">Unscheduled</span>
+          <span class="badge recovered">Recovered</span>
+        </div>
+      </div>
+    `;
+    
+    // Add after heading but before instructions
+    const heading = unscheduledList.querySelector('h3');
+    if (heading && heading.nextSibling) {
+      unscheduledList.insertBefore(assessmentEl, heading.nextSibling);
+    } else {
+      unscheduledList.appendChild(assessmentEl);
     }
     
-    // Send as JSON to our API endpoint
-    fetch('/schedule_assessment_api', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(pendingScheduleData)
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // Show success icon on the event
-        if (pendingEvent && pendingEvent.setProp) {
-          pendingEvent.setProp('classNames', ['scheduled-success']);
-        }
-        
-        // Create success message that matches Flask flash messages
-        const successMessage = document.createElement('div');
-        successMessage.className = 'alert alert-success';
-        successMessage.style.position = 'fixed';
-        successMessage.style.top = '80px';
-        successMessage.style.left = '50%';
-        successMessage.style.transform = 'translateX(-50%)';
-        successMessage.style.padding = '12px 20px';
-        successMessage.style.borderRadius = '4px';
-        successMessage.style.boxShadow = '0 4px 10px rgba(0,0,0,0.2)';
-        successMessage.style.backgroundColor = '#4cd964';
-        successMessage.style.color = 'white';
-        successMessage.style.zIndex = '9999';
-        successMessage.style.minWidth = '300px';
-        successMessage.style.textAlign = 'center';
-        successMessage.innerHTML = data.message || 'Assessment scheduled successfully';
-        
-        document.body.appendChild(successMessage);
-        
-        // Reset pending data
-        pendingScheduleData = null;
-        pendingEvent = null;
-        
-        // Refresh page after message is shown
-        setTimeout(() => {
-          successMessage.style.opacity = '0';
-          successMessage.style.transition = 'opacity 0.3s ease';
-          
-          setTimeout(() => {
-            window.location.reload();
-          }, 300);
-        }, 2000);
-      } else {
-        // Show error state and message
-        if (pendingEvent && pendingEvent.setProp) {
-          pendingEvent.setProp('classNames', ['scheduling-error']);
-        }
-        
-        const errorMessage = document.createElement('div');
-        errorMessage.className = 'alert alert-danger';
-        errorMessage.style.position = 'fixed';
-        errorMessage.style.top = '80px';
-        errorMessage.style.left = '50%';
-        errorMessage.style.transform = 'translateX(-50%)';
-        errorMessage.style.padding = '12px 20px';
-        errorMessage.style.borderRadius = '4px';
-        errorMessage.style.boxShadow = '0 4px 10px rgba(0,0,0,0.2)';
-        errorMessage.style.backgroundColor = '#ff3b30';
-        errorMessage.style.color = 'white';
-        errorMessage.style.zIndex = '9999';
-        errorMessage.style.minWidth = '300px';
-        errorMessage.style.textAlign = 'center';
-        errorMessage.innerHTML = data.error || 'Error scheduling assessment';
-        
-        document.body.appendChild(errorMessage);
-        
-        // Reset pending data
-        pendingScheduleData = null;
-        pendingEvent = null;
-        
-        // Refresh after showing error
-        setTimeout(() => {
-          errorMessage.style.opacity = '0';
-          errorMessage.style.transition = 'opacity 0.3s ease';
-          
-          setTimeout(() => {
-            window.location.reload();
-          }, 300);
-        }, 2000);
+    // Make it draggable
+    new FullCalendar.Draggable(assessmentEl, {
+      eventData: function() {
+        return {
+          id: assessmentId,
+          title: `${courseCode}-${assessmentName}`,
+          backgroundColor: colors.Assignment,
+          textColor: '#fff',
+          extendedProps: {
+            course_code: courseCode,
+            assessmentName: assessmentName,
+            isRescheduling: false
+          }
+        };
       }
-    })
-    .catch(error => {
-      console.error('Error scheduling assessment:', error);
-      
-      // Show error state and message
-      if (pendingEvent && pendingEvent.setProp) {
-        pendingEvent.setProp('classNames', ['scheduling-error']);
+    });
+    
+    console.log("Fallback card created successfully");
+  }
+  
+  // Helper function to manually add a specific assessment card
+  function manuallyAddAssessmentCard(assessment) {
+    if (!assessment || !assessment.id) return;
+    
+    console.log("Manually adding assessment card:", assessment);
+    
+    const unscheduledList = document.getElementById('unscheduled-list');
+    if (!unscheduledList) return;
+    
+    // Check if card already exists
+    if (isAssessmentCardVisible(assessment.id)) {
+      console.log("Card already exists, not adding manually");
+      return;
+    }
+    
+    // Create assessment element
+    const isScheduled = assessment.scheduled !== null;
+    const assessmentEl = document.createElement('div');
+    assessmentEl.className = `draggable-assessment ${assessment.proctored ? 'proctored' : ''} ${isScheduled ? 'scheduled' : 'status-unscheduled'} can-drag recovered`;
+    assessmentEl.dataset.assessmentId = assessment.id;
+    assessmentEl.dataset.courseCode = assessment.course_code;
+    assessmentEl.dataset.percentage = assessment.percentage || '';
+    assessmentEl.dataset.proctored = assessment.proctored || false;
+    assessmentEl.dataset.scheduled = isScheduled ? assessment.scheduled : 'false';
+    assessmentEl.dataset.name = assessment.name;
+    
+    assessmentEl.innerHTML = `
+      <span class="assessment-name">${assessment.course_code}-${assessment.name}</span>
+      <div class="assessment-details">
+        Weight: ${assessment.percentage || ''}%
+        <div class="badge-container">
+          ${isScheduled ? '<span class="status-badge scheduled">Scheduled</span>' : '<span class="status-badge unscheduled">Unscheduled</span>'}
+          ${assessment.proctored ? '<span class="badge proctored">Proctored</span>' : ''}
+          <span class="badge recovered">Recovered</span>
+        </div>
+        ${isScheduled ? `<div>Date: ${assessment.scheduled}</div>` : ''}
+      </div>
+    `;
+    
+    // Add after heading but before instructions
+    const heading = unscheduledList.querySelector('h3');
+    if (heading && heading.nextSibling) {
+      unscheduledList.insertBefore(assessmentEl, heading.nextSibling);
+    } else {
+      unscheduledList.appendChild(assessmentEl);
+    }
+    
+    // Make it draggable
+    new FullCalendar.Draggable(assessmentEl, {
+      eventData: function() {
+        return {
+          id: assessment.id,
+          title: `${assessment.course_code}-${assessment.name} (${assessment.percentage || ''}%)`,
+          backgroundColor: assessment.proctored ? colors.Proctored : colors.Assignment,
+          textColor: '#fff',
+          extendedProps: {
+            course_code: assessment.course_code,
+            percentage: assessment.percentage,
+            proctored: assessment.proctored,
+            isRescheduling: isScheduled,
+            assessmentName: assessment.name
+          }
+        };
       }
+    });
+    
+    console.log("Card manually added successfully");
+  }
+
+  function commitScheduleEvent() {
+    if (pendingScheduleData) {
+      const successIndicator = document.createElement('div');
+      successIndicator.className = 'schedule-feedback success';
+      successIndicator.innerHTML = '<i class="fas fa-check-circle"></i> Scheduling...';
+      document.body.appendChild(successIndicator);
       
-      const errorMessage = document.createElement('div');
-      errorMessage.className = 'alert alert-danger';
-      errorMessage.style.position = 'fixed';
-      errorMessage.style.top = '80px';
-      errorMessage.style.left = '50%';
-      errorMessage.style.transform = 'translateX(-50%)';
-      errorMessage.style.padding = '12px 20px';
-      errorMessage.style.borderRadius = '4px';
-      errorMessage.style.boxShadow = '0 4px 10px rgba(0,0,0,0.2)';
-      errorMessage.style.backgroundColor = '#ff3b30';
-      errorMessage.style.color = 'white';
-      errorMessage.style.zIndex = '9999';
-      errorMessage.style.minWidth = '300px';
-      errorMessage.style.textAlign = 'center';
-      errorMessage.innerHTML = 'An error occurred while scheduling the assessment';
-      
-      document.body.appendChild(errorMessage);
+      fetch('/schedule_assessment_api', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pendingScheduleData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Update the indicator to show success
+          successIndicator.innerHTML = '<i class="fas fa-check-circle"></i> Scheduled successfully';
+          successIndicator.className = 'schedule-feedback success';
+          
+          // Refresh calendar on success
+          calendar.refetchEvents();
+          
+          // Update the assessment count in the header
+          updateAssessmentCountDisplay(data.scheduled_count || 0, data.unscheduled_count || 0);
+          
+          // Remove the feedback after delay
+          setTimeout(() => {
+            if (successIndicator.parentNode) {
+              successIndicator.parentNode.removeChild(successIndicator);
+            }
+          }, 3000);
+        } else {
+          // Update the indicator to show error
+          successIndicator.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + (data.message || 'Error scheduling');
+          successIndicator.className = 'schedule-feedback error';
+          
+          // Remove the feedback after delay
+          setTimeout(() => {
+            if (successIndicator.parentNode) {
+              successIndicator.parentNode.removeChild(successIndicator);
+            }
+          }, 3000);
+          
+          // Refresh UI to restore previous state
+          cancelScheduleEvent();
+        }
+      })
+      .catch(error => {
+        console.error('Error scheduling assessment:', error);
+        
+        // Update the indicator to show error
+        successIndicator.innerHTML = '<i class="fas fa-exclamation-circle"></i> Network error';
+        successIndicator.className = 'schedule-feedback error';
+        
+        // Remove the feedback after delay
+        setTimeout(() => {
+          if (successIndicator.parentNode) {
+            successIndicator.parentNode.removeChild(successIndicator);
+          }
+        }, 3000);
+        
+        // Refresh UI to restore previous state
+        cancelScheduleEvent();
+      });
       
       // Reset pending data
       pendingScheduleData = null;
       pendingEvent = null;
-      
-      // Refresh after showing error
-      setTimeout(() => {
-        errorMessage.style.opacity = '0';
-        errorMessage.style.transition = 'opacity 0.3s ease';
-        
-        setTimeout(() => {
-          window.location.reload();
-        }, 300);
-      }, 2000);
-    });
+    }
   }
 
   function unscheduleEvent(eventId) {
@@ -1695,4 +1931,318 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
   });
+
+  // Initialize external events
+  document.addEventListener('DOMContentLoaded', function() {
+    // Style setup for feedback indicators
+    const style = document.createElement('style');
+    style.textContent = `
+      .schedule-feedback {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px 20px;
+        color: white;
+        border-radius: 4px;
+        z-index: 9999;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        animation: fadeInOut 3s ease forwards;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .schedule-feedback.success {
+        background-color: #4cd964;
+      }
+      
+      .schedule-feedback.cancel {
+        background-color: #ff9500;
+      }
+      
+      .schedule-feedback.error {
+        background-color: #ff3b30;
+      }
+      
+      @keyframes fadeInOut {
+        0% { opacity: 0; }
+        10% { opacity: 1; }
+        80% { opacity: 1; }
+        100% { opacity: 0; }
+      }
+      
+      .loading-indicator {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+      }
+      
+      .loading-indicator.dark-mode {
+        background-color: rgba(33, 33, 33, 0.9);
+        color: #fff;
+      }
+      
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #5e72e4;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      .dark-mode .spinner {
+        border: 4px solid #333;
+        border-top: 4px solid #5e72e4;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .loading-text {
+        font-size: 14px;
+        font-weight: 500;
+      }
+      
+      .badge.recovered {
+        background-color: #f5a623;
+        color: white;
+        animation: pulse 2s infinite;
+      }
+      
+      @keyframes pulse {
+        0% { opacity: 0.6; }
+        50% { opacity: 1; }
+        100% { opacity: 0.6; }
+      }
+      
+      .draggable-assessment.recovered {
+        animation: highlightCard 2s ease-in-out;
+        box-shadow: 0 0 10px rgba(245, 166, 35, 0.7);
+      }
+      
+      @keyframes highlightCard {
+        0% { background-color: rgba(245, 166, 35, 0.3); }
+        100% { background-color: transparent; }
+      }
+      
+      /* Enhanced recovery visual */
+      .draggable-assessment.recovered::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border: 2px solid #f5a623;
+        border-radius: inherit;
+        animation: pulseBorder 1.5s ease-out;
+        pointer-events: none;
+      }
+      
+      @keyframes pulseBorder {
+        0% { 
+          box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.7);
+          opacity: 1;
+        }
+        70% { 
+          box-shadow: 0 0 0 10px rgba(245, 166, 35, 0);
+          opacity: 0.7;
+        }
+        100% { 
+          box-shadow: 0 0 0 0 rgba(245, 166, 35, 0);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    // Rest of initialization code
+    // ... existing code ...
+  });
+
+  // Function to refresh the assessment list
+  function refreshCurrentAssessments() {
+    console.log("Refreshing current assessments");
+    
+    // Show loading indicator
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'loading-indicator' + (isDarkModeActive() ? ' dark-mode' : '');
+    loadingIndicator.innerHTML = '<div class="spinner"></div><div class="loading-text">Refreshing...</div>';
+    document.body.appendChild(loadingIndicator);
+    
+    // Fetch updated assessments for the current user and semester
+    fetch('/api/my_semester_assessments')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          // Refresh the calendar
+          calendar.refetchEvents();
+          
+          // Update the unscheduled assessment list
+          updateAssessmentList(data.assessments);
+          console.log("Successfully refreshed assessments", data.assessments);
+        } else {
+          console.error("Failed to refresh assessments:", data.message);
+          // Fallback to rebuilding the list from current DOM state
+          rebuildAssessmentListFromCurrentState();
+        }
+      })
+      .catch(error => {
+        console.error("Error refreshing assessments:", error);
+        // Fallback to rebuilding the list from current DOM state
+        rebuildAssessmentListFromCurrentState();
+      })
+      .finally(() => {
+        // Always apply filters after refresh
+        setTimeout(applyFilters, 200);
+        
+        // Remove loading indicator
+        if (loadingIndicator.parentNode) {
+          loadingIndicator.parentNode.removeChild(loadingIndicator);
+        }
+      });
+  }
+  
+  // Function to rebuild assessment list from current DOM state when API fails
+  function rebuildAssessmentListFromCurrentState() {
+    console.log("Using fallback to rebuild assessment list");
+    const unscheduledList = document.getElementById('unscheduled-list');
+    
+    // If we have any scheduled items in the calendar that aren't in the unscheduled list,
+    // make sure they're added back to the list
+    const calendarEvents = calendar.getEvents();
+    const existingItems = Array.from(unscheduledList.querySelectorAll('.draggable-assessment'))
+      .map(el => el.dataset.assessmentId);
+    
+    // Force the calendar to render all events
+    calendar.render();
+    
+    // Make all existing assessment elements draggable again
+    new FullCalendar.Draggable(unscheduledList, {
+      itemSelector: ".draggable-assessment.can-drag",
+      eventData: function(eventEl) {
+        return {
+          id: eventEl.dataset.assessmentId,
+          title: `${eventEl.dataset.courseCode}-${eventEl.dataset.name || eventEl.children[0].innerText.split('-')[1]} (${eventEl.dataset.percentage}%)`,
+          backgroundColor: eventEl.dataset.proctored === "1" || eventEl.dataset.proctored === "True" || eventEl.dataset.proctored === "true" ? colors.Proctored : colors.Assignment,
+          textColor: '#fff',
+          extendedProps: {
+            course_code: eventEl.dataset.courseCode,
+            percentage: eventEl.dataset.percentage,
+            proctored: eventEl.dataset.proctored === "1" || eventEl.dataset.proctored === "True" || eventEl.dataset.proctored === "true",
+            isRescheduling: eventEl.classList.contains('scheduled'),
+            assessmentName: eventEl.dataset.name
+          }
+        };
+      },
+      mirrorSelector: ".draggable-assessment",
+      dragRevertDuration: 0,
+      droppableScope: 'assessment',
+      dragClass: 'is-dragging',
+      mirrorClass: 'assessment-mirror'
+    });
+    
+    // Make all items visible by default, filtering will be applied later
+    Array.from(unscheduledList.querySelectorAll('.draggable-assessment')).forEach(el => {
+      el.style.display = 'block';
+    });
+  }
+  
+  // Function to update the assessment list with new data
+  function updateAssessmentList(assessments) {
+    const unscheduledList = document.getElementById('unscheduled-list');
+    if (!unscheduledList) return;
+    
+    // Get everything except the h3, instructions and info elements
+    const listHeader = unscheduledList.querySelector('h3');
+    const dragInstructions = unscheduledList.querySelector('.drag-instructions');
+    const dateRangeInfo = unscheduledList.querySelector('.date-range-info');
+    
+    // Clear existing assessments
+    unscheduledList.innerHTML = '';
+    
+    // Add back the header
+    if (listHeader) unscheduledList.appendChild(listHeader);
+    
+    // Add assessments
+    if (assessments && assessments.length > 0) {
+      for (const assessment of assessments) {
+        const isScheduled = assessment.scheduled !== null;
+        
+        const assessmentEl = document.createElement('div');
+        assessmentEl.className = `draggable-assessment ${assessment.proctored ? 'proctored' : ''} ${isScheduled ? 'scheduled' : 'status-unscheduled'} can-drag`;
+        assessmentEl.dataset.assessmentId = assessment.id;
+        assessmentEl.dataset.courseCode = assessment.course_code;
+        assessmentEl.dataset.percentage = assessment.percentage;
+        assessmentEl.dataset.proctored = assessment.proctored;
+        assessmentEl.dataset.scheduled = isScheduled ? assessment.scheduled : 'false';
+        assessmentEl.dataset.name = assessment.name;
+        
+        assessmentEl.innerHTML = `
+          <span class="assessment-name">${assessment.course_code}-${assessment.name}</span>
+          <div class="assessment-details">
+            Weight: ${assessment.percentage}%
+            <div class="badge-container">
+              ${isScheduled ? '<span class="status-badge scheduled">Scheduled</span>' : '<span class="status-badge unscheduled">Unscheduled</span>'}
+              ${assessment.proctored ? '<span class="badge proctored">Proctored</span>' : ''}
+            </div>
+            ${isScheduled ? `<div>Date: ${assessment.scheduled}</div>` : ''}
+          </div>
+        `;
+        
+        unscheduledList.appendChild(assessmentEl);
+      }
+    } else {
+      const noAssessmentsMsg = document.createElement('p');
+      noAssessmentsMsg.textContent = 'No assessments found for your courses in the active semester.';
+      unscheduledList.appendChild(noAssessmentsMsg);
+    }
+    
+    // Add back the instructions and info
+    if (dragInstructions) unscheduledList.appendChild(dragInstructions);
+    if (dateRangeInfo) unscheduledList.appendChild(dateRangeInfo);
+    
+    // Reinitialize draggable functionality
+    new FullCalendar.Draggable(unscheduledList, {
+      itemSelector: ".draggable-assessment.can-drag",
+      eventData: function(eventEl) {
+        console.log("Dragging assessment:", eventEl.dataset);
+        return {
+          id: eventEl.dataset.assessmentId,
+          title: `${eventEl.dataset.courseCode}-${eventEl.dataset.name || eventEl.children[0].innerText.split('-')[1]} (${eventEl.dataset.percentage}%)`,
+          backgroundColor: eventEl.dataset.proctored === "1" || eventEl.dataset.proctored === "True" || eventEl.dataset.proctored === "true" ? colors.Proctored : colors.Assignment,
+          textColor: '#fff',
+          extendedProps: {
+            course_code: eventEl.dataset.courseCode,
+            percentage: eventEl.dataset.percentage,
+            proctored: eventEl.dataset.proctored === "1" || eventEl.dataset.proctored === "True" || eventEl.dataset.proctored === "true",
+            isRescheduling: eventEl.classList.contains('scheduled'),
+            assessmentName: eventEl.dataset.name
+          }
+        };
+      }
+    });
+    
+    // Apply current filters
+    setTimeout(applyFilters, 100);
+  }
 }); 
