@@ -441,7 +441,7 @@ def get_calendar_page():
                     filtered_courses.append(course)
             print(f"Filtered courses for active semester: {semester_course_codes}")
             print(f"Original courses: {[c['code'] for c in courses]}")
-            print(f"Filtered courses: {[c['code'] for c in filtered_courses]}")
+            print(f"Filtered courses: {[c['code'] for c in filtered_courses]}") 
         else:
             filtered_courses = courses
             print("No active semester or semester course codes available for filtering")
