@@ -12,7 +12,7 @@ from App.controllers.kris import solve_stage1, solve_stage2
 from App.controllers.courseoverlap import get_phi_matrix
 from App.models.solvers.kris import KrisSolver
 from App.controllers.admin import create_admin_user
-from App.controllers.semester import get_all_semesters, create_test_assessments_for_semester
+from App.controllers.semester import get_all_semesters, create_test_assessments_for_semester, set_semester_solver
 from App.controllers.course import get_lecturer_assignments, get_course_lecturer_count, remove_lecturer
 from App.controllers.staff import get_staff_by_id
 from App.models.course_lecturer import CourseLecturer
@@ -28,7 +28,7 @@ def init():
 @app.cli.command("clear", help="Removes all data from the database")
 def drop():
     clear()
-    create_admin_user(101101, 'admin', 'adminpass')
+    create_admin_user(101101, 'admin@mail.com   ', 'adminpass')
     print("database cleared")
 
 
@@ -347,6 +347,44 @@ def create_semester_test_assessments(semester_id, count):
     print(f"Created {created} test assessments in total")
 
 
+@semester_cli.command("set_solver", help="Set the solver type for a semester")
+@click.argument("semester_id", type=int)
+@click.argument("solver_type", type=click.Choice(['kris', 'prof']))
+def set_semester_solver_command(semester_id, solver_type):
+    """Set the solver type for a semester"""
+    success = set_semester_solver(semester_id, solver_type)
+    if success:
+        print(f"Semester {semester_id} solver type set to {solver_type}")
+    else:
+        print(f"Failed to set solver type for semester {semester_id}")
+
+
+@semester_cli.command("run_solver", help="Run the solver for the active semester")
+def run_solver_command():
+    """Run the solver for the active semester"""
+    from App.models.semester import Semester
+    
+    semester = get_active_semester()
+    if not semester:
+        print("No active semester found")
+        return
+        
+    print(f"Running solver '{semester.solver_type}' for semester {semester.id}")
+    
+    try:
+        solver = semester.get_solver()
+        schedule = solver.solve()
+        
+        if schedule:
+            print(f"Successfully scheduled {len(schedule)} assessments")
+        else:
+            print("Failed to generate a valid schedule")
+    except Exception as e:
+        print(f"Error running solver: {str(e)}")
+        import traceback
+        traceback.print_exc()
+
+
 app.cli.add_command(semester_cli)
 
 kris_cli = AppGroup("kris", help="Kris related functionality")
@@ -459,6 +497,41 @@ def kris_solve():
 
 
 app.cli.add_command(kris_cli)
+
+prof_cli = AppGroup("prof", help="Prof solver functionality")
+
+
+@prof_cli.command("solve", help="Uses the prof model to schedule assessments")
+def prof_solve():
+    try:
+        print("\n=== Starting Prof Model Solver ===")
+        from App.models.solvers.prof import ProfSolver
+        
+        solver = ProfSolver()
+        schedule = solver.solve()
+        
+        if not schedule:
+            print("Failed to generate a valid schedule")
+            return None
+            
+        print("\n=== Prof Model Solution ===")
+        print(f"Total assessments scheduled: {len(schedule)}")
+        
+        print("\nDetailed schedule:")
+        for entry in schedule:
+            k, week, day, course, assessment = entry
+            print(f"  Week {week}, Day {day}: {course}-{assessment}")
+        
+        return schedule
+        
+    except Exception as e:
+        print(f"Error in Prof model: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+
+app.cli.add_command(prof_cli)
 
 admin_cli = AppGroup("admin", help="Admin related functionality")
 

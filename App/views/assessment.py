@@ -21,7 +21,8 @@ from ..controllers import (
     get_all_assessments,
     staff_required,
     unschedule_assessment_only,
-    reset_all_assessment_constraints
+    reset_all_assessment_constraints,
+    get_semester_lecturer_assessments
 )
 from ..controllers.assessment_clash import evaluate_assessment_date
 import time
@@ -334,7 +335,10 @@ def get_calendar_page():
         
         # Get all assessments and process
         all_assessments = get_all_assessments() or []
-        user_assessments = get_assessments_by_lecturer(staff.email) or []
+        
+        # Get assessments for the lecturer that are in the active semester
+        # This will be used for the list on the right side
+        semester_lecturer_assessments = get_semester_lecturer_assessments(staff.email) or []
         
         # Initialize with empty lists to avoid None issues
         staff_exams = []
@@ -377,7 +381,8 @@ def get_calendar_page():
         if active_semester:
             semester_course_codes = [assignment.course_code for assignment in active_semester.course_assignments]
 
-        for assessment in user_assessments:
+        # Process the semester-filtered lecturer assessments for the right sidebar
+        for assessment in semester_lecturer_assessments:
             try:
                 assessment_dict = {
                     "id": assessment.id,
@@ -402,16 +407,14 @@ def get_calendar_page():
                             "T"
                         )[0]
 
-                staff_exams.append(assessment_dict)
-                
                 # Add to my_assessments list regardless of scheduling status
                 my_assessments.append(assessment_dict)
 
-                # Only show unscheduled assessments for courses in the active semester
-                if not assessment.scheduled and assessment.course_code in semester_course_codes:
+                # Only add to unscheduled_assessments if not scheduled
+                if not assessment.scheduled:
                     unscheduled_assessments.append(assessment_dict)
             except Exception as e:
-                print(f"Error processing user assessment {assessment.id}: {str(e)}")
+                print(f"Error processing semester lecturer assessment {assessment.id}: {str(e)}")
 
         staff_course_objects = get_staff_courses(email) or []
         staff_courses = []
@@ -428,14 +431,27 @@ def get_calendar_page():
                 print(f"Error processing course {course.code}: {str(e)}")
 
         courses = staff_courses
-        other_exams = staff_exams
+        other_exams = []  # We don't need this anymore since we're using my_assessments
+        
+        # Filter courses to only include those from the active semester
+        filtered_courses = []
+        if active_semester and semester_course_codes:
+            for course in courses:
+                if course['code'] in semester_course_codes:
+                    filtered_courses.append(course)
+            print(f"Filtered courses for active semester: {semester_course_codes}")
+            print(f"Original courses: {[c['code'] for c in courses]}")
+            print(f"Filtered courses: {[c['code'] for c in filtered_courses]}") 
+        else:
+            filtered_courses = courses
+            print("No active semester or semester course codes available for filtering")
 
         return render_template(
             "calendar.html",
             staff_exams=staff_exams,
             other_exams=other_exams,
             staff_courses=staff_courses,
-            courses=courses,
+            courses=filtered_courses,
             semester=semester,
             scheduled_assessments=scheduled_assessments,
             unscheduled_assessments=unscheduled_assessments,
@@ -678,6 +694,69 @@ def unschedule_all_assessments():
     except Exception as e:
         flash(f"An error occurred: {str(e)}", "error")
         return redirect(url_for("assessment_views.get_calendar_page"))
+
+
+@assessment_views.route("/api/my_semester_assessments", methods=["GET"])
+@staff_required
+def get_my_semester_assessments():
+    # API endpoint to get assessments for the current lecturer in the active semester
+    try:
+        email = get_jwt_identity()
+        staff = get_staff_by_email(email)
+        
+        # Get active semester 
+        active_semester = get_active_semester()
+        if not active_semester:
+            return jsonify({
+                "success": False,
+                "error": "No active semester found"
+            })
+            
+        # Get assessments filtered by semester and lecturer
+        assessments = get_semester_lecturer_assessments(staff.email)
+        
+        # Transform to dictionary format
+        assessment_dicts = []
+        for assessment in assessments:
+            try:
+                scheduled_date = None
+                if assessment.scheduled:
+                    scheduled_date = assessment.scheduled.isoformat()
+                    if "T" in scheduled_date:
+                        scheduled_date = scheduled_date.split("T")[0]
+                
+                assessment_dict = {
+                    "id": assessment.id,
+                    "name": assessment.name,
+                    "course_code": assessment.course_code,
+                    "percentage": assessment.percentage,
+                    "start_week": assessment.start_week,
+                    "start_day": assessment.start_day,
+                    "end_week": assessment.end_week,
+                    "end_day": assessment.end_day,
+                    "proctored": assessment.proctored,
+                    "scheduled": scheduled_date
+                }
+                assessment_dicts.append(assessment_dict)
+            except Exception as e:
+                print(f"Error processing assessment {assessment.id}: {str(e)}")
+        
+        return jsonify({
+            "success": True,
+            "assessments": assessment_dicts,
+            "semester": {
+                "id": active_semester.id,
+                "sem_num": active_semester.sem_num,
+                "start_date": active_semester.start_date.isoformat(),
+                "end_date": active_semester.end_date.isoformat()
+            }
+        })
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
 
 
 @assessment_views.route("/schedule_assessment", methods=["POST"])

@@ -22,7 +22,8 @@ from ..controllers import (
     create_semester,
     set_active,
     parse_date,
-    update_semester
+    update_semester,
+    get_active_semester
 )
 from ..controllers.auth import admin_required
 from ..controllers.admin import create_admin_user, get_admin_by_id, update_admin, delete_admin
@@ -60,7 +61,15 @@ def admin_dashboard():
             'scheduled': 0
         }
     
-    return render_template('admin_dashboard.html', stats=stats)
+    # Get the active semester for scheduling controls
+    try:
+        from ..controllers.semester import get_active_semester
+        active_semester = get_active_semester()
+    except Exception as e:
+        print(f"Error getting active semester: {str(e)}")
+        active_semester = None
+    
+    return render_template('admin_dashboard.html', stats=stats, active_semester=active_semester)
 
 @admin_views.route('/semester', methods=['GET'])
 @admin_required

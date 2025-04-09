@@ -17,6 +17,7 @@ from ...controllers import (
     get_timetable_from_db,
 )
 from ...controllers.course_timetable import get_timetable_entries, convert_to_timetable_format
+from ...controllers.courseoverlap import get_course_matrix, verify_matrix_consistency
 
 
 class KrisSolver(Solver):
@@ -81,31 +82,21 @@ class KrisSolver(Solver):
         return course_assessment_list
 
     def compile_class_matrix(self) -> List[List[int]]:
-        semester = get_active_semester()
-        if not semester:
-            print("No active semester found")
-            return []
         
-        valid_courses = [course for course in semester.courses if course is not None]
+        # Compiles the course overlap matrix.
+        # First compile the course data if not already available
+        if not hasattr(self, 'courses') or not self.courses:
+            self.courses = self.compile_course_data()
         
-        def has_unscheduled_assessments(course):
-            assessments_dict = get_assessment_dictionary_by_course(course.code)
-            if not assessments_dict or 'assessments' not in assessments_dict:
-                return False
-            
-            assessment_list = assessments_dict.get('assessments', [])
-            return any(not a.get('scheduled') for a in assessment_list)
+        course_codes = [course['code'] for course in self.courses]
         
-        courses_with_unscheduled = [
-            course.code for course in valid_courses 
-            if has_unscheduled_assessments(course)
-        ]
+        # Get the matrix with debugging output
+        matrix = get_course_matrix(course_codes, debug=True)
         
-        if not courses_with_unscheduled:
-            print("No courses with unscheduled assessments found")
-            return []
+        # Verify consistency with the database
+        matrix = verify_matrix_consistency(matrix, course_codes, debug=True)
         
-        return get_course_matrix(courses_with_unscheduled)
+        return matrix
 
     def schedule_assessments(self, schedule: List[Tuple]) -> bool:
         """Schedule the assessments according to the generated schedule."""

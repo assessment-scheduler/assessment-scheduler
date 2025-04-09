@@ -363,6 +363,55 @@
     gap: 10px;
     margin-top: 2rem;
   }
+  
+  .action-btn {
+    display: inline-block;
+    padding: 8px 15px;
+    margin: 5px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  .action-btn:hover {
+    transform: translateY(-2px);
+  }
+  
+  .btn-success {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+  }
+  
+  .btn-success:hover {
+    background-color: #43a047;
+  }
+  
+  .solver-actions {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--card-color);
+  }
+  
+  .solver-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .solver-badge {
+    background-color: var(--tertiary-color);
+    color: white;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
 </style>
 {% endblock %}
 
@@ -452,6 +501,18 @@
       </form>
     </div>
   </div>
+</div>
+
+<div class="solver-actions">
+  <div class="solver-heading">
+    <h3>Solver Settings</h3>
+    <span class="solver-badge">Current: {{ semester.solver_type }}</span>
+  </div>
+  <p>You can change the solver type or run the current solver to reschedule all assessments.</p>
+  <form action="/schedule" method="POST" style="display: inline;">
+    <button type="submit" class="action-btn btn-success">Run Current Solver</button>
+  </form>
+  <a href="/update_semester/{{ semester.id }}" class="action-btn btn-primary">Change Solver Type</a>
 </div>
 
 <script>

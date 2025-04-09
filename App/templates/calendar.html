@@ -10,6 +10,30 @@
     color: var(--text-color);
   }
   
+  .info-box {
+    background-color: var(--secondary-color);
+    border-left: 4px solid var(--tertiary-color);
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .info-box i {
+    color: var(--tertiary-color);
+    margin-right: 10px;
+    font-size: 24px;
+  }
+  
+  .info-box p {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  
   #unscheduled-list {
     padding: 10px;
     background: var(--card-color);
@@ -2148,6 +2172,13 @@
 
 {% block content %}
 <div id="container">
+  {% if semester %}
+  <div class="info-box">
+    <i class="material-icons">info</i>
+    <p>This calendar displays all scheduled assessments. The sidebar on the right shows only assessments for <strong>your courses</strong> in the <strong>active semester</strong> ({{ semester.sem_num }}).</p>
+  </div>
+  {% endif %}
+  
   <div id="filters">
     <select id="level">
       <option value="0" class="list-item">Filter by Level</option>
@@ -2175,7 +2206,7 @@
     <div id="calendar"></div>
     <div id="nav">
       <div id="unscheduled-list">
-        <h3>My Assessments</h3>
+        <h3>My Semester Assessments</h3>
         {% if my_assessments %}
           {% for assessment in my_assessments %}
             <div class="draggable-assessment {% if assessment.proctored %}proctored{% endif %} {% if assessment.scheduled %}scheduled can-drag{% else %}status-unscheduled can-drag{% endif %}" 
@@ -2203,7 +2234,7 @@
             </div>
           {% endfor %}
         {% else %}
-          <p>No assessments found.</p>
+          <p>No assessments found for your courses in the active semester.</p>
         {% endif %}
         
         <div class="drag-instructions">

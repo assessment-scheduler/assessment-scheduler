@@ -14,7 +14,7 @@ def initialize() -> None:
     db.drop_all()
     db.create_all()
 
-    create_admin_user(101101, 'admin', 'adminpass')
+    create_admin_user(101101, 'admin@mail.com', 'adminpass')
 
     with open('App/uploads/staff.csv') as staff_file:
          reader = csv.DictReader(staff_file)
