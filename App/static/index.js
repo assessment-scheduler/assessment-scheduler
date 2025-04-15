@@ -1160,10 +1160,8 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById('clash-modal').classList.add('hidden');
       document.getElementById('clash-modal-overlay').style.display = 'none';
       
-      // Ensure we properly cancel the operation and restore the card
-      setTimeout(() => {
-        cancelScheduleEvent();
-      }, 50);
+      // Refresh the page when cancel is clicked
+      window.location.reload();
       return false;
     });
     
@@ -1176,10 +1174,8 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById('clash-modal').classList.add('hidden');
       document.getElementById('clash-modal-overlay').style.display = 'none';
       
-      // Ensure we properly cancel the operation and restore the card
-      setTimeout(() => {
-        cancelScheduleEvent();
-      }, 50);
+      // Refresh the page when close button is clicked
+      window.location.reload();
       return false;
     });
     
@@ -1191,10 +1187,8 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById('clash-modal').classList.add('hidden');
       document.getElementById('clash-modal-overlay').style.display = 'none';
       
-      // Ensure we properly cancel the operation and restore the card
-      setTimeout(() => {
-        cancelScheduleEvent();
-      }, 50);
+      // Refresh the page when overlay is clicked
+      window.location.reload();
       return false;
     };
   }
@@ -1203,17 +1197,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById('clash-modal');
     const overlay = document.getElementById('clash-modal-overlay');
     
-    console.log("Closing clash modal, will cancel schedule event");
+    console.log("Closing clash modal, will refresh the page");
     
     // Hide the modal first
     modal.classList.add('hidden');
     overlay.style.display = 'none';
     
-    // Make sure we also cancel the scheduling operation with a proper delay
-    // to ensure the modal is fully closed first
-    setTimeout(() => {
-      cancelScheduleEvent();
-    }, 200);
+    // Refresh the page instead of cancelling the event
+    window.location.reload();
   }
 
   function cancelScheduleEvent() {
@@ -1583,18 +1574,12 @@ document.addEventListener("DOMContentLoaded", function () {
           successIndicator.innerHTML = '<i class="fas fa-check-circle"></i> Scheduled successfully';
           successIndicator.className = 'schedule-feedback success';
           
-          // Refresh calendar on success
-          calendar.refetchEvents();
+          // Reset pending data
+          pendingScheduleData = null;
+          pendingEvent = null;
           
-          // Update the assessment count in the header
-          updateAssessmentCountDisplay(data.scheduled_count || 0, data.unscheduled_count || 0);
-          
-          // Remove the feedback after delay
-          setTimeout(() => {
-            if (successIndicator.parentNode) {
-              successIndicator.parentNode.removeChild(successIndicator);
-            }
-          }, 3000);
+          // Redirect with success parameter to refresh page and show flash message
+          window.location.href = window.location.pathname + '?scheduled=success';
         } else {
           // Update the indicator to show error
           successIndicator.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + (data.message || 'Error scheduling');
@@ -1628,10 +1613,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // Refresh UI to restore previous state
         cancelScheduleEvent();
       });
-      
-      // Reset pending data
-      pendingScheduleData = null;
-      pendingEvent = null;
     }
   }
 

@@ -320,17 +320,19 @@ def get_schedule_assessment_page(id):
 @staff_required
 def get_calendar_page():
     try:
+        if request.args.get('scheduled') == 'success':
+            flash("Assessment scheduled successfully", "success")
+        elif request.args.get('cancelled') == 'true':
+            flash("Cancelled schedule operation", "info")
+            
         email = get_jwt_identity()
         staff = get_staff_by_email(email)
         
-        # Get active semester first - if none exists, return early with clear message
         active_semester = get_active_semester()
         if not active_semester:
             flash("No active semester found. Please contact an administrator.", "warning")
-            # Return a simplified version of the template with just the error
             return render_template("calendar.html", semester=None, error="no_semester")
             
-        # Process semester data
         semester = {
             "id": active_semester.id,
             "start_date": active_semester.start_date.isoformat().split("T")[0],
@@ -341,20 +343,15 @@ def get_calendar_page():
             "active": active_semester.active,
         }
         
-        # Get all assessments and process
         all_assessments = get_all_assessments() or []
         
-        # Get assessments for the lecturer that are in the active semester
-        # This will be used for the list on the right side
         semester_lecturer_assessments = get_semester_lecturer_assessments(staff.email) or []
         
-        # Initialize with empty lists to avoid None issues
         staff_exams = []
         scheduled_assessments = []
         unscheduled_assessments = []
         my_assessments = []
         
-        # Process data with better error handling
         for assessment in all_assessments:
             try:
                 assessment_dict = {
