@@ -1715,32 +1715,52 @@ document.addEventListener("DOMContentLoaded", function () {
         allAssessments.classList.remove('hidden');
         popupOverlay.classList.add('active');
         document.body.style.overflow = 'hidden'; // Prevent scrolling behind popup
+        
+        // Ensure close button is attached after popup is opened
+        attachCloseButtonHandler();
       });
     }
     
-    if (closePopupBtn) {
-      closePopupBtn.addEventListener('click', function() {
-        allAssessments.classList.add('hidden');
-        popupOverlay.classList.remove('active');
-        document.body.style.overflow = ''; // Restore scrolling
-      });
-    }
+    // Initial attachment of close button handler
+    attachCloseButtonHandler();
     
     if (popupOverlay) {
       popupOverlay.addEventListener('click', function() {
-        allAssessments.classList.add('hidden');
-        popupOverlay.classList.remove('active');
-        document.body.style.overflow = ''; // Restore scrolling
+        closeAllAssessmentsPopup();
       });
     }
     
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && !allAssessments.classList.contains('hidden')) {
-        allAssessments.classList.add('hidden');
-        popupOverlay.classList.remove('active');
-        document.body.style.overflow = ''; // Restore scrolling
+      if (e.key === 'Escape' && allAssessments && !allAssessments.classList.contains('hidden')) {
+        closeAllAssessmentsPopup();
       }
     });
+    
+    // Function to close the all assessments popup
+    function closeAllAssessmentsPopup() {
+      if (allAssessments) {
+        allAssessments.classList.add('hidden');
+        if (popupOverlay) popupOverlay.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
+      }
+    }
+    
+    // Function to ensure the close button handler is attached
+    function attachCloseButtonHandler() {
+      const closeBtn = document.getElementById('close-popup-btn');
+      if (closeBtn) {
+        // Clone and replace to remove any existing handlers
+        const newCloseBtn = closeBtn.cloneNode(true);
+        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+        
+        // Add the click handler
+        newCloseBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          closeAllAssessmentsPopup();
+        });
+      }
+    }
   });
 
   function applyBlueBackgroundClass() {

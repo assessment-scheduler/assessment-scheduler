@@ -1311,7 +1311,7 @@
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 999;
-    cursor: default;
+    cursor: pointer;
     pointer-events: auto !important;
   }
   
@@ -1347,17 +1347,29 @@
   
   /* Close button in popup header */
   #all-assessments .close-btn {
-    background: none;
+    background-color: rgba(0, 0, 0, 0.1);
     border: none;
-    font-size: 20px;
+    font-size: 32px;
     cursor: pointer;
-    color: var(--text-color);
-    opacity: 0.7;
+    color: #ff3b30;
+    opacity: 0.8;
     transition: all 0.2s ease;
+    padding: 5px 10px;
+    z-index: 1001;
+    position: relative;
+    width: 46px;
+    height: 46px;
+    line-height: 40px;
+    text-align: center;
+    border-radius: 50%;
+    margin-left: 10px;
   }
   
   #all-assessments .close-btn:hover {
     opacity: 1;
+    background-color: rgba(255, 59, 48, 0.2);
+    transform: scale(1.1);
+    color: #ff3b30;
   }
   
   /* Style for scheduled assessment cards in the popup */
@@ -2289,27 +2301,29 @@
             <div id="all-assessments" class="all-assessments hidden">
               <div class="popup-header">
                 <div class="popup-title">All Scheduled Assessments ({{ scheduled_assessments|length }})</div>
-                <button class="close-btn" id="close-popup-btn">&times;</button>
+                <button class="close-btn" id="close-popup-btn" aria-label="Close" onclick="document.getElementById('all-assessments').classList.add('hidden'); document.querySelector('.popup-overlay').classList.remove('active'); document.body.style.overflow = '';">&times;</button>
               </div>
-              {% for assessment in scheduled_assessments %}
-                <div class="assessment-item draggable-assessment {% if assessment.proctored %}proctored{% endif %}" 
-                    data-assessment-id="{{ assessment.id }}" 
-                    data-course-code="{{ assessment.course_code }}" 
-                    data-percentage="{{ assessment.percentage }}"
-                    data-proctored="{{ assessment.proctored }}"
-                    data-scheduled="{{ assessment.scheduled|default('false') }}"
-                    data-name="{{ assessment.name }}">
-                  <span class="assessment-name">{{ assessment.course_code }}-{{ assessment.name }}</span>
-                  <div class="assessment-details">
-                    Weight: {{ assessment.percentage }}%
-                    <div class="badge-container">
-                      <span class="status-badge scheduled">Scheduled</span>
-                      {% if assessment.proctored %}<span class="badge proctored">Proctored</span>{% endif %}
+              <div class="assessment-list">
+                {% for assessment in scheduled_assessments %}
+                  <div class="assessment-item draggable-assessment {% if assessment.proctored %}proctored{% endif %}" 
+                      data-assessment-id="{{ assessment.id }}" 
+                      data-course-code="{{ assessment.course_code }}" 
+                      data-percentage="{{ assessment.percentage }}"
+                      data-proctored="{{ assessment.proctored }}"
+                      data-scheduled="{{ assessment.scheduled|default('false') }}"
+                      data-name="{{ assessment.name }}">
+                    <span class="assessment-name">{{ assessment.course_code }}-{{ assessment.name }}</span>
+                    <div class="assessment-details">
+                      Weight: {{ assessment.percentage }}%
+                      <div class="badge-container">
+                        <span class="status-badge scheduled">Scheduled</span>
+                        {% if assessment.proctored %}<span class="badge proctored">Proctored</span>{% endif %}
+                      </div>
+                      <div>Date: {{ assessment.scheduled }}</div>
                     </div>
-                    <div>Date: {{ assessment.scheduled }}</div>
                   </div>
-                </div>
-              {% endfor %}
+                {% endfor %}
+              </div>
             </div>
           {% endif %}
           
@@ -2461,3 +2475,61 @@
 </div>
 
 {% endblock %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add direct event handler for the close button
+    const closeBtn = document.getElementById('close-popup-btn');
+    const popup = document.getElementById('all-assessments');
+    const overlay = document.querySelector('.popup-overlay');
+    
+    if (closeBtn && popup) {
+      closeBtn.addEventListener('click', function() {
+        popup.classList.add('hidden');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
+        console.log('Close button clicked - popup closed');
+      });
+      
+      console.log('Close button handler attached');
+    }
+    
+    // Also handle escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && popup && !popup.classList.contains('hidden')) {
+        popup.classList.add('hidden');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = '';
+        console.log('Escape key pressed - popup closed');
+      }
+    });
+    
+    // Add click handler to the overlay
+    if (overlay) {
+      overlay.addEventListener('click', function() {
+        popup.classList.add('hidden');
+        overlay.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
+        console.log('Overlay clicked - popup closed');
+      });
+    }
+    
+    // Ensure this script runs after any other scripts
+    setTimeout(function() {
+      if (closeBtn && popup) {
+        // Force attach one more time after a delay
+        const newCloseBtn = closeBtn.cloneNode(true);
+        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+        
+        newCloseBtn.addEventListener('click', function() {
+          popup.classList.add('hidden');
+          if (overlay) overlay.classList.remove('active');
+          document.body.style.overflow = '';
+          console.log('Delayed close button clicked - popup closed');
+        });
+        
+        console.log('Close button handler reattached after delay');
+      }
+    }, 1000);
+  });
+</script>
