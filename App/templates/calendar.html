@@ -1289,8 +1289,8 @@
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     padding: 20px;
     width: 90%;
     max-width: 600px;
@@ -1309,10 +1309,11 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.6);
     z-index: 999;
     cursor: pointer;
     pointer-events: auto !important;
+    backdrop-filter: blur(2px);
   }
   
   .popup-overlay.active {
@@ -1324,9 +1325,11 @@
   }
   
   /* Dark mode adjustments for popup */
-  [data-bs-theme="dark"] #all-assessments {
-    background-color: #2d3748;
-    border-color: #4a5568;
+  [data-bs-theme="dark"] #all-assessments,
+  .dark-mode #all-assessments {
+    background-color: #1e2235;
+    border-color: #3a3f5c;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
   }
   
   /* Add a title to the popup */
@@ -1334,15 +1337,20 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--border-color);
   }
   
   #all-assessments .popup-title {
-    font-size: 18px;
+    font-size: 22px;
     font-weight: bold;
-    color: var(--text-color);
+    color: #333;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .popup-title,
+  .dark-mode #all-assessments .popup-title {
+    color: #f5f5f5;
   }
   
   /* Close button in popup header */
@@ -1372,35 +1380,133 @@
     color: #ff3b30;
   }
   
-  /* Style for scheduled assessment cards in the popup */
+  [data-bs-theme="dark"] #all-assessments .close-btn,
+  .dark-mode #all-assessments .close-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ff6b6b;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .close-btn:hover,
+  .dark-mode #all-assessments .close-btn:hover {
+    background-color: rgba(255, 107, 107, 0.2);
+  }
+  
+  /* Style for assessment cards in the popup */
   #all-assessments .assessment-item, 
   #all-assessments .draggable-assessment {
-    background-color: var(--card-blue);
-    color: white;
-    border-left-color: var(--card-blue-dark);
+    background-color: #f8fafc;
+    color: #333;
+    border-left: 5px solid #4a88c7;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+    position: relative;
   }
   
-  #all-assessments .assessment-item .assessment-name,
-  #all-assessments .draggable-assessment .assessment-name,
-  #all-assessments .assessment-item .assessment-details,
-  #all-assessments .draggable-assessment .assessment-details {
-    color: white;
-  }
-  
-  #all-assessments .assessment-item:hover,
-  #all-assessments .draggable-assessment:hover {
-    background-color: var(--card-blue-dark);
-  }
-  
-  /* Proctored items in popup */
   #all-assessments .assessment-item.proctored,
   #all-assessments .draggable-assessment.proctored {
-    border-left-color: var(--card-accent);
+    border-left-color: #9C9FE2;
   }
   
-  /* Make the popup scrollbar more attractive */
+  #all-assessments .assessment-item:hover, 
+  #all-assessments .draggable-assessment:hover {
+    background-color: #edf2f7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  }
+  
+  /* Specific styling for dark mode assessment cards */
+  [data-bs-theme="dark"] #all-assessments .assessment-item,
+  [data-bs-theme="dark"] #all-assessments .draggable-assessment,
+  .dark-mode #all-assessments .assessment-item,
+  .dark-mode #all-assessments .draggable-assessment {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    border-left: 5px solid #4a88c7;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .assessment-item:hover,
+  [data-bs-theme="dark"] #all-assessments .draggable-assessment:hover,
+  .dark-mode #all-assessments .assessment-item:hover,
+  .dark-mode #all-assessments .draggable-assessment:hover {
+    background-color: #3a4a63;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+  }
+  
+  /* Assessment title styling */
+  #all-assessments .assessment-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .assessment-name,
+  .dark-mode #all-assessments .assessment-name {
+    color: #f7fafc;
+  }
+  
+  /* Assessment details styling */
+  #all-assessments .assessment-details {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.4;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .assessment-details,
+  .dark-mode #all-assessments .assessment-details {
+    color: #cbd5e0;
+  }
+  
+  /* Badge styling */
+  #all-assessments .badge-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 6px 0;
+  }
+  
+  #all-assessments .status-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  
+  #all-assessments .status-badge.scheduled {
+    background-color: #4ade80;
+    color: #064e3b;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .status-badge.scheduled,
+  .dark-mode #all-assessments .status-badge.scheduled {
+    background-color: #059669;
+    color: #ecfdf5;
+  }
+  
+  #all-assessments .badge.proctored {
+    background-color: #a78bfa;
+    color: #4c1d95;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .badge.proctored,
+  .dark-mode #all-assessments .badge.proctored {
+    background-color: #7c3aed;
+    color: #f5f3ff;
+  }
+  
+  /* Improve scrollbar styling */
   #all-assessments::-webkit-scrollbar {
-    width: 8px;
+    width: 10px;
   }
   
   #all-assessments::-webkit-scrollbar-track {
@@ -1409,23 +1515,42 @@
   }
   
   #all-assessments::-webkit-scrollbar-thumb {
-    background: var(--card-blue);
+    background: #4a88c7;
     border-radius: 10px;
+    border: 2px solid #f1f1f1;
   }
   
   #all-assessments::-webkit-scrollbar-thumb:hover {
-    background: var(--card-blue-dark);
+    background: #3a6d9e;
   }
   
   /* Dark mode scrollbar */
-  [data-bs-theme="dark"] #all-assessments::-webkit-scrollbar-track {
+  [data-bs-theme="dark"] #all-assessments::-webkit-scrollbar-track,
+  .dark-mode #all-assessments::-webkit-scrollbar-track {
     background: #2d3748;
   }
   
-  /* Ensure the count badge in the scheduled list matches our color scheme */
-  .count-badge {
-    background-color: var(--card-blue);
-    color: white;
+  [data-bs-theme="dark"] #all-assessments::-webkit-scrollbar-thumb,
+  .dark-mode #all-assessments::-webkit-scrollbar-thumb {
+    background: #4a88c7;
+    border: 2px solid #2d3748;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments::-webkit-scrollbar-thumb:hover,
+  .dark-mode #all-assessments::-webkit-scrollbar-thumb:hover {
+    background: #5e9de0;
+  }
+  
+  /* Assessment date styling */
+  #all-assessments .assessment-details div:last-child {
+    margin-top: 5px;
+    font-weight: 500;
+    color: #4a5568;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .assessment-details div:last-child,
+  .dark-mode #all-assessments .assessment-details div:last-child {
+    color: #a0aec0;
   }
   
   /* Assessment Clash Evaluation Modal */
@@ -2179,6 +2304,213 @@
     --danger-color: #fc8181;
     --danger-dark: #f56565;
   }
+  
+  /* Filter styling in popup */
+  #all-assessments .popup-filter {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .popup-filter,
+  .dark-mode #all-assessments .popup-filter {
+    border-bottom-color: #4a5568;
+  }
+  
+  #all-assessments .filter-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    transition: all 0.2s;
+    color: #2d3748;
+    background-color: #f8fafc;
+  }
+  
+  #all-assessments .filter-input:focus {
+    border-color: #4a88c7;
+    box-shadow: 0 0 0 3px rgba(74, 136, 199, 0.2);
+    outline: none;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .filter-input,
+  .dark-mode #all-assessments .filter-input {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .filter-input:focus,
+  .dark-mode #all-assessments .filter-input:focus {
+    border-color: #4a88c7;
+    box-shadow: 0 0 0 3px rgba(74, 136, 199, 0.3);
+  }
+  
+  #all-assessments .filter-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  #all-assessments .filter-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #4a5568;
+    cursor: pointer;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .filter-label,
+  .dark-mode #all-assessments .filter-label {
+    color: #a0aec0;
+  }
+  
+  #all-assessments .filter-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #4a88c7;
+  }
+  
+  #all-assessments .sort-dropdown {
+    padding: 6px 10px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    background-color: #f8fafc;
+    color: #4a5568;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  
+  #all-assessments .sort-dropdown:focus {
+    border-color: #4a88c7;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(74, 136, 199, 0.2);
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .sort-dropdown,
+  .dark-mode #all-assessments .sort-dropdown {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #a0aec0;
+  }
+  
+  /* Assessment list container */
+  #all-assessments .assessment-list {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 5px;
+  }
+  
+  #all-assessments .assessment-list::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  #all-assessments .assessment-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  #all-assessments .assessment-list::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 8px;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .assessment-list::-webkit-scrollbar-thumb,
+  .dark-mode #all-assessments .assessment-list::-webkit-scrollbar-thumb {
+    background: #4a5568;
+  }
+  
+  /* Style for assessment info cards in the popup */
+  #all-assessments .assessment-info-card {
+    background-color: #f8fafc;
+    color: #333;
+    border-left: 5px solid #4a88c7;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  #all-assessments .assessment-info-card.proctored {
+    border-left-color: #9C9FE2;
+  }
+  
+  #all-assessments .assessment-info-card:hover {
+    background-color: #edf2f7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  }
+  
+  /* Specific styling for dark mode assessment cards */
+  [data-bs-theme="dark"] #all-assessments .assessment-info-card,
+  .dark-mode #all-assessments .assessment-info-card {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    border-left: 5px solid #4a88c7;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .assessment-info-card:hover,
+  .dark-mode #all-assessments .assessment-info-card:hover {
+    background-color: #3a4a63;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+  }
+  
+  /* Assessment title styling */
+  #all-assessments .assessment-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .assessment-name,
+  .dark-mode #all-assessments .assessment-name {
+    color: #f7fafc;
+  }
+  
+  /* Assessment details styling */
+  #all-assessments .assessment-details {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.4;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .assessment-details,
+  .dark-mode #all-assessments .assessment-details {
+    color: #cbd5e0;
+  }
+  
+  /* Weight info styling */
+  #all-assessments .weight-info {
+    margin-bottom: 5px;
+  }
+  
+  /* Date info styling */
+  #all-assessments .date-info {
+    margin-top: 5px;
+    font-weight: 500;
+    color: #4a5568;
+  }
+  
+  [data-bs-theme="dark"] #all-assessments .date-info,
+  .dark-mode #all-assessments .date-info {
+    color: #a0aec0;
+  }
+  
+  /* Badge styling */
+  #all-assessments .badge-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 6px 0;
+  }
+  
 </style>
 {% endblock %}
 
@@ -2301,25 +2633,19 @@
             <div id="all-assessments" class="all-assessments hidden">
               <div class="popup-header">
                 <div class="popup-title">All Scheduled Assessments ({{ scheduled_assessments|length }})</div>
-                <button class="close-btn" id="close-popup-btn" aria-label="Close" onclick="document.getElementById('all-assessments').classList.add('hidden'); document.querySelector('.popup-overlay').classList.remove('active'); document.body.style.overflow = '';">&times;</button>
+                <button class="close-btn" id="close-popup-btn" aria-label="Close" onclick="document.getElementById('all-assessments').classList.add('hidden'); document.querySelector('.popup-overlay').classList.remove('active'); document.body.style.overflow = ''; document.getElementById('show-more-btn').style.display = 'block';">&times;</button>
               </div>
+              
               <div class="assessment-list">
                 {% for assessment in scheduled_assessments %}
-                  <div class="assessment-item draggable-assessment {% if assessment.proctored %}proctored{% endif %}" 
-                      data-assessment-id="{{ assessment.id }}" 
-                      data-course-code="{{ assessment.course_code }}" 
-                      data-percentage="{{ assessment.percentage }}"
-                      data-proctored="{{ assessment.proctored }}"
-                      data-scheduled="{{ assessment.scheduled|default('false') }}"
-                      data-name="{{ assessment.name }}">
+                  <div class="assessment-info-card {% if assessment.proctored %}proctored{% endif %}">
                     <span class="assessment-name">{{ assessment.course_code }}-{{ assessment.name }}</span>
                     <div class="assessment-details">
-                      Weight: {{ assessment.percentage }}%
+                      <div class="weight-info">Weight: {{ assessment.percentage }}%</div>
                       <div class="badge-container">
-                        <span class="status-badge scheduled">Scheduled</span>
                         {% if assessment.proctored %}<span class="badge proctored">Proctored</span>{% endif %}
                       </div>
-                      <div>Date: {{ assessment.scheduled }}</div>
+                      <div class="date-info">Date: {{ assessment.scheduled }}</div>
                     </div>
                   </div>
                 {% endfor %}
@@ -2482,12 +2808,15 @@
     const closeBtn = document.getElementById('close-popup-btn');
     const popup = document.getElementById('all-assessments');
     const overlay = document.querySelector('.popup-overlay');
+    const showMoreBtn = document.getElementById('show-more-btn');
     
     if (closeBtn && popup) {
       closeBtn.addEventListener('click', function() {
         popup.classList.add('hidden');
         if (overlay) overlay.classList.remove('active');
         document.body.style.overflow = ''; // Restore scrolling
+        // Show the "Show All" button again
+        if (showMoreBtn) showMoreBtn.style.display = 'block';
         console.log('Close button clicked - popup closed');
       });
       
@@ -2500,6 +2829,8 @@
         popup.classList.add('hidden');
         if (overlay) overlay.classList.remove('active');
         document.body.style.overflow = '';
+        // Show the "Show All" button again
+        if (showMoreBtn) showMoreBtn.style.display = 'block';
         console.log('Escape key pressed - popup closed');
       }
     });
@@ -2510,7 +2841,28 @@
         popup.classList.add('hidden');
         overlay.classList.remove('active');
         document.body.style.overflow = ''; // Restore scrolling
+        // Show the "Show All" button again
+        if (showMoreBtn) showMoreBtn.style.display = 'block';
         console.log('Overlay clicked - popup closed');
+      });
+    }
+    
+    // Update the onclick attribute for the close button as well
+    if (closeBtn) {
+      closeBtn.setAttribute('onclick', 
+        "document.getElementById('all-assessments').classList.add('hidden'); " +
+        "document.querySelector('.popup-overlay').classList.remove('active'); " +
+        "document.body.style.overflow = ''; " +
+        "document.getElementById('show-more-btn').style.display = 'block';");
+    }
+    
+    // Make sure the Show All button hides when clicked
+    if (showMoreBtn) {
+      showMoreBtn.addEventListener('click', function() {
+        this.style.display = 'none';
+        popup.classList.remove('hidden');
+        if (overlay) overlay.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent scrolling behind popup
       });
     }
     
@@ -2525,8 +2877,17 @@
           popup.classList.add('hidden');
           if (overlay) overlay.classList.remove('active');
           document.body.style.overflow = '';
+          // Show the "Show All" button again
+          if (showMoreBtn) showMoreBtn.style.display = 'block';
           console.log('Delayed close button clicked - popup closed');
         });
+        
+        // Update the onclick attribute again
+        newCloseBtn.setAttribute('onclick', 
+          "document.getElementById('all-assessments').classList.add('hidden'); " +
+          "document.querySelector('.popup-overlay').classList.remove('active'); " +
+          "document.body.style.overflow = ''; " +
+          "document.getElementById('show-more-btn').style.display = 'block';");
         
         console.log('Close button handler reattached after delay');
       }
