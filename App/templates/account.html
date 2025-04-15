@@ -16,7 +16,7 @@
     padding: 20px;
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 30px;
     justify-content: center;
   }
 
@@ -151,7 +151,6 @@
     flex: 1;
     min-width: 300px;
     max-width: 400px;
-    transition: all 0.3s ease;
     align-self: flex-start;
     height: fit-content;
   }
@@ -435,7 +434,7 @@
     {% endif %}
     
     <div class="password-form">
-      <form action="/change_password" method="POST">
+      <form action="/change_password" method="POST" class="password-form">
         <div class="form-group">
           <label for="current_password" class="form-label">Current Password</label>
           <input type="password" id="current_password" name="current_password" class="form-input" required>
