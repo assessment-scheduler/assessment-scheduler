@@ -167,6 +167,30 @@
   .course-info strong {
     color: var(--tertiary-color);
   }
+
+  .hint-note {
+    background-color: var(--secondary-color);
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--tertiary-color);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .hint-note .material-icons {
+    color: var(--tertiary-color);
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .hint-note p {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
 </style>
 {% endblock %}
 
@@ -219,8 +243,17 @@
       </div>
       
       <div class="form-col">
-        <label for="start_day">Start Day (1-7, Monday-Sunday)</label>
-        <input type="number" id="start_day" name="start_day" min="1" max="7" required placeholder="e.g., 1 for Monday">
+        <label for="start_day">Start Day</label>
+        <select id="start_day" name="start_day" class="form-input" required>
+          <option value="" disabled selected>Select day</option>
+          <option value="1">1 - Monday</option>
+          <option value="2">2 - Tuesday</option>
+          <option value="3">3 - Wednesday</option>
+          <option value="4">4 - Thursday</option>
+          <option value="5">5 - Friday</option>
+          <option value="6">6 - Saturday</option>
+          <option value="7">7 - Sunday</option>
+        </select>
       </div>
     </div>
     
@@ -231,9 +264,23 @@
       </div>
       
       <div class="form-col">
-        <label for="end_day">End Day (1-7, Monday-Sunday)</label>
-        <input type="number" id="end_day" name="end_day" min="1" max="7" required placeholder="e.g., 5 for Friday">
+        <label for="end_day">End Day</label>
+        <select id="end_day" name="end_day" class="form-input" required>
+          <option value="" disabled selected>Select day</option>
+          <option value="1">1 - Monday</option>
+          <option value="2">2 - Tuesday</option>
+          <option value="3">3 - Wednesday</option>
+          <option value="4">4 - Thursday</option>
+          <option value="5">5 - Friday</option>
+          <option value="6">6 - Saturday</option>
+          <option value="7">7 - Sunday</option>
+        </select>
       </div>
+    </div>
+    
+    <div class="hint-note">
+      <span class="material-icons">info</span>
+      <p>Note: The start week, end week, start day, and end day fields represent a range of dates during which the assessment can be scheduled. This gives the system flexibility when generating an optimal assessment schedule.</p>
     </div>
     
     <div class="form-group">
@@ -326,8 +373,8 @@
       return false;
     }
     
-    if (!startDay || isNaN(startDay) || startDay < 1 || startDay > 7) {
-      alert('Please enter a valid start day (1-7)');
+    if (!startDay) {
+      alert('Please select a start day');
       return false;
     }
     
@@ -336,8 +383,8 @@
       return false;
     }
     
-    if (!endDay || isNaN(endDay) || endDay < 1 || endDay > 7) {
-      alert('Please enter a valid end day (1-7)');
+    if (!endDay) {
+      alert('Please select an end day');
       return false;
     }
     

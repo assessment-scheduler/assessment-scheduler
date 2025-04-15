@@ -128,3 +128,32 @@ def associate_with_semester(staff_id, semester_id, active=True):
     db.session.commit()
     return True
 
+def get_staff_courses_in_active_semester(staff_id_or_email: str) -> List[Course]:
+    from .semester import get_active_semester
+    
+    staff = get_staff(staff_id_or_email)
+    if not staff:
+        staff = get_staff_by_id(staff_id_or_email)
+    if not staff:
+        print(f"Could not get staff courses, staff {staff_id_or_email} not found")
+        return []
+    
+    active_semester = get_active_semester()
+    if not active_semester:
+        print("No active semester found")
+        return []
+    
+    all_staff_courses = []
+    for assignment in staff.course_assignments:
+        try:
+            course = assignment.course
+            if course:
+                all_staff_courses.append(course)
+        except Exception as e:
+            print(f"Error retrieving course: {str(e)}")
+    
+    semester_course_codes = [sc.course_code for sc in active_semester.course_assignments]
+    active_semester_courses = [course for course in all_staff_courses if course.code in semester_course_codes]
+    
+    return active_semester_courses
+

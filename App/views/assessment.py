@@ -37,8 +37,16 @@ assessment_views = Blueprint(
 def get_assessments_page():
     email = get_jwt_identity()
     user = get_staff_by_email(email)
-    assessments = get_assessments_by_lecturer(user.email)
-    return render_template("assessments.html", course_assessments=assessments)
+    
+    # Get only assessments from the active semester
+    active_semester = get_active_semester()
+    
+    if active_semester:
+        assessments = get_semester_lecturer_assessments(user.email)
+    else:
+        assessments = []
+    
+    return render_template("assessments.html", course_assessments=assessments, active_semester=active_semester)
 
 
 @assessment_views.route("/add_assessment", methods=["GET"])

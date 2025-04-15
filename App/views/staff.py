@@ -16,6 +16,7 @@ from ..controllers import (
     get_assessments_by_course
 )
 from ..controllers.auth import staff_required
+from ..controllers.staff import get_staff_courses_in_active_semester
 
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
 
@@ -61,13 +62,17 @@ def get_account_page():
 def get_my_courses():
     email = get_jwt_identity()
     staff = get_staff_by_email(email)
-    courses = get_staff_courses(email)
+    
+    # Get only courses from the active semester
+    courses = get_staff_courses_in_active_semester(email)
+    
+    active_semester = get_active_semester()
     
     # Add assessments to each course
     for course in courses:
         course.assessments = get_assessments_by_course(course.code)
     
-    return render_template('my_courses.html', staff=staff, courses=courses)
+    return render_template('my_courses.html', staff=staff, courses=courses, active_semester=active_semester)
 
 @staff_views.route('/change_password', methods=['POST'])
 @staff_required

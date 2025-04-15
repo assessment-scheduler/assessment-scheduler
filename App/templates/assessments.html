@@ -5,24 +5,26 @@
 {% block head %}
     <link rel="stylesheet" href="../static/css/assessments.css">
     <style>
-        /* Ensure styles only apply to content area, not affecting the navbar */
+        /* Scope all styles to content area to prevent affecting the navigation */
         .content-wrapper {
             width: 100%;
             max-width: none;
             padding: 2rem;
             margin: 0;
             box-sizing: border-box;
+            font-size: 1rem; /* Ensure consistent font size */
         }
 
-        h2 {
+        .content-wrapper h2 {
             margin-bottom: 1.5rem;
             font-weight: 600;
             position: relative;
             padding-bottom: 10px;
             text-align: center;
+            font-size: 1.75rem; /* Control heading size */
         }
 
-        h2:after {
+        .content-wrapper h2:after {
             content: '';
             position: absolute;
             bottom: 0;
@@ -34,7 +36,7 @@
             border-radius: 2px;
         }
 
-        #table_container {
+        .content-wrapper #table_container {
             margin-bottom: 1.5rem;
             overflow-x: auto;
             height: 60vh;
@@ -43,14 +45,14 @@
             background-color: var(--primary-color);
         }
 
-        #assessmentTable {
+        .content-wrapper #assessmentTable {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0 8px;
             background-color: var(--primary-color);
         }
 
-        #assessmentTable thead th {
+        .content-wrapper #assessmentTable thead th {
             text-align: left;
             padding: 12px 15px;
             font-weight: 600;
@@ -61,50 +63,52 @@
             top: 0;
             background-color: var(--tertiary-color);
             z-index: 10;
+            font-size: 0.95rem;
         }
 
-        .assessment-row {
+        .content-wrapper .assessment-row {
             transition: all 0.2s ease;
             cursor: pointer;
             background-color: var(--primary-color);
         }
 
-        .assessment-row td {
+        .content-wrapper .assessment-row td {
             padding: 15px;
             border-radius: 0;
+            font-size: 0.95rem;
         }
 
-        .assessment-row td:first-child {
+        .content-wrapper .assessment-row td:first-child {
             border-top-left-radius: 6px;
             border-bottom-left-radius: 6px;
             font-weight: 600;
         }
 
-        .assessment-row td:last-child {
+        .content-wrapper .assessment-row td:last-child {
             border-top-right-radius: 6px;
             border-bottom-right-radius: 6px;
         }
 
-        .assessment-row:hover {
+        .content-wrapper .assessment-row:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
-        .selected {
+        .content-wrapper .selected {
             background-color: var(--secondary-color) !important;
             position: relative;
         }
 
-        .selected td:first-child {
+        .content-wrapper .selected td:first-child {
             border-left: 4px solid var(--tertiary-color);
             padding-left: 11px;
         }
 
-        .selected:before {
+        .content-wrapper .selected:before {
             display: none;
         }
 
-        .action-btn {
+        .content-wrapper .action-btn {
             min-width: 70px;
             padding: 5px 10px;
             margin-right: 5px;
@@ -116,21 +120,21 @@
             display: inline-block;
         }
 
-        .update-btn {
+        .content-wrapper .update-btn {
             background-color: var(--tertiary-color);
         }
 
-        .delete-btn {
+        .content-wrapper .delete-btn {
             background-color: #e74c3c;
         }
 
-        .action-btn:hover {
+        .content-wrapper .action-btn:hover {
             opacity: 0.9;
             transform: translateY(-1px);
         }
 
         /* Modal Styles */
-        .modal {
+        .content-wrapper .modal {
             display: none;
             position: fixed;
             z-index: 1000;
@@ -147,7 +151,7 @@
             to { opacity: 1; }
         }
 
-        .modal-content {
+        .content-wrapper .modal-content {
             background-color: var(--card-color);
             margin: 15% auto;
             padding: 25px;
@@ -163,26 +167,26 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        .modal-content h3 {
+        .content-wrapper .modal-content h3 {
             margin-top: 0;
             color: var(--text-color);
             font-size: 1.5rem;
             margin-bottom: 15px;
         }
 
-        .modal-content p {
+        .content-wrapper .modal-content p {
             margin-bottom: 25px;
             color: var(--text-color);
             line-height: 1.5;
         }
 
-        .modal-buttons {
+        .content-wrapper .modal-buttons {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
         }
 
-        .confirm-delete-btn {
+        .content-wrapper .confirm-delete-btn {
             background-color: #e74c3c;
             color: white;
             border: none;
@@ -193,11 +197,11 @@
             transition: all 0.2s ease;
         }
 
-        .confirm-delete-btn:hover {
+        .content-wrapper .confirm-delete-btn:hover {
             background-color: #c0392b;
         }
 
-        .cancel-delete-btn {
+        .content-wrapper .cancel-delete-btn {
             background-color: #7f8c8d;
             color: white;
             border: none;
@@ -208,18 +212,18 @@
             transition: all 0.2s ease;
         }
 
-        .cancel-delete-btn:hover {
+        .content-wrapper .cancel-delete-btn:hover {
             background-color: #95a5a6;
         }
 
-        #buttons_container {
+        .content-wrapper #buttons_container {
             display: flex;
             justify-content: center;
             gap: 15px;
             margin-top: 1.5rem;
         }
 
-        .formBtn {
+        .content-wrapper .formBtn {
             background-color: var(--tertiary-color);
             color: white;
             padding: 10px 20px;
@@ -231,19 +235,19 @@
             cursor: pointer;
         }
 
-        .formBtn:hover {
+        .content-wrapper .formBtn:hover {
             opacity: 0.9;
             transform: translateY(-2px);
         }
 
         /* Filter styles */
-        .filter-container {
+        .content-wrapper .filter-container {
             display: flex;
             justify-content: flex-end;
             margin-bottom: 1rem;
         }
 
-        .filter-container select {
+        .content-wrapper .filter-container select {
             padding: 8px 15px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
@@ -254,7 +258,7 @@
         }
 
         /* Flash messages */
-        .flash-message {
+        .content-wrapper .flash-message {
             padding: 15px;
             margin-bottom: 20px;
             border-radius: 4px;
@@ -262,20 +266,20 @@
             animation: fadeIn 0.3s ease-in-out;
         }
         
-        .flash-success {
+        .content-wrapper .flash-success {
             background-color: rgba(46, 204, 113, 0.2);
             border-left: 4px solid #2ecc71;
             color: #2ecc71;
         }
         
-        .flash-error {
+        .content-wrapper .flash-error {
             background-color: rgba(231, 76, 60, 0.2);
             border-left: 4px solid #e74c3c;
             color: #e74c3c;
         }
 
         /* Empty state */
-        .empty-state {
+        .content-wrapper .empty-state {
             text-align: center;
             padding: 3rem;
             background-color: var(--card-color);
@@ -284,19 +288,55 @@
             border: 1px solid var(--border-color);
         }
 
-        .empty-state h3 {
+        .content-wrapper .empty-state h3 {
             font-size: 1.5rem;
             color: var(--text-color);
             margin-bottom: 1rem;
         }
 
-        .empty-state p {
+        .content-wrapper .empty-state p {
             color: var(--accent-color);
             margin-bottom: 2rem;
         }
 
-        .schedule-btn {
+        .content-wrapper .schedule-btn {
             background-color: #3498db;
+        }
+
+        .content-wrapper .semester-info {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: var(--card-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .content-wrapper .semester-label {
+            font-weight: 600;
+            margin-right: 1rem;
+        }
+
+        .content-wrapper .semester-date {
+            color: var(--text-color);
+        }
+
+        .content-wrapper .no-semester-alert {
+            text-align: center;
+            padding: 3rem;
+            background-color: var(--card-color);
+            border-radius: 8px;
+            margin-top: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .content-wrapper .no-semester-alert p {
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+
+        .content-wrapper .material-icons {
+            font-size: 2rem;
+            margin-right: 0.5rem;
         }
     </style>
 {% endblock %}
@@ -316,6 +356,12 @@
 
         <h2>Assessment Management</h2>
 
+        {% if active_semester %}
+        <div class="semester-info">
+            <span class="semester-label">Active Semester: {{ active_semester.sem_num }}</span>
+            <div class="semester-date">{{ active_semester.start_date.strftime('%B %d, %Y') }} - {{ active_semester.end_date.strftime('%B %d, %Y') }}</div>
+        </div>
+        
         <div class="filter-container">
             <select id="filterDropdownAssessments"> 
                 <option value="all">All Courses</option>
@@ -367,13 +413,21 @@
         {% else %}
         <div class="empty-state">
             <h3>No Assessments Found</h3>
-            <p>You haven't created any assessments yet. Click the "Add Assessment" button to get started.</p>
+            <p>You haven't created any assessments for the active semester yet. Click the "Add Assessment" button to get started.</p>
         </div>
         {% endif %}
         
         <div id="buttons_container">
             <a href="{{ url_for('assessment_views.get_add_assessments_page') }}" class="formBtn">Add Assessment</a>
         </div>
+        {% else %}
+        <div class="no-semester-alert">
+            <span class="material-icons">warning</span>
+            <div>
+                <p>There is no active semester. Please contact the system administrator to set up an active semester.</p>
+            </div>
+        </div>
+        {% endif %}
         
         <!-- Confirmation Modal -->
         <div id="deleteConfirmModal" class="modal">
