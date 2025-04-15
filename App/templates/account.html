@@ -11,9 +11,13 @@
   }
 
   .dashboard-container {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
   }
 
   .profile-card {
@@ -25,6 +29,9 @@
     overflow: hidden;
     margin-bottom: 20px;
     border: 1px solid var(--border-color);
+    flex: 2;
+    min-width: 300px;
+    max-width: 650px;
   }
 
   .profile-header {
@@ -140,8 +147,50 @@
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    margin-top: 20px;
     border: 1px solid var(--border-color);
+    flex: 1;
+    min-width: 300px;
+    max-width: 400px;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+    height: fit-content;
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    cursor: pointer;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .section-header:hover {
+    color: var(--tertiary-color);
+  }
+  
+  .toggle-icon {
+    transition: transform 0.3s ease;
+    color: var(--tertiary-color);
+  }
+  
+  .toggle-icon.collapsed {
+    transform: rotate(-90deg);
+  }
+  
+  .section-content {
+    max-height: 1000px;
+    opacity: 1;
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  
+  .section-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    padding-top: 0;
   }
 
   .section-title {
@@ -315,6 +364,17 @@
       box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
     }
   }
+
+  @media (max-width: 768px) {
+    .dashboard-container {
+      flex-direction: column;
+    }
+    
+    .profile-card, 
+    .password-section {
+      max-width: 100%;
+    }
+  }
 </style>
 {% endblock %}
 
@@ -388,7 +448,11 @@
   </div>
 
   <div class="password-section">
-    <h3 class="section-title">Change Password</h3>
+    <div class="section-header" id="password-section-header">
+      <h3 class="section-title">Change Password</h3>
+      <i class="material-icons toggle-icon">expand_more</i>
+    </div>
+    
     {% if staff and staff.check_password('default') %}
     <div class="default-password-alert">
       <span class="material-icons">security</span>
@@ -398,21 +462,46 @@
       </div>
     </div>
     {% endif %}
-    <form action="/change_password" method="POST" class="password-form">
-      <div class="form-group">
-        <label for="current_password" class="form-label">Current Password</label>
-        <input type="password" id="current_password" name="current_password" class="form-input" required>
-      </div>
-      <div class="form-group">
-        <label for="new_password" class="form-label">New Password</label>
-        <input type="password" id="new_password" name="new_password" class="form-input" required>
-      </div>
-      <div class="form-group">
-        <label for="confirm_password" class="form-label">Confirm New Password</label>
-        <input type="password" id="confirm_password" name="confirm_password" class="form-input" required>
-      </div>
-      <button type="submit" class="btn btn-primary">Change Password</button>
-    </form>
+    
+    <div class="section-content" id="password-section-content">
+      <form action="/change_password" method="POST" class="password-form">
+        <div class="form-group">
+          <label for="current_password" class="form-label">Current Password</label>
+          <input type="password" id="current_password" name="current_password" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label for="new_password" class="form-label">New Password</label>
+          <input type="password" id="new_password" name="new_password" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label for="confirm_password" class="form-label">Confirm New Password</label>
+          <input type="password" id="confirm_password" name="confirm_password" class="form-input" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Change Password</button>
+      </form>
+    </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const header = document.getElementById('password-section-header');
+    const content = document.getElementById('password-section-content');
+    const toggleIcon = document.querySelector('.toggle-icon');
+    
+    // Check if there's a default password alert, if so, don't collapse by default
+    const hasDefaultAlert = document.querySelector('.default-password-alert');
+    
+    if (!hasDefaultAlert) {
+      // Initially collapse the section
+      content.classList.add('collapsed');
+      toggleIcon.classList.add('collapsed');
+    }
+    
+    header.addEventListener('click', function() {
+      content.classList.toggle('collapsed');
+      toggleIcon.classList.toggle('collapsed');
+    });
+  });
+</script>
 {% endblock %} 
