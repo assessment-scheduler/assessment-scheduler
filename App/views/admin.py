@@ -249,8 +249,8 @@ def set_active_semester(semester_id):
                     assessment_count += course_assessments
             
             if assessment_count > 0:
-                flash(f"Started rescheduling {assessment_count} assessments for {len(semester.course_assignments)} courses", "info")
-                flash("This process may take a moment to complete. Check the calendar page when complete.", "info")
+                flash(f"All {assessment_count} assessments for {len(semester.course_assignments)} courses have been reset", "info")
+                flash("You can now schedule assessments manually or use the scheduler from the calendar page.", "info")
             else:
                 flash("No assessments found for this semester's courses. Add assessments to schedule them.", "warning")
         else:

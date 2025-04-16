@@ -162,24 +162,6 @@ def set_active(semester_id: int) -> bool:
         
         print(f"Reset scheduling for {all_assessments_count} assessments for semester {semester_id}")
         
-        if all_assessments_count == 0:
-            print(f"No assessments found for semester {semester_id}. Skipping auto-scheduling.")
-            return True
-            
-        print(f"Rescheduling {all_assessments_count} assessments for semester {semester_id}")
-        
-        try:
-            solver = semester.get_solver()
-            schedule = solver.solve()
-            
-            if schedule:
-                print(f"Successfully rescheduled {len(schedule)} assessments for semester {semester_id}")
-            else:
-                print(f"Failed to reschedule assessments for semester {semester_id}")
-        except Exception as e:
-            print(f"Error while rescheduling assessments for semester {semester_id}: {str(e)}")
-            print("Traceback:", traceback.format_exc())
-            
         return True
 
 def add_course_to_semester(semester_id: int, course_code: str) -> bool:
