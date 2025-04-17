@@ -1,13 +1,9 @@
 var weekCounter = 0;
-
 let pendingScheduleData = null;
 let pendingEvent = null;
 
 document.addEventListener("DOMContentLoaded", function () {
   let eventsLoaded = false;
-  
-
-  
   const colors = {
     Assignment: "#4a88c7",
     Quiz: "#4a88c7",
@@ -431,34 +427,23 @@ document.addEventListener("DOMContentLoaded", function () {
         data.end_day = offsets.endDay;
       }
       
-      // Add visual indicator that we're processing
       const loadingIndicator = document.createElement('div');
       loadingIndicator.className = 'event-loading';
       loadingIndicator.innerHTML = '<div class="loading-spinner"></div>';
       info.event.setProp('classNames', ['processing-drop']);
       
-      // If it's already scheduled, we need to unschedule first then reschedule
       if (isRescheduling) {
-        
-        // We'll save the event directly instead of calling unscheduleEvent first
         saveEvent(data, info.event);
-        
-        // After successful save, we might want to update the UI
-        // This will happen in the saveEvent function
         } else {
-        // Regular scheduling of an unscheduled assessment
         saveEvent(data, info.event);
       }
     },
     eventRemove: function(info) {
-      // Explicit remove actions, not drag-out
     },
     eventLeave: function(info) {
     },
     initialDate: semester && semester.start_date ? semester.start_date : undefined,
     eventClick: function(info) {
-      // Only handle the click if it's not on the delete button
-      // Button clicks are handled separately
     },
   });
 
@@ -476,7 +461,6 @@ document.addEventListener("DOMContentLoaded", function () {
   try {
     calendar.render();
     
-    // Apply filters on initial load
     setTimeout(() => {
       applyFilters();
     }, 300);
@@ -520,13 +504,11 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
     
-    // Apply visual styling to dates outside semester range
     const markDatesOutsideSemester = () => {
       if (semester && semester.start_date && semester.end_date) {
         const semesterStart = new Date(semester.start_date);
         const semesterEnd = new Date(semester.end_date);
         
-        // Find all day cells in the calendar
         const dayCells = document.querySelectorAll('.fc-daygrid-day');
         
         dayCells.forEach(dayCell => {
@@ -534,7 +516,6 @@ document.addEventListener("DOMContentLoaded", function () {
           if (dateAttr) {
             const cellDate = new Date(dateAttr);
             
-            // Check if date is outside semester range
             if (cellDate < semesterStart || cellDate > semesterEnd) {
               dayCell.classList.add('outside-semester');
             } else {
@@ -545,23 +526,17 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     };
     
-    // Initial application of outside-semester styling
     markDatesOutsideSemester();
     
-    // Apply styling when month changes
     calendar.on('datesSet', function() {
       markDatesOutsideSemester();
-      
-      // Save current date and view for state preservation
       localStorage.setItem('calendarCurrentDate', calendar.getDate().toISOString());
       localStorage.setItem('calendarViewType', calendar.view.type);
     });
     
-    // Ensure events are loaded by forcing a refetch after a short delay
     setTimeout(() => {
       calendar.refetchEvents();
       
-      // Highlight all scheduled assessments briefly to draw attention to them
       const calendarEvents = calendar.getEvents();
       
       calendarEvents.forEach(event => {
@@ -577,16 +552,12 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }, 300);
     
-    // Make sure FullCalendar has initialized properly by checking its APIs
-
-    
   } catch (error) {
     console.error('Error rendering calendar:', error);
   }
 
   function loadSavedFilters() {
     try {
-      // Restore saved filter values if available
       const savedLevel = localStorage.getItem('calendarLevelFilter');
       const savedCourse = localStorage.getItem('calendarCourseFilter');
       const savedType = localStorage.getItem('calendarTypeFilter');
@@ -595,19 +566,16 @@ document.addEventListener("DOMContentLoaded", function () {
       if (savedCourse && courseFilter) courseFilter.value = savedCourse;
       if (savedType && typeFilter) typeFilter.value = savedType;
       
-      // Apply the saved filters
       applyFilters();
     } catch (error) {
       console.error("Error loading saved filters:", error);
     }
   }
 
-  // Apply filters when changed
   if (levelFilter) levelFilter.addEventListener('change', applyFilters);
   if (courseFilter) courseFilter.addEventListener('change', applyFilters);
   if (typeFilter) typeFilter.addEventListener('change', applyFilters);
   
-  // Load saved filters on init
   setTimeout(loadSavedFilters, 200);
 
   function applyFilters() {
@@ -617,18 +585,15 @@ document.addEventListener("DOMContentLoaded", function () {
       const typeValue = typeFilter ? typeFilter.value : "all";
       
       
-      // Save filter selections to localStorage
       if (levelFilter) localStorage.setItem('calendarLevelFilter', levelValue);
       if (courseFilter) localStorage.setItem('calendarCourseFilter', courseValue);
       if (typeFilter) localStorage.setItem('calendarTypeFilter', typeValue);
       
-      // Filter calendar events
       if (calendar) {
         const events = calendar.getEvents();
         events.forEach(event => {
           let visible = true;
           
-          // Level filter
           if (levelValue !== "0") {
             const courseCode = event.extendedProps.course_code;
             if (courseCode && courseCode.length >= 5) {
@@ -639,11 +604,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           }
           
-          // Course filter 
           if (courseValue !== "all") {
             if (courseValue === "My Courses") {
-              // Only show events for the logged-in lecturer's courses
-              // These assessments can be identified by the isOwnedAssessment property
               if (!event.extendedProps.isOwnedAssessment) {
                 visible = false;
               }
@@ -652,7 +614,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           }
           
-          // Type filter
           if (typeValue !== "all") {
             if ((typeValue === "1" && !event.extendedProps.proctored) || 
                 (typeValue === "0" && event.extendedProps.proctored)) {
@@ -660,7 +621,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           }
           
-          // Apply visibility
           if (visible) {
             event.setProp('display', 'auto');
           } else {
@@ -669,12 +629,10 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       }
       
-      // Update the unscheduled assessments list based on filters
       const assessmentItems = document.querySelectorAll('#unscheduled-list .draggable-assessment');
       assessmentItems.forEach(item => {
         let visible = true;
         
-        // Level filter
         if (levelValue !== "0") {
           const courseCode = item.dataset.courseCode;
           if (courseCode && courseCode.length >= 5) {
@@ -685,14 +643,12 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         }
         
-        // Course filter - Note: All items in #unscheduled-list are already filtered to the user's courses
         if (courseValue !== "all" && courseValue !== "My Courses") {
           if (item.dataset.courseCode !== courseValue) {
             visible = false;
           }
         }
         
-        // Type filter
         if (typeValue !== "all") {
           const isProctored = item.dataset.proctored === "1" || 
                              item.dataset.proctored === "True" || 
@@ -702,7 +658,6 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         }
         
-        // Apply visibility
         item.style.display = visible ? 'block' : 'none';
       });
     } catch (error) {
@@ -767,7 +722,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const semesterStart = new Date(semester.start_date);
     const semesterEnd = new Date(semester.end_date);
     
-    // Validate the drop is within the semester
     if (eventDate < semesterStart || eventDate > semesterEnd) {
       info.revert();
       alert("Cannot reschedule assessment: Date is outside the semester range.");
@@ -775,11 +729,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     
-    // Store the original event data and element info for possible recovery
     const originalAssessmentId = event.id;
     const originalElement = document.querySelector(`.draggable-assessment[data-assessment-id="${originalAssessmentId}"]`);
     
-    // Save original assessment card details if available
     if (originalElement) {
       window._lastDraggedAssessment = {
         id: originalAssessmentId,
@@ -810,7 +762,6 @@ document.addEventListener("DOMContentLoaded", function () {
     saveEvent(data, event);
   }
 
-  // calendar breaks if i dont have this
   function handleNewItem(info) {
     return;
   }
@@ -875,30 +826,30 @@ document.addEventListener("DOMContentLoaded", function () {
       clashValue.textContent = Number(data.average_clash_value).toFixed(1);
       
       if (parseFloat(data.average_clash_value) <= 2.0) {
-        clashValue.style.color = '#4cd964'; // green
+        clashValue.style.color = '#4cd964'; 
       } else if (parseFloat(data.average_clash_value) <= 5.0) {
-        clashValue.style.color = '#5e72e4'; // blue
+        clashValue.style.color = '#5e72e4'; 
       } else {
-        clashValue.style.color = '#ff3b30'; // red
+        clashValue.style.color = '#ff3b30'; 
       }
     } else {
       clashValue.textContent = "0";
-      clashValue.style.color = '#4cd964'; // green
+      clashValue.style.color = '#4cd964'; 
     }
     
     if (data.highest_clash_value !== undefined) {
       highestClashValue.textContent = Number(data.highest_clash_value).toFixed(1);
       
       if (parseFloat(data.highest_clash_value) <= 2.0) {
-        highestClashValue.style.color = '#4cd964'; // green
+        highestClashValue.style.color = '#4cd964'; 
       } else if (parseFloat(data.highest_clash_value) <= 5.0) {
-        highestClashValue.style.color = '#5e72e4'; // blue
+        highestClashValue.style.color = '#5e72e4'; 
       } else {
-        highestClashValue.style.color = '#ff3b30'; // red
+        highestClashValue.style.color = '#ff3b30'; 
       }
     } else {
       highestClashValue.textContent = "0";
-      highestClashValue.style.color = '#4cd964'; // green
+      highestClashValue.style.color = '#4cd964'; 
     }
     
     clashEvaluation.textContent = data.evaluation;
@@ -1455,26 +1406,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     attachCloseButtonHandler();
-    
-    if (popupOverlay) {
-      popupOverlay.addEventListener('click', function() {
-        closeAllAssessmentsPopup();
-      });
-    }
-    
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && allAssessments && !allAssessments.classList.contains('hidden')) {
-        closeAllAssessmentsPopup();
-      }
-    });
-    
-    function closeAllAssessmentsPopup() {
-      if (allAssessments) {
-        allAssessments.classList.add('hidden');
-        if (popupOverlay) popupOverlay.classList.remove('active');
-        document.body.style.overflow = '';
-      }
-    }
+
     
     function attachCloseButtonHandler() {
       const closeBtn = document.getElementById('close-popup-btn');
@@ -1490,33 +1422,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
   });
-
-  function applyBlueBackgroundClass() {
-    const assessmentItems = document.querySelectorAll('.assessment-item, .draggable-assessment');
-    
-    assessmentItems.forEach(item => {
-      const style = window.getComputedStyle(item);
-      const bgColor = style.backgroundColor;
-      
-      if (bgColor.includes('rgb(92, 70, 180)') || 
-          bgColor.includes('rgb(94, 114, 228)') || 
-          bgColor.includes('rgb(52, 152, 219)') ||
-          item.style.backgroundColor === 'var(--tertiary-color)' ||
-          item.style.backgroundColor === '#5e72e4') {
-        item.classList.add('blue-bg');
-      } else {
-        item.classList.remove('blue-bg');
-      }
-    });
-  }
-  
-  document.addEventListener('DOMContentLoaded', function() {
-    applyBlueBackgroundClass();
-    
-    setTimeout(applyBlueBackgroundClass, 1000);
-  });
-  
-  document.addEventListener('themeToggled', applyBlueBackgroundClass);
 
   function showUnscheduleConfirmation(assessmentId, courseCode, assessmentName) {
     const overlay = document.getElementById('unschedule-overlay');
@@ -1560,7 +1465,6 @@ document.addEventListener("DOMContentLoaded", function () {
   function closeUnscheduleConfirmation() {
     const overlay = document.getElementById('unschedule-overlay');
     const dialog = document.getElementById('unschedule-confirm');
-    
     overlay.style.display = 'none';
     dialog.style.display = 'none';
   }
@@ -1571,224 +1475,6 @@ document.addEventListener("DOMContentLoaded", function () {
            localStorage.getItem('darkMode') === 'true';
   }
 
-
-  document.addEventListener('themeToggled', function() {
-    const isDark = isDarkModeActive();
-    
-    const clashModal = document.getElementById('clash-modal');
-    const clashOverlay = document.getElementById('clash-modal-overlay');
-    
-    if (clashModal && !clashModal.classList.contains('hidden')) {
-      if (isDark) {
-        clashModal.classList.add('dark-mode');
-        clashOverlay.classList.add('dark-mode');
-      } else {
-        clashModal.classList.remove('dark-mode');
-        clashOverlay.classList.remove('dark-mode');
-      }
-    }
-    
-    const unscheduleConfirm = document.getElementById('unschedule-confirm');
-    const unscheduleOverlay = document.getElementById('unschedule-overlay');
-    
-    if (unscheduleConfirm && unscheduleConfirm.style.display !== 'none') {
-      if (isDark) {
-        unscheduleConfirm.classList.add('dark-mode');
-        unscheduleOverlay.classList.add('dark-mode');
-      } else {
-        unscheduleConfirm.classList.remove('dark-mode');
-        unscheduleOverlay.classList.remove('dark-mode');
-      }
-    }
-    
-    const loadingIndicator = document.querySelector('.loading-indicator');
-    if (loadingIndicator) {
-      if (isDark) {
-        loadingIndicator.classList.add('dark-mode');
-      } else {
-        loadingIndicator.classList.remove('dark-mode');
-      }
-    }
-  });
-
-  document.addEventListener('DOMContentLoaded', function() {
-    const style = document.createElement('style');
-    style.textContent = `
-      .schedule-feedback {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 10px 20px;
-        color: white;
-        border-radius: 4px;
-        z-index: 9999;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        animation: fadeInOut 3s ease forwards;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      
-      .schedule-feedback.success {
-        background-color: #4cd964;
-      }
-      
-      .schedule-feedback.cancel {
-        background-color: #ff9500;
-      }
-      
-      .schedule-feedback.error {
-        background-color: #ff3b30;
-      }
-      
-      @keyframes fadeInOut {
-        0% { opacity: 0; }
-        10% { opacity: 1; }
-        80% { opacity: 1; }
-        100% { opacity: 0; }
-      }
-      
-      .loading-indicator {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: rgba(255, 255, 255, 0.9);
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        z-index: 10000;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-      }
-      
-      .loading-indicator.dark-mode {
-        background-color: rgba(33, 33, 33, 0.9);
-        color: #fff;
-      }
-      
-      .spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #5e72e4;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-      
-      .dark-mode .spinner {
-        border: 4px solid #333;
-        border-top: 4px solid #5e72e4;
-      }
-      
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      
-      .loading-text {
-        font-size: 14px;
-        font-weight: 500;
-      }
-      
-      .badge.recovered {
-        background-color: #f5a623;
-        color: white;
-        animation: pulse 2s infinite;
-      }
-      
-      @keyframes pulse {
-        0% { opacity: 0.6; }
-        50% { opacity: 1; }
-        100% { opacity: 0.6; }
-      }
-      
-      .draggable-assessment.recovered {
-        animation: highlightCard 2s ease-in-out;
-        box-shadow: 0 0 10px rgba(245, 166, 35, 0.7);
-      }
-      
-      @keyframes highlightCard {
-        0% { background-color: rgba(245, 166, 35, 0.3); }
-        100% { background-color: transparent; }
-      }
-      
-      /* Enhanced recovery visual */
-      .draggable-assessment.recovered::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        border: 2px solid #f5a623;
-        border-radius: inherit;
-        animation: pulseBorder 1.5s ease-out;
-        pointer-events: none;
-      }
-      
-      @keyframes pulseBorder {
-        0% { 
-          box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.7);
-          opacity: 1;
-        }
-        70% { 
-          box-shadow: 0 0 0 10px rgba(245, 166, 35, 0);
-          opacity: 0.7;
-        }
-        100% { 
-          box-shadow: 0 0 0 0 rgba(245, 166, 35, 0);
-          opacity: 0;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-    
-    // Rest of initialization code
-    // ... existing code ...
-  });
-
-  function refreshCurrentAssessments() {
-    
-    const loadingIndicator = document.createElement('div');
-    loadingIndicator.className = 'loading-indicator' + (isDarkModeActive() ? ' dark-mode' : '');
-    loadingIndicator.innerHTML = '<div class="spinner"></div><div class="loading-text">Refreshing...</div>';
-    document.body.appendChild(loadingIndicator);
-    
-    fetch('/api/my_semester_assessments')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (data.success) {
-          calendar.refetchEvents();
-          
-          updateAssessmentList(data.assessments);
-        } else {
-          console.error("Failed to refresh assessments:", data.message);
-          rebuildAssessmentListFromCurrentState();
-        }
-      })
-      .catch(error => {
-        console.error("Error refreshing assessments:", error);
-        rebuildAssessmentListFromCurrentState();
-      })
-      .finally(() => {
-        setTimeout(applyFilters, 200);
-        
-        if (loadingIndicator.parentNode) {
-          loadingIndicator.parentNode.removeChild(loadingIndicator);
-        }
-      });
-  }
-  
-  // 
   function updateAssessmentList(assessments) {
     const unscheduledList = document.getElementById('unscheduled-list');
     if (!unscheduledList) return;
