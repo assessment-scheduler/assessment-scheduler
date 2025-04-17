@@ -10,7 +10,6 @@ from ..controllers.staff import get_staff
 
 scheduling_views = Blueprint("scheduling", __name__, template_folder="../templates")
 
-# Custom decorator that allows either staff or admin access
 def staff_or_admin_required(f):
     @wraps(f)
     @jwt_required()
@@ -22,7 +21,7 @@ def staff_or_admin_required(f):
     return decorated_function
 
 @scheduling_views.route("/schedule", methods=["POST"])
-@staff_or_admin_required  # Using our custom decorator instead of staff_required
+@staff_or_admin_required  
 def get_schedule_action():
     semester = get_active_semester()
     if not semester:
@@ -41,7 +40,6 @@ def get_schedule_action():
     except Exception as e:
         flash(f"Error generating schedule: {str(e)}", "error")
     
-    # Redirect admin users to admin dashboard, staff to assessments page
     email = get_jwt_identity()
     if is_admin(email):
         return redirect(url_for("admin_views.admin_dashboard"))
@@ -77,7 +75,6 @@ def toggle_solver():
         flash("No active semester found", "error")
         return redirect(url_for("admin_views.admin_dashboard"))
     
-    # Toggle between the two solvers
     new_solver = 'prof' if semester.solver_type == 'kris' else 'kris'
     
     success = set_semester_solver(semester.id, new_solver)
@@ -86,7 +83,6 @@ def toggle_solver():
     else:
         flash("Failed to change solver type", "error")
     
-    # Redirect back to the referring page or dashboard
     referrer = request.referrer
     if referrer:
         return redirect(referrer)

@@ -56,21 +56,17 @@ def calculate_assessment_clash(course_code: str, target_date: datetime) -> Tuple
         if nearest_assessment and nearest_assessment.scheduled:
             days_diff = abs((nearest_assessment.scheduled - target_date).days)
             
-            # More aggressive day factor for very close assessments
             if days_diff < 3:
-                day_factor = 1.5  # Increased impact for very close dates (0-2 days)
+                day_factor = 1.5   
             elif days_diff < 7:
-                day_factor = 1.0  # Full impact (3-6 days)
+                day_factor = 1.0  
             elif days_diff < 14:
-                day_factor = 0.7  # 70% impact (7-13 days)
+                day_factor = 0.7  
             elif days_diff < 21:
-                day_factor = 0.4  # 40% impact (14-20 days)
+                day_factor = 0.4  
             else:
-                day_factor = 0.2  # 20% impact for assessments far apart (21+ days)
+                day_factor = 0.2   
             
-            # More sensitive calculation for clash value
-            # Using 30 as divisor instead of 50, and add extra weight for proctored exams
-            # Also add extra weight when days_diff is very small (less than 3 days)
             proctored_multiplier = 1.5 if nearest_assessment.proctored else 1.0
             close_date_multiplier = 1.5 if days_diff < 3 else 1.0
             
@@ -96,7 +92,6 @@ def calculate_assessment_clash(course_code: str, target_date: datetime) -> Tuple
     
     avg_clash_value = total_clash_value / valid_clash_count if valid_clash_count > 0 else 0
     
-    # Adjust the final calculation to emphasize the highest clash value even more
     final_clash_value = (highest_clash_value * 0.7) + (avg_clash_value * 0.3) if valid_clash_count > 0 else 0
     
     final_clash_value = min(final_clash_value, 10)
@@ -106,7 +101,6 @@ def calculate_assessment_clash(course_code: str, target_date: datetime) -> Tuple
 def evaluate_assessment_date(course_code: str, target_date: datetime) -> Dict:
     clash_value, clash_details = calculate_assessment_clash(course_code, target_date)
     
-    # Updated thresholds that better reflect the new calculation method
     evaluation = "good"
     if clash_value <= 2.0:
         evaluation = "excellent"
@@ -115,13 +109,11 @@ def evaluate_assessment_date(course_code: str, target_date: datetime) -> Dict:
     else:
         evaluation = "poor"
     
-    # Also check the highest individual clash, which might indicate problems
-    # even if the average is good
     highest_clash = max([detail['clash_value'] for detail in clash_details]) if clash_details else 0
     if highest_clash > 4.0 and evaluation != "poor":
-        evaluation = "poor"  # Override if any single clash is very high
+        evaluation = "poor"  
     elif highest_clash > 3.0 and evaluation == "excellent":
-        evaluation = "good"  # Downgrade from excellent to good if any clash is significant
+        evaluation = "good"  
     
     return {
         'average_clash_value': clash_value,

@@ -351,7 +351,6 @@
 
 {% block content %}
 <div class="dashboard-container">
-  <!-- Profile Section -->
   <div class="profile-card">
     {% if staff %}
     <div class="profile-header">
@@ -362,7 +361,6 @@
       <p class="profile-email">{{ staff.email }}</p>
     </div>
 
-    <!-- Stats Section -->
     <div class="stats-container">
       <div class="stat-card">
         <div class="stat-value">{{ courses|length if courses else 0 }}</div>

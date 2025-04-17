@@ -269,7 +269,6 @@
     const startDateError = document.getElementById('start_date_error');
     const endDateError = document.getElementById('end_date_error');
     
-    // Reset error states
     startDateInput.classList.remove('error');
     endDateInput.classList.remove('error');
     startDateError.style.display = 'none';
@@ -294,18 +293,15 @@
     return true;
   }
 
-  // Add event listeners for date inputs
   document.getElementById('start_date').addEventListener('change', validateDates);
   document.getElementById('end_date').addEventListener('change', validateDates);
 
-  // Form validation
   document.getElementById('semesterForm').addEventListener('submit', function(e) {
     if (!validateDates()) {
       e.preventDefault();
       return false;
     }
     
-    // Ensure at least one course is selected
     const coursesSelect = document.getElementById('courses');
     const selectedCourses = Array.from(coursesSelect.selectedOptions);
     if (selectedCourses.length === 0) {

@@ -5,14 +5,13 @@
 {% block head %}
     <link rel="stylesheet" href="../static/css/assessments.css">
     <style>
-        /* Scope all styles to content area to prevent affecting the navigation */
         .content-wrapper {
             width: 100%;
             max-width: none;
             padding: 2rem;
             margin: 0;
             box-sizing: border-box;
-            font-size: 1rem; /* Ensure consistent font size */
+            font-size: 1rem;
         }
 
         .content-wrapper h2 {
@@ -21,7 +20,7 @@
             position: relative;
             padding-bottom: 10px;
             text-align: center;
-            font-size: 1.75rem; /* Control heading size */
+            font-size: 1.75rem;
         }
 
         .content-wrapper h2:after {
@@ -133,7 +132,6 @@
             transform: translateY(-1px);
         }
 
-        /* Modal Styles */
         .content-wrapper .modal {
             display: none;
             position: fixed;
@@ -240,7 +238,6 @@
             transform: translateY(-2px);
         }
 
-        /* Filter styles */
         .content-wrapper .filter-container {
             display: flex;
             justify-content: flex-end;
@@ -257,7 +254,6 @@
             cursor: pointer;
         }
 
-        /* Flash messages */
         .content-wrapper .flash-message {
             padding: 15px;
             margin-bottom: 20px;
@@ -278,7 +274,6 @@
             color: #e74c3c;
         }
 
-        /* Empty state */
         .content-wrapper .empty-state {
             text-align: center;
             padding: 3rem;
@@ -343,7 +338,6 @@
 
 {% block content %}
     <div class="content-wrapper">
-        <!-- Display flash messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -429,7 +423,6 @@
         </div>
         {% endif %}
         
-        <!-- Confirmation Modal -->
         <div id="deleteConfirmModal" class="modal">
             <div class="modal-content">
                 <h3>Confirm Deletion</h3>
@@ -452,7 +445,6 @@
             const deleteForm = document.getElementById('deleteAssessmentForm');
             const filterDropdown = document.getElementById('filterDropdownAssessments');
             
-            // Filter functionality
             filterDropdown.addEventListener('change', function() {
                 const selectedValue = filterDropdown.value;
                 
@@ -466,7 +458,6 @@
                 });
             });
             
-            // Delete button click handlers
             document.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -477,7 +468,6 @@
                 });
             });
             
-            // Row click handler to highlight the selected row
             assessmentRows.forEach(row => {
                 row.addEventListener('click', function() {
                     assessmentRows.forEach(row => row.classList.remove('selected'));
@@ -485,19 +475,16 @@
                 });
             });
             
-            // Hide modal when cancel button is clicked
             cancelBtn.addEventListener('click', function() {
                 modal.style.display = 'none';
             });
             
-            // Close modal when clicking outside of it
             window.addEventListener('click', function(event) {
                 if (event.target === modal) {
                     modal.style.display = 'none';
                 }
             });
             
-            // Auto-hide flash messages after 5 seconds
             setTimeout(function() {
                 const flashMessages = document.querySelectorAll('.flash-message');
                 flashMessages.forEach(message => {

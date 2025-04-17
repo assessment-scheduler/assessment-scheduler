@@ -5,6 +5,7 @@ import os, csv
 from ..database import db
 from ..models import Admin, Staff, Course, Assessment
 from ..views.assessment import assessment_views
+from ..models.assessment import Assessment
 from ..controllers import (
     change_password,
     create_assessment,
@@ -60,8 +61,6 @@ def admin_dashboard():
             'assessments': 0,
             'scheduled': 0
         }
-    
-    # Get the active semester for scheduling controls
     try:
         from ..controllers.semester import get_active_semester
         active_semester = get_active_semester()
@@ -87,7 +86,6 @@ def get_upload_files_page():
 def get_new_semester_form():
     courses = get_all_courses()
     semesters = get_all_semesters()
-    # Convert semesters to serializable format
     serialized_semesters = [{
         'id': s.id,
         'start_date': s.start_date.isoformat(),
@@ -155,7 +153,6 @@ def get_update_semester(semester_id):
     
     courses = get_all_courses()
     semesters = get_all_semesters()
-    # Convert semesters to serializable format
     serialized_semesters = [{
         'id': s.id,
         'start_date': s.start_date.isoformat(),
@@ -233,12 +230,8 @@ def set_active_semester(semester_id):
     
     if result:
         flash('Semester set as active', 'success')
-        
-        # Get semester to check if it has courses
         semester = get_semester(semester_id)
         if semester and semester.course_assignments:
-            # Check if there are any assessments
-            from ..models.assessment import Assessment
             
             assessment_count = 0
             for assignment in semester.course_assignments:
@@ -451,7 +444,6 @@ def upload_cells_file():
                     message = f'Error: CSV file must contain the following columns: {", ".join(required_columns)}'
                     return render_template('upload_files.html', message=message)
             
-            # Process the cells file
             cells_added = 0
             with open(os.path.join('App/uploads', filename)) as cells_file:
                 reader = csv.DictReader(cells_file)

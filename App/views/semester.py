@@ -115,10 +115,8 @@ def set_active_semester(semester_id: int):
     if success:
         flash(f"Semester {semester_id} was successfully set as active", "success")
         
-        # Get semester to check if it has courses
         semester = get_semester(semester_id)
         if semester and semester.course_assignments:
-            # Check total assessment count
             assessment_count = 0
             for assignment in semester.course_assignments:
                 if assignment.course:

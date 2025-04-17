@@ -196,7 +196,6 @@
 
 {% block content %}
 <div class="form-container">
-  <!-- Display flash messages -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, message in messages %}
@@ -320,14 +319,12 @@
     const semStart = new Date(semesterStartDate);
     const semEnd = new Date(semesterEndDate);
 
-    // Calculate assessment dates
     const assessmentStartDate = new Date(semStart);
     assessmentStartDate.setDate(assessmentStartDate.getDate() + ((startWeek - 1) * 7) + (startDay - 1));
 
     const assessmentEndDate = new Date(semStart);
     assessmentEndDate.setDate(assessmentEndDate.getDate() + ((endWeek - 1) * 7) + (endDay - 1));
 
-    // Check if dates are within semester bounds
     if (assessmentStartDate < semStart || assessmentStartDate > semEnd) {
       alert('Assessment start date must be within the semester dates (' + semesterStartDate + ' to ' + semesterEndDate + ')');
       return false;
@@ -342,7 +339,6 @@
   }
 
   function validateForm() {
-    // Get form values
     const courseCode = document.getElementById('course_code').value;
     const name = document.getElementById('name').value;
     const percentage = document.getElementById('percentage').value;
@@ -350,8 +346,6 @@
     const startDay = document.getElementById('start_day').value;
     const endWeek = document.getElementById('end_week').value;
     const endDay = document.getElementById('end_day').value;
-    
-    // Validate required fields
     if (!courseCode) {
       alert('Please select a course');
       return false;
@@ -362,7 +356,6 @@
       return false;
     }
     
-    // Validate numeric fields
     if (!percentage || isNaN(percentage) || percentage < 0 || percentage > 100) {
       alert('Please enter a valid percentage (0-100)');
       return false;
@@ -388,7 +381,6 @@
       return false;
     }
     
-    // Validate end date is after start date
     if (parseInt(endWeek) < parseInt(startWeek) || 
         (parseInt(endWeek) === parseInt(startWeek) && parseInt(endDay) < parseInt(startDay))) {
       alert('End date must be after start date');
@@ -399,7 +391,6 @@
   }
   
   document.addEventListener('DOMContentLoaded', function() {
-    // Auto-hide flash messages after 5 seconds
     setTimeout(function() {
       const flashMessages = document.querySelectorAll('.flash-message');
       flashMessages.forEach(message => {

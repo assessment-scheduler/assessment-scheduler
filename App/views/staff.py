@@ -63,12 +63,10 @@ def get_my_courses():
     email = get_jwt_identity()
     staff = get_staff_by_email(email)
     
-    # Get only courses from the active semester
     courses = get_staff_courses_in_active_semester(email)
     
     active_semester = get_active_semester()
     
-    # Add assessments to each course
     for course in courses:
         course.assessments = get_assessments_by_course(course.code)
     
