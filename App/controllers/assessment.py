@@ -55,13 +55,9 @@ def get_assessments_by_lecturer(staff_email: str) -> List[Assessment]:
 def get_semester_lecturer_assessments(staff_email: str, semester_id: int = None) -> List[Assessment]:
 
     from ..controllers.semester import get_active_semester, get_semester
-    
-    # Get the lecturer's courses
     staff_courses = get_staff_courses(staff_email)
     if not staff_courses:
         return []
-    
-    # Get the semester
     semester = None
     if semester_id:
         semester = get_semester(semester_id)
@@ -70,15 +66,9 @@ def get_semester_lecturer_assessments(staff_email: str, semester_id: int = None)
     
     if not semester:
         return []
-    
-    # Get list of courses in the semester
     semester_courses = [assignment.course_code for assignment in semester.course_assignments]
-    
-    # Filter the lecturer's courses to only those in the semester
     lecturer_semester_courses = [course for course in staff_courses if course.code in semester_courses]
     course_codes = [course.code for course in lecturer_semester_courses]
-    
-    # Get assessments for these courses
     filtered_assessments = []
     for course_code in course_codes:
         assessments = get_assessments_by_course(course_code)
